@@ -1,5 +1,6 @@
 CC = @CC@
 CFLAGS = @CFLAGS@ @OCFLAGS@
+MAKE_P = @MAKE_P@
 PROG = libncsnet
 STATIC_LIB = $(PROG).a
 DYNAMIC_LIB = $(PROG).so
@@ -22,13 +23,13 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 libraries: $(STATIC_LIB) $(DYNAMIC_LIB)
 examples: libraries
-	cd $(EXAMPLES_DIR) && make && cd ..
+	cd $(EXAMPLES_DIR) && $(MAKE_P) && cd ..
 tests: libraries
-	cd $(TESTS_DIR) && make && cd ..
+	cd $(TESTS_DIR) && $(MAKE_P) && cd ..
 clean:
 	rm -rf config.status config.log autom4te.cache Makefile config.h *.o $(STATIC_LIB) $(DYNAMIC_LIB)
-	cd $(EXAMPLES_DIR) && make clean && cd ..
-	cd $(TESTS_DIR) && make clean && cd ..
+	cd $(EXAMPLES_DIR) && $(MAKE_P) clean && cd ..
+	cd $(TESTS_DIR) &&  $(MAKE_P) clean && cd ..
 distclean: clean
 	rm -f configure
 .PHONY: all clean examples distclean libraries tests

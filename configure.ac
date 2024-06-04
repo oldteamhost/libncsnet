@@ -8,6 +8,7 @@ AC_PROG_CC
 dnl flags
 CFLAGS="-Wall -fPIC -DONLY_COMPILE -march=native -mtune=native -g -flto"
 OCFLAGS="-O3 -fforce-addr"
+MAKE_P="make"
 AC_SUBST(CFLAGS)
 AC_SUBST(OCFLAGS)
 
@@ -31,6 +32,14 @@ case "$host_os" in
     ;;
 esac
 AC_MSG_RESULT([$OS_TYPE])
+
+AC_MSG_CHECKING([for make util])
+if test "$OS_TYPE" = "bsd"; then
+  MAKE_P="gmake"
+fi
+AC_MSG_RESULT([$MAKE_P])
+
+AC_SUBST(MAKE_P)
 
 dnl check dlt
 AC_MSG_CHECKING([for DLT_EN10MB])

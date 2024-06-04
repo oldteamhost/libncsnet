@@ -4054,8 +4054,6 @@ esac
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $OS_TYPE" >&5
 printf "%s\n" "$OS_TYPE" >&6; }
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for make util" >&5
-printf %s "checking for make util... " >&6; }
 if test "$OS_TYPE" = "bsd"; then
   MAKE_P="gmake"
 fi
