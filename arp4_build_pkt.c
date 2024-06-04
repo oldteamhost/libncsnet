@@ -23,12 +23,10 @@
 */
 
 #include "ncsnet/arp.h"
-#include "ncsnet/eth.h"
-#include <netinet/in.h>
 
 u8 *arp4_build_pkt(mac_t ethsrc, mac_t ethdst, u16 hdr, u16 pro,
-                   u8 hln, u8 pln, u16 op, mac_t sha, ip4_addreth_t spa,
-                   mac_t tha, ip4_addreth_t tpa, u32 *pktlen)
+                   u8 hln, u8 pln, u16 op, mac_t sha, ip4_t spa,
+                   mac_t tha, ip4_t tpa, u32 *pktlen)
 {
   struct arp_hdr *arp;
   u32 arplen;

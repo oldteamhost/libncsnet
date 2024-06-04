@@ -41,7 +41,7 @@
 
 #include "ncsnet/inet.h"
 
-static int inet_pton4(const char *src, u_char *dst)
+static int inet_pton4(const char *src, u8 *dst)
 {
   static const char digits[] = "0123456789";
   int saw_digit, octets, ch;
@@ -52,7 +52,7 @@ static int inet_pton4(const char *src, u_char *dst)
   *(tp = tmp) = 0;
   while ((ch = *src++) != '\0') {
     const char *pch;
-    if ((pch = strchr(digits, ch)) != NULL) {
+    if ((pch = strchr(digits, ch))) {
       u32 new = *tp * 10 + (pch - digits);
       if (saw_digit && *tp == 0)
 	return (0);
@@ -80,7 +80,7 @@ static int inet_pton4(const char *src, u_char *dst)
   return 1;
 }
 
-static int inet_pton6(const char *src, u_char *dst)
+static int inet_pton6(const char *src, u8 *dst)
 {
   static const char xdigits_l[] = "0123456789abcdef",
     xdigits_u[] = "0123456789ABCDEF";
@@ -100,9 +100,9 @@ static int inet_pton6(const char *src, u_char *dst)
   val = 0;
   while ((ch = *src++) != '\0') {
     const char *pch;
-    if ((pch = strchr((xdigits = xdigits_l), ch)) == NULL)
+    if (!(pch = strchr((xdigits = xdigits_l), ch)))
       pch = strchr((xdigits = xdigits_u), ch);
-    if (pch != NULL) {
+    if (pch) {
       val <<= 4;
       val |= (pch - xdigits);
       if (++seen_xdigits > 4)
@@ -142,7 +142,7 @@ static int inet_pton6(const char *src, u_char *dst)
     *tp++ = (u8)(val >> 8) & 0xff;
     *tp++ = (u8)val & 0xff;
   }
-  if (colonp != NULL) {
+  if (colonp) {
     const int n = tp - colonp;
     int i;
     if (tp == endp)

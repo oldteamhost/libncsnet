@@ -68,9 +68,9 @@ struct link_header {
 
 void        read_util_tracepkt(int pdir, const u8 *pkt, u32 len, double rtt, int detail);
 const char *read_ippktinfo(const u8 *pkt, u32 len, int detail);
-bool  read_util_validate_tcp(const u8 *tcpc, unsigned len);
-bool  read_util_validate_pkt(const u8 *ipc, unsigned *len);
-int   read_util_datalinkoffset(int datalink);
+bool        read_util_validate_tcp(const u8 *tcpc, unsigned len);
+bool        read_util_validate_pkt(const u8 *ipc, unsigned *len);
+int         read_util_datalinkoffset(int datalink);
 const void *read_util_getip4data_pr(const void *pkt, u32 *len, struct abstract_iphdr *hdr, bool upperlayer_onl);
 const void *read_util_getip6data_pr(const struct ip6_hdr *ip6, u32 *len, u8 *nxt, bool upperlayer_only);
 const void *read_util_ip4getdata_up(const struct ip4_hdr *ip, u32 *len);
@@ -83,20 +83,6 @@ char       *read_util_fmtipopt(const u8 *ipopt, int ipoptlen);
 #define     read_util_ip4getdata_any(pkt, len, hdr) read_util_getip4data_pr((pkt), (len), (hdr), false)
 #define     read_util_ip6getdata(ip6, len, nxt) read_util_getip6data_pr((ip6), (len), (nxt), true)
 #define     read_util_ip6getdata_any(ip6, len, nxt) read_util_getip6data_pr((ip6), (len), (nxt), false)
-
-/* OLD */
-struct ip4_hdr*   ext_iphdr(u8 *buf);
-struct tcp_hdr*  ext_tcphdr(u8 *buf);
-struct udp_hdr*  ext_udphdr(u8 *buf);
-struct icmp4_hdr* ext_icmphdr(u8 *buf);
-struct igmp_hdr* ext_igmphdr(u8 *buf);
-
-void print_ipdr(const struct ip4_hdr *iphdr);
-void print_tcphdr(const struct tcp_hdr *tcphdr);
-void print_udphdr(const struct udp_hdr *udphdr);
-void print_icmphdr(const struct icmp4_hdr *icmphdr);
-void print_payload(const u8 *payload, int len);
-void print_payload_ascii(const u8 *payload, int len);
 
 __END_DECLS
 

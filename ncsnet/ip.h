@@ -178,30 +178,35 @@
   #define IP6_RESERVED_MASK	0x0006 /* reserved bits in offlg */
   #define IP6_MORE_FRAG		0x0001	/* more-fragments flag */
 #endif
-#define IP6_OPT_PAD1 0x00 /* 00 0 00000 */
-#define IP6_OPT_PADN 0x01 /* 00 0 00001 */
-#define IP6_OPT_JUMBO 0xC2 /* 11 0 00010 = 194 */
-#define IP6_OPT_JUMBO_LEN 6
-#define IP6_OPT_RTALERT 0x05 /* 00 0 00101 */
-#define IP6_OPT_RTALERT_LEN 4
-#define IP6_OPT_RTALERT_MLD 0 /* Datagram contains an MLD message */
-#define IP6_OPT_RTALERT_RSVP 1 /* Datagram contains an RSVP message */
-#define IP6_OPT_RTALERT_ACTNET 2 /* contains an Active Networks msg */
-#define IP6_OPT_LEN_MIN 2
-#define IP6_OPT_TYPE_SKIP 0x00 /* continue processing on failure */
-#define IP6_OPT_TYPE_DISCARD 0x40 /* discard packet on failure */
-#define IP6_OPT_TYPE_FORCEICMP 0x80 /* discard and send ICMP on failure */
-#define IP6_OPT_TYPE_ICMP 0xC0 /* ...only if non-multicast dst */
-#define IP6_OPT_MUTABLE 0x20 /* option data may change en route */
-#define IP6_OPT_TYPE(o) ((o) & 0xC0) /* high 2 bits of opt_type */
+#define IP6_OPT_PAD1            0x00 /* 00 0 00000 */
+#define IP6_OPT_PADN            0x01 /* 00 0 00001 */
+#define IP6_OPT_JUMBO           0xC2 /* 11 0 00010 = 194 */
+#define IP6_OPT_JUMBO_LEN       6
+#define IP6_OPT_RTALERT         0x05 /* 00 0 00101 */
+#define IP6_OPT_RTALERT_LEN     4
+#define IP6_OPT_RTALERT_MLD     0 /* Datagram contains an MLD message */
+#define IP6_OPT_RTALERT_RSVP    1 /* Datagram contains an RSVP message */
+#define IP6_OPT_RTALERT_ACTNET  2 /* contains an Active Networks msg */
+#define IP6_OPT_LEN_MIN         2
+#define IP6_OPT_TYPE_SKIP       0x00 /* continue processing on failure */
+#define IP6_OPT_TYPE_DISCARD    0x40 /* discard packet on failure */
+#define IP6_OPT_TYPE_FORCEICMP  0x80 /* discard and send ICMP on failure */
+#define IP6_OPT_TYPE_ICMP       0xC0 /* ...only if non-multicast dst */
+#define IP6_OPT_MUTABLE         0x20 /* option data may change en route */
+#define IP6_OPT_TYPE(o)         ((o) & 0xC0) /* high 2 bits of opt_type */
 
 #define IP6_ADDR_UNSPEC							\
   "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 #define IP6_ADDR_LOOPBACK						\
   "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
 
-typedef struct ip6_addr { u8 data[IP6_ADDR_LEN]; } ip6_addr_t;
-typedef struct ip4_addreth_addr { u8 data[IP4_ADDR_LEN]; } ip4_addreth_t;
+typedef struct ip6_addr {
+  u8 octet[IP6_ADDR_LEN];
+} ip6_t;
+
+typedef struct ip4_addr {
+  u8 octet[IP4_ADDR_LEN];
+} ip4_t;
 
 struct ip_opt_data_sec { u16 s, c, h; u8 tcc[3]; };
 struct ip_opt_data_rr { u8 ptr; u32 iplist[]; };
@@ -257,7 +262,7 @@ struct ip6_ext_data_fragment { u16 offlg; u32 ident; };
 struct ip6_ext_data_routing0 {
   u8 type, segleft, reserved;
   u8 slmap[3];
-  ip6_addr_t addr[1];
+  ip6_t addr[1];
 };
 
 struct ip6_ext_hdr {
@@ -280,8 +285,8 @@ struct ip6_hdr
     } ip6_un1;
     u8 ip6_un2_vfc; /* 4 bits version, top 4 bits class */
   } ip6_ctlun;
-  ip6_addr_t ip6_src;
-  ip6_addr_t ip6_dst;
+  ip6_t ip6_src;
+  ip6_t ip6_dst;
 };
 
 #define ip6_hdr(hdr, fc, fl, _pktlen, nxt, hlim, _src, _dst)		\

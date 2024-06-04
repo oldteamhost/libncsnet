@@ -78,7 +78,6 @@ int igmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                    int ttl, bool df, u8 *ipops, int ipoptlen, u16 ipid, u8 tos,
                    u8 type, u8 code, const char *data, u16 datalen, int mtu,
                    bool badsum);
-
 __END_DECLS
 
 #endif

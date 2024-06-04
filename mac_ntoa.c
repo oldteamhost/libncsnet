@@ -24,7 +24,7 @@
 
 #include "ncsnet/mac.h"
 
-void hexascii(uint8_t byte, char *str)
+void hexascii(u8 byte, char *str)
 {
   u8 i = 0;
   str[0] = (byte >> 4) & 0x0f;
@@ -39,15 +39,21 @@ void hexascii(uint8_t byte, char *str)
 
 int mac_ntoa(mac_t *addr, char *str)
 {
-  char tmp[2];
-  u8 i = 0;
-
-  for (; i < MAC_ADDR_LEN; ++i) {
-    hexascii(addr->octet[i], tmp);
-    strcat(str, tmp);
-    if (i < 5)
-      strcat(str, ":");
-  }
+  char tmp[3];
+  u8 i;
   
+  str[0] = '\0';
+  for (i = 0; i < MAC_ADDR_LEN; ++i) {
+    hexascii(addr->octet[i], tmp);
+    if (tmp[0] == '\0') {
+      tmp[0] = '0';
+      tmp[1] = tmp[2];
+    }
+    tmp[2] = '\0';
+    strcat(str, tmp);
+    if (i < MAC_ADDR_LEN - 1) {
+      strcat(str, ":");
+    }
+  }
   return 0;
 }

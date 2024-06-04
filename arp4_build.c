@@ -23,11 +23,9 @@
 */
 
 #include "ncsnet/arp.h"
-#include "ncsnet/eth.h"
-#include <netinet/in.h>
 
 u8 *arp4_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op, mac_t sha,
-               ip4_addreth_t spa, mac_t tha, ip4_addreth_t tpa,
+               ip4_t spa, mac_t tha, ip4_t tpa,
                u32 *pktlen)
 {
   struct arp_hdr *arp;
@@ -47,9 +45,9 @@ u8 *arp4_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op, mac_t sha,
   arp->op  = htons(op);
 
   memcpy(arp->data,     sha.octet, MAC_ADDR_LEN);
-  memcpy(arp->data+6,   spa.data,  IP4_ADDR_LEN);
+  memcpy(arp->data+6,   spa.octet,  IP4_ADDR_LEN);
   memcpy(arp->data+10,  tha.octet, MAC_ADDR_LEN);
-  memcpy(arp->data+16,  tpa.data,  IP4_ADDR_LEN);
+  memcpy(arp->data+16,  tpa.octet,  IP4_ADDR_LEN);
 
   *pktlen = packetlen;
   return pkt;

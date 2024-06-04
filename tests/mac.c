@@ -6,9 +6,8 @@
 
 int main(void)
 {
-  char buf[MAC_ADDR_STRING_LEN];
+  char buf[MAC_ADDR_STRING_LEN + 1];
   struct ethtmp et;
-  
   memset(&et, 0, sizeof(struct ethtmp));
   mac_aton(&et.src, "40:b0:76:47:8f:9a");
   mac_aton(&et.dst, "50:b0:76:47:8f:9a");

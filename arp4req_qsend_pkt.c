@@ -24,8 +24,8 @@
 
 #include "ncsnet/arp.h"
 
-int arp4req_qsend_pkt(eth_t *eth, mac_t ethsrc, ip4_addreth_t ipsrc,
-                      ip4_addreth_t ipdst)
+int arp4req_qsend_pkt(eth_t *eth, mac_t ethsrc, ip4_t ipsrc,
+                      ip4_t ipdst)
 {
   mac_t macdst, macsrc;
   u32 pktlen;

@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "../ncsnet/inet.h"
+#include "../ncsnet/ip.h"
 
 void test_ncs_inet_aton(void)
 {

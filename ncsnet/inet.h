@@ -38,14 +38,13 @@
 
 __BEGIN_DECLS
 
-int          ncs_inet_pton(int af, const char * __restrict src,
+int         ncs_inet_pton(int af, const char * __restrict src,
 			   void * __restrict dst);
-const char  *ncs_inet_ntop(int af, const void * __restrict src,
+const char *ncs_inet_ntop(int af, const void * __restrict src,
 			   char * __restrict dst, u32 len);
-
-u32          ncs_inet_addr(const char *cp);
-char        *ncs_inet_ntoa(struct in_addr in);
-int          ncs_inet_aton(const char *cp, struct in_addr *addr);
+u32   ncs_inet_addr(const char *cp);
+char *ncs_inet_ntoa(struct in_addr in);
+int   ncs_inet_aton(const char *cp, struct in_addr *addr);
 
 __END_DECLS
 

@@ -117,10 +117,10 @@ struct icmp6_msg_echo
 struct icmp6_msg_nd
 {
   uint32_t   icmpv6_flags;
-  ip6_addr_t icmpv6_target;
+  ip6_t      icmpv6_target;
   uint8_t    icmpv6_option_type;
   uint8_t    icmpv6_option_length;
-  mac_t icmpv6_mac;
+  mac_t      icmpv6_mac;
 };
 
 union icmp6_msg
