@@ -1,5 +1,5 @@
 
-libncsnet (library nesca net): a free set of [low-level and no] networking tools;
+libncsnet (nesca network library): a free set of [low-level and no] networking tools;
 works on linux and bsd systems. Library provides the most flexible, fastest, and
 largest set of tools for its tasks.
 
