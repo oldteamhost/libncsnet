@@ -37,7 +37,7 @@ struct sha512_ctx
   u64 H[8];
   union
   {
-    #if WORDSIZE == 64
+    #if WORD_SIZE == 64
       #define USE_TOTAL128
       u32 total128 __attribute__ ((__mode__ (TI)));
     #endif
@@ -45,7 +45,7 @@ struct sha512_ctx
       #define TOTAL128_low 1
       #define TOTAL128_high 0
     #else
-       #define TOTAL128_low 0
+      #define TOTAL128_low 0
        #define TOTAL128_high 1
     #endif
     u64 total[2];

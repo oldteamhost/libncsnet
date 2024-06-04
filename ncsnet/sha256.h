@@ -40,9 +40,7 @@ struct sha256_ctx
     u64 total64;
     #if defined(LITTLE_ENDIAN_SYSTEM)
       #define TOTAL64_low 1
-      #define TOTAL64_high 0
      #else
-      #define TOTAL64_low 0
       #define TOTAL64_high 1
     #endif
     u32 total[2];
