@@ -9,6 +9,9 @@
 /* Define if DLT_HDR is available */
 #undef HAVE_DLT_HDR
 
+/* Define to 1 if fseeko (and ftello) are declared in stdio.h. */
+#undef HAVE_FSEEKO
+
 /* Define to 1 if you have the 'htons' function. */
 #undef HAVE_HTONS
 
@@ -79,3 +82,18 @@
 
 /* Word size in bits */
 #undef WORD_SIZE
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
+/* Define to 1 if necessary to make fseeko visible. */
+#undef _LARGEFILE_SOURCE
+
+/* Define to 1 on platforms where this makes off_t a 64-bit type. */
+#undef _LARGE_FILES
+
+/* Number of bits in time_t, on hosts where this is settable. */
+#undef _TIME_BITS
+
+/* Define to 1 on platforms where this makes time_t a 64-bit type. */
+#undef __MINGW_USE_VC2005_COMPAT

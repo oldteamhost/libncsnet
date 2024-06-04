@@ -5,6 +5,15 @@ AC_CONFIG_HEADERS([config.h:config.h.in])
 dnl check compiler
 AC_PROG_CC
 
+dnl flags
+CFLAGS="-Wall -fPIC -DONLY_COMPILE -march=native -mtune=native -g -flto"
+OCFLAGS="-O3 -fforce-addr"
+AC_SUBST(CFLAGS)
+AC_SUBST(OCFLAGS)
+
+AC_SYS_LARGEFILE
+AC_FUNC_FSEEKO
+
 dnl check OS
 AC_CANONICAL_HOST
 AC_MSG_CHECKING([for operating system])
