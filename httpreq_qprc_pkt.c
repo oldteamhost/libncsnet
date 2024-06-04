@@ -39,7 +39,7 @@ int httpreq_qprc_pkt(const char *dst, u16 dstport, const char *path,
   http_add_hdr(&req, "User-Agent", "oldteam");
   http_add_hdr(&req, "Connection", "close");
 
-  fd = session(dst, dstport, timeoutns, temp, sizeof(temp));
+  fd = sock_session(dst, dstport, timeoutns, temp, sizeof(temp));
   if (fd == -1)
     return a;
   a = http_send_pkt(fd, &req);

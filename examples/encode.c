@@ -34,10 +34,11 @@
 #include "../ncsnet/base64.h"
 #include "../ncsnet/crc.h"
 #include "../ncsnet/adler32.h"
+#include "../ncsnet/md4.h"
 
 #define SHA512M 1
 #define SHA256M 2
-#define MD5M    3
+#define MD5     3
 #define CRC8    4
 #define CRC16   5
 #define CRC32   6
@@ -46,6 +47,7 @@
 #define ADLER32 9
 #define BASE64  10
 #define SHA1    11
+#define MD4     12
 
 noreturn void usage(char** argv)
 {
@@ -53,7 +55,7 @@ noreturn void usage(char** argv)
   printf("Methods: [1](SHA512),    [2](SHA256), [3](MD5)\n");
   printf("         [4](CRC8),      [5](CRC16),  [6](CRC32)\n");
   printf("         [7](CRC64ECMA), [8](CRC64WE) [9](ADLER32)\n");
-  printf("         [10](BASE64)    [11](SHA-1)\n");
+  printf("         [10](BASE64)    [11](SHA-1)  [12](MD4)\n");
   exit(0);
 }
 
@@ -65,11 +67,11 @@ int main(int argc, char **argv)
   
   if (argc < 2 + 1)
     usage(argv);
-  if (atoi(argv[2]) > 11)
+  if (atoi(argv[2]) > 12)
     usage(argv);
 
   switch (atoi(argv[2])) {
-  case MD5M:
+  case MD5:
     temp = md5str(argv[1], strlen(argv[1]));
     break;
   case SHA256M:
@@ -114,6 +116,9 @@ int main(int argc, char **argv)
     }
     break;
   }
+  case MD4:
+    temp = md4str(argv[1], strlen(argv[1]));
+    break;
   default:
     temp = "failed";
     break;

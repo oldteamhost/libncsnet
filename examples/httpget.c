@@ -47,7 +47,7 @@ int main(int argc, char** argv)
   http_add_hdr(&r, "Host", argv[1]);
   http_add_hdr(&r, "User-Agent", argv[3]);
 
-  fd = session(argv[1], atoi(argv[2]), 2000000000, NULL, 0); /* timeout 2s */
+  fd = sock_session(argv[1], atoi(argv[2]), 2000000000, NULL, 0); /* timeout 2s */
   if (fd == -1)
     return -1;
 

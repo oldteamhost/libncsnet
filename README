@@ -12,7 +12,7 @@ protocols:  IP, IP6, TCP, UDP, ICMP4, ICMP6, IGMP, SCTP, ARP, ETH,
 	    HTTP, FTP, SMTP, SOCKS5;
 
 crypt:      MD5, SHA-512, SHA-256, ADLER32, BASE64, CRC-8,
-            CRC-16, CRC-32, CRC-64, SHA-1;
+            CRC-16, CRC-32, CRC-64, SHA-1, MD4;
 	       
 addr:       IP4, IP6, MAC, CIDR, RANGE, URL;
 

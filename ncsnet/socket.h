@@ -31,6 +31,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdarg.h>
+#include "utils.h"
 
 #include "sys/types.h"
 #include "sys/nethdrs.h"
@@ -40,11 +42,11 @@
 
 __BEGIN_DECLS
 
-int     session(const char* dst, u16 port, long long timeoutns, u8* packet, size_t len);
-ssize_t session_packet(int fd, u8* packet, ssize_t len, const char* message);
-int     session_run(const char* dest_ip, int port, long long timeoutnms, int verbose);
-u8      *sendproto_command(int fd, const char* command);
-bool    socket_util_timeoutns(int fd, long long timeoutns, bool send, bool recv);
+int     sock_session(const char* dst, u16 port, long long ns, u8* pkt, size_t pktlen);
+ssize_t sock_probe(int fd, u8 *pkt, size_t pktlen, const char *fmt, ...);
+#define sock_send(fd, data, datalen) send((fd), (data), (datalen), MSG_NOSIGNAL)
+ssize_t sock_recv(int fd, void *pkt, size_t pktlen);
+bool    sock_util_timeoutns(int fd, long long timeoutns, bool send, bool recv);
 
 __END_DECLS
 

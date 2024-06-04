@@ -22,13 +22,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "ncsnet/ftp.h"
 #include "ncsnet/socket.h"
-#include "ncsnet/utils.h"
 
-void ftp_qprc_version(const char *dst, u16 dstport, long long timeoutns,
-    u8 *verbuf, ssize_t buflen)
+bool sock_util_timeoutns(int fd, long long timeoutns, bool send, bool recv)
 {
-  sock_session(dst, dstport, timeoutns, verbuf, buflen);
-  remove_specials((char*)verbuf);
+  struct timeval tv;
+  tv = timevalns(timeoutns);
+  
+  if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0 && recv)
+    return false;
+  if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) < 0 && send)
+    return false;
+
+  return true;
 }

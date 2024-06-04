@@ -22,13 +22,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "ncsnet/ftp.h"
 #include "ncsnet/socket.h"
-#include "ncsnet/utils.h"
 
-void ftp_qprc_version(const char *dst, u16 dstport, long long timeoutns,
-    u8 *verbuf, ssize_t buflen)
+ssize_t sock_recv(int fd, void *pkt, size_t pktlen) {
+  return (recv(fd, pkt, pktlen, MSG_NOSIGNAL));
+}
+
+ssize_t sock_probe(int fd, u8 *pkt, size_t pktlen, const char *fmt, ...)
 {
-  sock_session(dst, dstport, timeoutns, verbuf, buflen);
-  remove_specials((char*)verbuf);
+  ssize_t s, r, datalen;
+  va_list args;
+  char *data;
+
+  data = NULL;
+  va_start(args, fmt);
+  datalen = vsnprintf(NULL, 0, fmt, args);
+  va_end(args);
+  if (datalen < 0)
+    return -1;
+  data = (char*)malloc(datalen+1);
+  if (!data)
+    return -1;
+  va_start(args, fmt);
+  vsnprintf(data, datalen + 1, fmt, args);
+  va_end(args);
+
+  s = sock_send(fd, data, datalen);
+  free(data);
+  if (s == -1)
+    return -1;
+  r = sock_recv(fd, pkt, pktlen - 1);
+  if (r == -1)
+    return -1;
+  else
+    pkt[r] = '\0';
+  
+  return r;
 }

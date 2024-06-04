@@ -31,7 +31,7 @@ int http_qprc_pkt(const char *dst, u16 dstport, long long timeoutms,
 {
   int fd, a;
 
-  fd = session(dst, dstport, timeoutms, NULL, 0);
+  fd = sock_session(dst, dstport, timeoutms, NULL, 0);
   if (fd == -1)
     return -1;
 

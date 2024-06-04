@@ -43,7 +43,7 @@ void dns_util_getip4(const char* dst, int srcport, long long timeoutns, char* dn
   sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1)
     goto fail;
-  socket_util_timeoutns(sock, timeoutns, true, true);
+  sock_util_timeoutns(sock, timeoutns, true, true);
 
   res = getnameinfo((struct sockaddr*)&sa, sizeof(sa), host, sizeof(host), NULL, 0, NI_NAMEREQD);
   close(sock);

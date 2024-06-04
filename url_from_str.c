@@ -93,11 +93,8 @@ static struct preproc_url *preprocurl(const char *url)
   if (!parsed_url)
     return NULL;
 
-  parsed_url->scheme = NULL;
-  parsed_url->authority = NULL;
-  parsed_url->path = NULL;
-  parsed_url->query = NULL;
-  parsed_url->fragment = NULL;
+  parsed_url->scheme = parsed_url->authority = parsed_url->path
+    = parsed_url->query = parsed_url->fragment = NULL;
   parsed_url->type = URL_INTER_TYPE_DEFAULT;
 
   pos = url;

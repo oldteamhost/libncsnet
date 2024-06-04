@@ -31,6 +31,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#include "socket.h"
+
 #include "sys/types.h"
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
@@ -188,8 +190,8 @@
 
 __BEGIN_DECLS
 
-bool ftp_qprc_auth(int fd, const char* login, const char* pass);
-void ftp_qprc_version(const char* dst, u16 dstport, long long timeoutns,
+bool ftp_qprc_auth(int fd, const char *login, const char *pass);
+void ftp_qprc_version(const char *dst, u16 dstport, long long timeoutns,
     u8* verbuf, ssize_t buflen);
 
 __END_DECLS

@@ -29,6 +29,6 @@
 void smtp_qprc_version(const char* dst, u16 dstport, long long timeoutns,
     u8* verbuf, size_t buflen)
 {
-  session(dst, dstport, timeoutns, (u8*)verbuf, buflen);
+  sock_session(dst, dstport, timeoutns, (u8*)verbuf, buflen);
   remove_specials((char*)verbuf);
 }

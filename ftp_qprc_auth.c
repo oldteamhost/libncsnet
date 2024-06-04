@@ -23,54 +23,27 @@
 */
 
 #include "ncsnet/ftp.h"
-#include "ncsnet/socket.h"
-#include <stdio.h>
-#include "ncsnet/utils.h"
-#include <errno.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <time.h>
 
- bool ftp_qprc_auth(int fd, const char* login, const char* pass)
+bool ftp_qprc_auth(int fd, const char *login, const char *pass)
 {
-  char command[CMD_BUFFER];
-  int rescode = 0;
-  u8 *recvbuf = NULL;
-
-  snprintf(command, CMD_BUFFER, "%s %s\r\n", C_USER, login);
-  recvbuf = sendproto_command(fd, command);
-  if (!recvbuf)
-    goto fail;
-  rescode = atoi((char*)recvbuf);
-
+  char buf[CMD_BUFFER];
+  int rescode;
+  
+  rescode = 0;
+  if (sock_probe(fd, (u8*)buf, CMD_BUFFER, "%s %s\r\n", C_USER, login) == -1)
+    return false;
+  rescode = atoi((char*)buf);
   if (rescode == R_220 || rescode == R_230)
-    goto ok;
+    return true;
   if (rescode != R_331)
-    goto fail;
+    return false;
 
-  memset(command, 0, CMD_BUFFER);
-  memset(recvbuf, 0, CMD_BUFFER);
-  snprintf(command, CMD_BUFFER, "%s %s\r\n", C_PASS, pass);
-
-  recvbuf = sendproto_command(fd, command);
-  if (!recvbuf)
-    goto fail;
-  rescode = atoi((char*)recvbuf);
-
+  memset(buf, 0, CMD_BUFFER);
+  if (sock_probe(fd, (u8*)buf, CMD_BUFFER, "%s %s\r\n", C_PASS, pass) == -1)
+    return false;
+  rescode = atoi((char*)buf);
   if (rescode == R_230 || rescode == R_200)
-    goto ok;
+    return true;
 
-  goto fail;
-
-fail:
-  if (recvbuf)
-    free(recvbuf);
   return false;
-
-ok:
-  if (recvbuf)
-    free(recvbuf);
-  return true;
-
 }
