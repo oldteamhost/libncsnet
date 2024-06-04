@@ -27,13 +27,13 @@
 
 void ip4_recheck(u8 *pkt, u32 pktlen)
 {
+  struct ip4_hdr *ipreal = NULL;
+  struct icmp4_hdr *icmp = NULL;
+  struct sctp_hdr *sctp = NULL;
+  struct igmp_hdr *igmp = NULL;
+  struct tcp_hdr *tcp = NULL;
+  struct udp_hdr *udp = NULL;
   struct abstract_iphdr ip;
-  struct ip4_hdr *ipreal;
-  struct tcp_hdr *tcp;
-  struct udp_hdr *udp;
-  struct sctp_hdr *sctp;
-  struct igmp_hdr *igmp;
-  struct icmp4_hdr *icmp;        
   const u8 *res = NULL;
   
   res = (u8*)read_util_ip4getdata_any(pkt, &pktlen, &ip);

@@ -26,13 +26,11 @@
 
 const void *read_util_icmp6getdata(const struct icmp6_hdr *icmp, u32 *len)
 {
-  u32 hdrlen;
-
+  u32 hdrlen = 0;
   if (icmp->type == ICMP6_TIMEXCEED || icmp->type == ICMP6_UNREACH)
     hdrlen = 8;
   if (hdrlen > *len)
     return NULL;
   *len -= hdrlen;
-
   return (char*)icmp + hdrlen;
 }
