@@ -1,0 +1,17 @@
+
+libncsnet (library nesca net): a free set of [low-level and no] networking tools;
+works on linux and bsd systems. Library provides the most flexible, fastest, and
+largest set of tools for its tasks.
+
+protocols:  IP, IP6, TCP, UDP, ICMP4, ICMP6, IGMP, SCTP, ARP, ETH,
+	    HTTP, FTP, SMTP, SOCKS5;
+
+crypt:      MD5, SHA-512, SHA-256, ADLER32, BASE64, CRC-8,
+            CRC-16, CRC-32, CRC-64, SHA-1;
+	       
+addr:       IP4, IP6, MAC, CIDR, RANGE, URL;
+
+random:     CMWC, MT19937, MSM;
+
+The library's work with transport, network, and data link prototocols can be
+quite complex. But there are always examples in [examples/], and [RFCs].

@@ -1,0 +1,33 @@
+CC = cc
+CFLAGS = -Wall -fPIC -DONLY_COMPILE -march=native -mtune=native -O3 -g -flto -finline-functions
+SRC_DIR = .
+BIN_DIR = .
+STATIC_LIB = libncsnet.a
+DYNAMIC_LIB = libncsnet.so
+
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(SRCS))
+EXAMPLES_DIR = examples
+TESTS_DIR = tests
+
+all: libraries examples tests
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.c | $(BIN_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(STATIC_LIB): $(OBJS)
+	ar rcs $@ $(OBJS)
+$(DYNAMIC_LIB): $(OBJS)
+	$(CC) -shared -o $@ $(OBJS)
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+libraries: $(STATIC_LIB) $(DYNAMIC_LIB)
+examples: libraries
+	cd $(EXAMPLES_DIR) && make -j && cd ..
+tests: libraries
+	cd $(TESTS_DIR) && make -j && cd ..
+clean:
+	rm -rf config.status config.log autom4te.cache Makefile config.h *.o $(STATIC_LIB) $(DYNAMIC_LIB)
+	cd $(EXAMPLES_DIR) && make clean && cd ..
+	cd $(TESTS_DIR) && make clean && cd ..
+distclean: clean
+	rm -f configure
+.PHONY: all clean examples distclean libraries tests
