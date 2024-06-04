@@ -42,10 +42,6 @@
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
 
-#if defined(HAVE_DLT_HDR)
-  #include "sys/dlt.h"
-#endif
-
 #define RECV_BUFFER_SIZE 60000
 
 #define TRACE_PKT_SENT 1
@@ -72,9 +68,9 @@ struct link_header {
 
 void        read_util_tracepkt(int pdir, const u8 *pkt, u32 len, double rtt, int detail);
 const char *read_ippktinfo(const u8 *pkt, u32 len, int detail);
-const bool  read_util_validate_tcp(const u8 *tcpc, unsigned len);
-const bool  read_util_validate_pkt(const u8 *ipc, unsigned *len);
-const int   read_util_datalinkoffset(int datalink);
+bool  read_util_validate_tcp(const u8 *tcpc, unsigned len);
+bool  read_util_validate_pkt(const u8 *ipc, unsigned *len);
+int   read_util_datalinkoffset(int datalink);
 const void *read_util_getip4data_pr(const void *pkt, u32 *len, struct abstract_iphdr *hdr, bool upperlayer_onl);
 const void *read_util_getip6data_pr(const struct ip6_hdr *ip6, u32 *len, u8 *nxt, bool upperlayer_only);
 const void *read_util_ip4getdata_up(const struct ip4_hdr *ip, u32 *len);

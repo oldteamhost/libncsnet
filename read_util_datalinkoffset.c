@@ -24,7 +24,7 @@
 
 #include "ncsnet/readpkt.h"
 
-const int read_util_datalinkoffset(int datalink)
+int read_util_datalinkoffset(int datalink)
 {
   int offset = -1;
   

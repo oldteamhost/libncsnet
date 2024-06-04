@@ -29,7 +29,7 @@
     #include <byteswap.h>
     #define SWAP(n) __bswap_32(n)
     #define SWAP64(n) __bswap_64(n)
-  #elif defined(IS BSD)
+  #elif defined(IS_BSD)
     #include <sys/endian.h>
     #define SWAP(n) bswap32(n)
     #define SWAP64(n) bswap64(n)

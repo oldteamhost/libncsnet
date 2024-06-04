@@ -33,6 +33,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define MAX_SNAPLEN 262144
+
 struct eth_handle { int fd; char device[16]; };
 int eth_fd(eth_t *e) {
   return e->fd;

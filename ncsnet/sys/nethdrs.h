@@ -24,6 +24,7 @@
 
 #ifndef NCSNETHDRSHDR
 #define NCSNETHDRSHDR
+#include "../../ncsnet-config.h"
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/param.h>
@@ -37,7 +38,6 @@
 #include <netdb.h>
 #include <errno.h>
 #include <net/if.h>
-#include "../../ncsnet-config.h"
 #if defined(IS_BSD)
   #include <sys/sysctl.h>
   #include <net/route.h>
@@ -55,5 +55,8 @@
     #include <linux/if_packet.h>
     #include <linux/if_ether.h>
   #endif
+#endif
+#if defined(HAVE_DLT_HDR)
+  #include "dlt.h"
 #endif
 #endif

@@ -24,7 +24,7 @@
 
 #include "ncsnet/readpkt.h"
 
-const bool read_util_validate_tcp(const u8 *tcpc, unsigned len)
+bool read_util_validate_tcp(const u8 *tcpc, unsigned len)
 {
   const struct tcp_hdr *tcp = (struct tcp_hdr *) tcpc;
   unsigned hdrlen, optlen;
@@ -85,7 +85,7 @@ const bool read_util_validate_tcp(const u8 *tcpc, unsigned len)
 #undef OPTLEN_IS
 }
 
-const bool read_util_validate_pkt(const u8 *ipc, unsigned *len)
+bool read_util_validate_pkt(const u8 *ipc, unsigned *len)
 {
   const struct ip4_hdr *ip = (struct ip4_hdr*)ipc;
   const void *data;
