@@ -24,7 +24,7 @@ quite complex. But there are always examples in [examples/], and [RFCs].
 To compile, run the following commands in the library's source directory:
 
   ./configure
-  make
+  make (on bsd use "gmake")
 
 The first one is needed to customize the source code and Makefile. The
 second one is for source code compilation.
