@@ -10,10 +10,9 @@ BIN_DIR = bin
 SRCS = $(shell find $(SRC_DIR) -name '*.c')
 OBJS = $(SRCS:.c=.o)
 
-EXAMPLES_DIR = examples
 TESTS_DIR = tests
 
-all: libraries examples tests
+all: libraries tests
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -26,18 +25,14 @@ $(DYNAMIC_LIB): $(OBJS)
 
 libraries: $(STATIC_LIB) $(DYNAMIC_LIB)
 
-examples: libraries
-	cd $(EXAMPLES_DIR) && $(MAKE_P) && cd ..
-
 tests: libraries
 	cd $(TESTS_DIR) && $(MAKE_P) && cd ..
 
 clean:
 	rm -rf config.status config.log autom4te.cache Makefile config.h $(OBJS) $(STATIC_LIB) $(DYNAMIC_LIB)
-	cd $(EXAMPLES_DIR) && $(MAKE_P) clean && cd ..
 	cd $(TESTS_DIR) && $(MAKE_P) clean && cd ..
 
 distclean: clean
 	rm -f configure
 
-.PHONY: all clean examples distclean libraries tests
+.PHONY: all clean distclean libraries tests
