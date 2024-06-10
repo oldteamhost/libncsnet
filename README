@@ -19,7 +19,7 @@ addr:       IP4, IP6, MAC, CIDR, RANGE, URL;
 random:     CMWC, MT19937, MSM;
 
 The library's work with transport, network, and data link prototocols can be
-quite complex. But there are always examples in [examples/], and [RFCs].
+quite complex. But there are always examples in [tests/], and [RFCs].
 
 To compile, run the following commands in the library's source directory:
 
