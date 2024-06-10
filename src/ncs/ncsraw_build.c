@@ -24,6 +24,63 @@
 
 #include <ncsnet/nescanet.h>
 
+#define NCSRAWBUILD_TOKEN_PROTO_OPEN    '['
+#define NCSRAWBUILD_TOKEN_PROTO_CLOSE   ']'
+#define NCSRAWBUILD_TOKEN_IP4_IDENT     "ip4"
+#define NCSRAWBUILD_TOKEN_IP6_IDENT     "ip6"
+#define NCSRAWBUILD_TOKEN_IP4_IDENT_1   "ip"
+#define NCSRAWBUILD_TOKEN_TCP_IDENT     "tcp"
+#define NCSRAWBUILD_TOKEN_ICMP4_IDENT   "icmp4"
+#define NCSRAWBUILD_TOKEN_ICMP4_IDENT_1 "icmp"
+#define NCSRAWBUILD_TOKEN_ICMP6_IDENT   "icmp6"
+#define NCSRAWBUILD_TOKEN_UDP_IDENT     "udp"
+#define NCSRAWBUILD_TOKEN_SCTP_IDENT    "sctp"
+#define NCSRAWBUILD_TOKEN_IGMP_IDENT    "igmp"
+#define NCSRAWBUILD_TOKEN_SPEC_DEL      ","
+#define NCSRAWBUILD_TOKEN_OPT_DEL       '='
+#define NCSRAWBUILD_TOKEN_LOCALIP   "local"
+#define NCSRAWBUILD_TOKEN_LOCALIP_1 "localhost"
+#define NCSRAWBUILD_PROTO_IP4       0
+#define NCSRAWBUILD_IP4HDR_SRC      "src"
+#define NCSRAWBUILD_IP4HDR_DST      "dst"
+#define NCSRAWBUILD_IP4HDR_PROTO    "proto"
+#define NCSRAWBUILD_IP4HDR_TTL      "ttl"
+#define NCSRAWBUILD_IP4HDR_ID       "ipid"
+#define NCSRAWBUILD_IP4HDR_TOS      "tos"
+#define NCSRAWBUILD_IP4HDR_DF       "df"
+#define NCSRAWBUILD_IP4HDR_OPT      "ipopt"
+#define NCSRAWBUILD_PROTO_TCP       1
+#define NCSRAWBUILD_TCPHDR_SRCPORT  "srcport"
+#define NCSRAWBUILD_TCPHDR_DSTPORT  "dstport"
+#define NCSRAWBUILD_TCPHDR_SEQ      "seq"
+#define NCSRAWBUILD_TCPHDR_ACK      "acknum"
+#define NCSRAWBUILD_TCPHDR_RESERVED "reserved"
+#define NCSRAWBUILD_TCPHDR_WINDOW   "win"
+#define NCSRAWBUILD_TCPHDR_URP      "urp"
+#define NCSRAWBUILD_TCPHDR_OPT      "tcpopt"
+#define NCSRAWBUILD_TCPHDR_DATA     "payload"
+#define NCSRAWBUILD_TCPHDR_FLAGS    "flags"
+#define NCSRAWBUILD_PROTO_UDP       2
+#define NCSRAWBUILD_UDPHDR_SRCPORT  "srcport"
+#define NCSRAWBUILD_UDPHDR_DSTPORT  "dstport"
+#define NCSRAWBUILD_UDPHDR_DATA     "payload"
+#define NCSRAWBUILD_PROTO_ICMP4     3
+#define NCSRAWBUILD_ICMP4HDR_TYPE   "type"
+#define NCSRAWBUILD_ICMP4HDR_CODE   "code"
+#define NCSRAWBUILD_ICMP4HDR_ID     "icmpid"
+#define NCSRAWBUILD_ICMP4HDR_SEQ    "seq"
+#define NCSRAWBUILD_ICMP4HDR_DATA   "payload"
+#define NCSRAWBUILD_PROTO_IGMP      4
+#define NCSRAWBUILD_IGMPHDR_TYPE    "type"
+#define NCSRAWBUILD_IGMPHDR_CODE    "code"
+#define NCSRAWBUILD_IGMPHDR_DATA    "payload"
+#define NCSRAWBUILD_HDR_BADSUM      "badsum"
+
+#define NCSRAWBUILD_PROTO_SCTP         5
+#define NCSRAWBUILD_SCTPHDR_SRCPORT    "srcport"
+#define NCSRAWBUILD_SCTPHDR_DSTPORT    "dstport"
+#define NCSRAWBUILD_SCTPHDR_VTAG       "vtag"
+
 typedef struct protospec
 {
   bool ip4, tcp, icmp4,
@@ -74,6 +131,11 @@ typedef struct tmpigmp_hdr
   const char *data;
   int datalen;
 } tmpigmp;
+
+typedef struct tmpsctp_hdr
+{
+  int srcport, dstport, vtag;
+} tmpsctp;
 
 static void remove_token(char *proto, char *token)
 {

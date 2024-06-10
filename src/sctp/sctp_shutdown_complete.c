@@ -24,19 +24,20 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
-                    u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
-                    char *chunks, int chunkslen, const char *data, u16 datalen,
-                    u32 *pktlen, bool adler32sum, bool badsum)
+u8 *sctp_shutdown_complete_build(u8 flags, u16 *chunklen)
 {
-  u8 *pkt, *sctp;
-  u32 sctplen;
+  struct sctp_chunk_hdr *sctp_sc;
+  u8 *res;
+  
+  *chunklen = sizeof(struct sctp_chunk_hdr);
+  res = (u8*)malloc(*chunklen);
+  if (!res)
+    return NULL;
 
-  sctp = sctp_build(srcport, dstport, vtag, chunks, chunkslen, data,
-      datalen, &sctplen, adler32sum, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
-      tos, df, ipopt, ipoptlen, (char*)sctp, sctplen, pktlen);
+  sctp_sc = (struct sctp_chunk_hdr*)res;
+  sctp_sc->flags = flags;
+  sctp_sc->type = SCTP_SHUTDOWN_COMPLETE;  
+  sctp_sc->len = htons(*chunklen);
 
-  free(sctp);
-  return pkt;
+  return res;
 }

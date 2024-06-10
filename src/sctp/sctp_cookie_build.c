@@ -24,19 +24,23 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
-                    u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
-                    char *chunks, int chunkslen, const char *data, u16 datalen,
-                    u32 *pktlen, bool adler32sum, bool badsum)
+u8 *sctp_cookie_build(u8 type, u8 flags, u8 *cookie, u16 cookielen, u16 *chunklen)
 {
-  u8 *pkt, *sctp;
-  u32 sctplen;
+  struct sctp_chunk_hdr *sctp_ce;
+  u8 *res;
 
-  sctp = sctp_build(srcport, dstport, vtag, chunks, chunkslen, data,
-      datalen, &sctplen, adler32sum, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
-      tos, df, ipopt, ipoptlen, (char*)sctp, sctplen, pktlen);
+  *chunklen = sizeof(struct sctp_chunk_hdr) + cookielen;
+  res = (u8*)malloc(*chunklen);
+  if (!res)
+    return NULL;
 
-  free(sctp);
-  return pkt;
+  sctp_ce = (struct sctp_chunk_hdr*)res;
+  sctp_ce->flags = flags;
+  sctp_ce->type  = type;
+  sctp_ce->len   = htons(*chunklen);
+
+  if (cookie && cookielen && type == SCTP_COOKIE_ECHO)
+    memcpy((u8*)sctp_ce + sizeof(struct sctp_chunk_hdr), cookie, cookielen);
+  
+  return res;
 }

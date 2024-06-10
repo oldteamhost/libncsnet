@@ -24,19 +24,27 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
-                    u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
-                    char *chunks, int chunkslen, const char *data, u16 datalen,
-                    u32 *pktlen, bool adler32sum, bool badsum)
+u8 *sctp_init_build(u8 type, u8 flags, u32 itag, u32 arwnd, u16 nos, u16 nis, u32 itsn,
+		    u16 *chunklen)
 {
-  u8 *pkt, *sctp;
-  u32 sctplen;
+  struct sctp_chunk_hdr_init *sctp_i;
+  u8 *res;
+  
+  *chunklen = sizeof(struct sctp_chunk_hdr_init);
+  res = (u8*)malloc(*chunklen);
+  if (!res)
+    return NULL;
 
-  sctp = sctp_build(srcport, dstport, vtag, chunks, chunkslen, data,
-      datalen, &sctplen, adler32sum, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
-      tos, df, ipopt, ipoptlen, (char*)sctp, sctplen, pktlen);
+  sctp_i = (struct sctp_chunk_hdr_init*)res;
+  sctp_i->arwnd = htonl(arwnd);
+  sctp_i->itag = htonl(itag);
+  sctp_i->itsn = htonl(itsn);
+  sctp_i->nis = htons(nis);
+  sctp_i->nos = htons(nos);
+  sctp_i->chunkhdr.flags = flags;
+  sctp_i->chunkhdr.type = SCTP_INIT;
+  sctp_i->chunkhdr.len = htons(*chunklen);
+  sctp_i->chunkhdr.type = type;
 
-  free(sctp);
-  return pkt;
+  return res;
 }

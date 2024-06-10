@@ -45,65 +45,15 @@
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
 
-#define NCSRAWBUILD_ERRBUF_MAXLEN       512
-#define NCSRAWBUILD_FMT_MAXLEN          65535
-#define NCSRAWBUILD_PROTOS_MAXLEN       512
-#define NCSRAWBUILD_TOKEN_PROTO_OPEN    '['
-#define NCSRAWBUILD_TOKEN_PROTO_CLOSE   ']'
-#define NCSRAWBUILD_TOKEN_IP4_IDENT     "ip4"
-#define NCSRAWBUILD_TOKEN_IP6_IDENT     "ip6"
-#define NCSRAWBUILD_TOKEN_IP4_IDENT_1   "ip"
-#define NCSRAWBUILD_TOKEN_TCP_IDENT     "tcp"
-#define NCSRAWBUILD_TOKEN_ICMP4_IDENT   "icmp4"
-#define NCSRAWBUILD_TOKEN_ICMP4_IDENT_1 "icmp"
-#define NCSRAWBUILD_TOKEN_ICMP6_IDENT   "icmp6"
-#define NCSRAWBUILD_TOKEN_UDP_IDENT     "udp"
-#define NCSRAWBUILD_TOKEN_SCTP_IDENT    "sctp"
-#define NCSRAWBUILD_TOKEN_IGMP_IDENT    "igmp"
-#define NCSRAWBUILD_TOKEN_SPEC_DEL      ","
-#define NCSRAWBUILD_TOKEN_OPT_DEL       '='
-#define NCSRAWBUILD_TOKEN_LOCALIP   "local"
-#define NCSRAWBUILD_TOKEN_LOCALIP_1 "localhost"
-#define NCSRAWBUILD_PROTO_IP4       0
-#define NCSRAWBUILD_IP4HDR_SRC      "src"
-#define NCSRAWBUILD_IP4HDR_DST      "dst"
-#define NCSRAWBUILD_IP4HDR_PROTO    "proto"
-#define NCSRAWBUILD_IP4HDR_TTL      "ttl"
-#define NCSRAWBUILD_IP4HDR_ID       "ipid"
-#define NCSRAWBUILD_IP4HDR_TOS      "tos"
-#define NCSRAWBUILD_IP4HDR_DF       "df"
-#define NCSRAWBUILD_IP4HDR_OPT      "ipopt"
-#define NCSRAWBUILD_PROTO_TCP       1
-#define NCSRAWBUILD_TCPHDR_SRCPORT  "srcport"
-#define NCSRAWBUILD_TCPHDR_DSTPORT  "dstport"
-#define NCSRAWBUILD_TCPHDR_SEQ      "seq"
-#define NCSRAWBUILD_TCPHDR_ACK      "acknum"
-#define NCSRAWBUILD_TCPHDR_RESERVED "reserved"
-#define NCSRAWBUILD_TCPHDR_WINDOW   "win"
-#define NCSRAWBUILD_TCPHDR_URP      "urp"
-#define NCSRAWBUILD_TCPHDR_OPT      "tcpopt"
-#define NCSRAWBUILD_TCPHDR_DATA     "payload"
-#define NCSRAWBUILD_TCPHDR_FLAGS    "flags"
-#define NCSRAWBUILD_PROTO_UDP       2
-#define NCSRAWBUILD_UDPHDR_SRCPORT  "srcport"
-#define NCSRAWBUILD_UDPHDR_DSTPORT  "dstport"
-#define NCSRAWBUILD_UDPHDR_DATA     "payload"
-#define NCSRAWBUILD_PROTO_ICMP4     3
-#define NCSRAWBUILD_ICMP4HDR_TYPE   "type"
-#define NCSRAWBUILD_ICMP4HDR_CODE   "code"
-#define NCSRAWBUILD_ICMP4HDR_ID     "icmpid"
-#define NCSRAWBUILD_ICMP4HDR_SEQ    "seq"
-#define NCSRAWBUILD_ICMP4HDR_DATA   "payload"
-#define NCSRAWBUILD_PROTO_IGMP      4
-#define NCSRAWBUILD_IGMPHDR_TYPE    "type"
-#define NCSRAWBUILD_IGMPHDR_CODE    "code"
-#define NCSRAWBUILD_IGMPHDR_DATA    "payload"
-#define NCSRAWBUILD_HDR_BADSUM      "badsum"
-#define NCSRAW_OPT_SEND_TRACE     0
-#define NCSRAW_OPT_FRAGMENT       1
-#define NCSRAW_OPT_SEND_DELAY     2
-#define NCSRAW_OPT_SEND_CUSTOM_FD 3
-#define NCSRAW_OPT_SEND_RANDOM_FD 4
+#define NCSRAWBUILD_ERRBUF_MAXLEN     512
+#define NCSRAWBUILD_FMT_MAXLEN        65535
+#define NCSRAWBUILD_PROTOS_MAXLEN     512
+
+#define NCSRAW_OPT_SEND_TRACE         0
+#define NCSRAW_OPT_FRAGMENT           1
+#define NCSRAW_OPT_SEND_DELAY         2
+#define NCSRAW_OPT_SEND_CUSTOM_FD     3
+#define NCSRAW_OPT_SEND_RANDOM_FD     4
 
 struct nescanetraw_opts
 {

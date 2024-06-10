@@ -24,19 +24,25 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
-                    u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
-                    char *chunks, int chunkslen, const char *data, u16 datalen,
-                    u32 *pktlen, bool adler32sum, bool badsum)
+u8 *sctp_abort_build(u8 code, u8 flags, u8 *info, u16 infolen, u16 *chunklen)
 {
-  u8 *pkt, *sctp;
-  u32 sctplen;
+  struct sctp_chunk_hdr_abort *sctp_a;
+  u8 *res;
+  
+  *chunklen = sizeof(struct sctp_chunk_hdr_abort) + infolen;
+  res = (u8*)malloc(*chunklen);
+  if (!res)
+    return NULL;
+  
+  sctp_a = (struct sctp_chunk_hdr_abort*)res;
+  sctp_a->chunkhdr.flags = flags;
+  sctp_a->chunkhdr.type = SCTP_ABORT;
+  sctp_a->chunkhdr.len = htons(*chunklen);
+  sctp_a->ec.code = code;
+  sctp_a->ec.len = htons(sizeof(struct sctp_error_cause_op_hdr) + infolen);
 
-  sctp = sctp_build(srcport, dstport, vtag, chunks, chunkslen, data,
-      datalen, &sctplen, adler32sum, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
-      tos, df, ipopt, ipoptlen, (char*)sctp, sctplen, pktlen);
-
-  free(sctp);
-  return pkt;
+  if (info && infolen)
+    memcpy((u8*)sctp_a + sizeof(struct sctp_chunk_hdr_abort), info, infolen);
+  
+  return res;
 }

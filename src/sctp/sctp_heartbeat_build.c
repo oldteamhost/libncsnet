@@ -24,19 +24,25 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
-                    u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
-                    char *chunks, int chunkslen, const char *data, u16 datalen,
-                    u32 *pktlen, bool adler32sum, bool badsum)
+u8 *sctp_heartbeat_build(u8 type, u8 flags, u8 *info, u16 infolen, u16 *chunklen)
 {
-  u8 *pkt, *sctp;
-  u32 sctplen;
-
-  sctp = sctp_build(srcport, dstport, vtag, chunks, chunkslen, data,
-      datalen, &sctplen, adler32sum, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
-      tos, df, ipopt, ipoptlen, (char*)sctp, sctplen, pktlen);
-
-  free(sctp);
-  return pkt;
+  struct sctp_chunk_hdr_heartbeat *sctp_hb;
+  u8 *res;
+  
+  *chunklen = sizeof(struct sctp_chunk_hdr_heartbeat) + infolen;
+  res = (u8*)malloc(*chunklen);
+  if (!res)
+    return NULL;
+  
+  sctp_hb = (struct sctp_chunk_hdr_heartbeat*)res;
+  sctp_hb->hi.infolen = htons(sizeof(struct sctp_chunk_hdr_heartbeat_info) + infolen);
+  sctp_hb->hi.type = SCTP_TYPEFLAG_REPORT;
+  sctp_hb->chunkhdr.flags = flags;
+  sctp_hb->chunkhdr.type = type;
+  sctp_hb->chunkhdr.len = htons(*chunklen);
+  
+  if (info && infolen)
+    memcpy((u8*)sctp_hb + sizeof(struct sctp_chunk_hdr_heartbeat), info, infolen);
+  
+  return res;
 }
