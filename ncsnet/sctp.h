@@ -130,8 +130,7 @@ struct sctp_chunk_hdr_heartbeat {
   struct sctp_chunk_hdr_heartbeat_info hi;
 };
 
-struct sctp_chunk_hdr_error
-{
+struct sctp_chunk_hdr_error {
   struct sctp_chunk_hdr chunkhdr;
   struct sctp_error_cause_op_hdr ec;
 };
