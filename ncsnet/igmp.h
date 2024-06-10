@@ -54,6 +54,12 @@
 #define IGMP_V3_GROUP_QUERY         2
 #define IGMP_V3_GROUP_SOURCE_QUERY  3
 
+#define	IGMP_DELAYING_MEMBER    1
+#define	IGMP_IDLE_MEMBER        2
+#define	IGMP_LAZY_MEMBER        3
+#define	IGMP_SLEEPING_MEMBER    4
+#define	IGMP_AWAKENING_MEMBER   5
+
 #define IGMP_EXP(x)             (((x) >> 4) & 0x07)
 #define IGMP_MANT(x)            ((x) & 0x0f)
 #define IGMP_QRESV(x)           (((x) >> 4) & 0x0f)
@@ -62,11 +68,11 @@
 
 struct igmp_hdr
 {
-  u8 type;
-  u8 code;
+  u8  type;
+  u8  code;
   u16 check;
   u32 var;
-  u8 data[1500];
+  u8  data[1500];
 };
 
 __BEGIN_DECLS

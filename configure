@@ -3679,7 +3679,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 CFLAGS="-Wall -fPIC -DONLY_COMPILE -march=native -mtune=native -g -flto"
 OCFLAGS="-O3 -fforce-addr"
-MAKE_P="make"
 
 
 
@@ -4054,6 +4053,7 @@ esac
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $OS_TYPE" >&5
 printf "%s\n" "$OS_TYPE" >&6; }
 
+MAKE_P="make"
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for make util" >&5
 printf %s "checking for make util... " >&6; }
 if test "$OS_TYPE" = "bsd"; then
@@ -4061,7 +4061,6 @@ if test "$OS_TYPE" = "bsd"; then
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MAKE_P" >&5
 printf "%s\n" "$MAKE_P" >&6; }
-
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for DLT_EN10MB" >&5

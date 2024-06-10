@@ -1,0 +1,75 @@
+.TH NCSRAW 1 "June 2024" "???" "ncsraw_build"
+.SH NAME
+ncsraw_build () \- функция для создания пакета на основе форматирования.
+.SH SYNOPSIS
+.nf
+.ft B
+#include "ncsnet/nescanet.h"
+void      ncsraw_build(ncsraw_t *n, char *errbuf, const char *fmt, ...);
+.ft
+.fi
+.SH DESCRIPTION
+.B ncsraw_build()
+создает пакет согласуясь с переданным форматированием в
+.B fmt;
+заполняет поля
+.B
+pkt и pktlen внутри *n;
+а если произошла ошибка записывает ее в
+.B errbuf,
+максимальному размеру которого соответсвует макрос
+.B NCSRAWBUILD_ERRBUF_MAXLEN.
+.SH SYNTAX
+Синтаксис форматирования следующий, (все пробелы будут удалены перед парсингом):
+.PP
+.B <[arg], [arg], [arg], ...,>
+.PP
+в качестве аргумента (arg), может быть либо токен протокола (в дальнейшим proto)
+.B <proto>,
+либо опция (в дальнейшим option),
+.B <key=value>.
+.PP
+Таким образом, менее абстрактый синтаксис форматирования следующий, (символ "|" означает "ИЛИ"),
+.PP
+.B <[<proto>|<key=value>], [<proto>|<key=value>], ...,>
+.PP
+количество доступных option определяют указанные proto, положение которых, к слову, вовсе не важно, \-
+ведь функция в первую очередь будет искать все proto, а затем уже все option.
+
+.SH IP4 PROTO OPTIONS
+.TP
+.B src
+указать IP4 адрес отправителя, для автоматического получения
+можно использовать ключевое слово local, или localhost, ex: (src=local);
+также можно указать DNS или URL.
+.TP
+.B dst
+указать IP4 адрес получателя, как и в случае с src можно также указывать
+и DNS и URL. ex: (dst=google.com)
+.TP
+.B ttl
+указать Time To Live, ex: (ttl=121)
+.TP
+.B ipid
+указать IP IDentifier, ex: (ipid=7777)
+.TP
+.B tos
+указать Type of Service (сейчас это поле обычно DiffServ Code Point), ex: (tos=0)
+.TP
+.B df
+указать флаг Don`t fragment, если вы не планируете фрагментацию пакета
+то лучше поставить его в 1, ex: (df=1)
+.TP
+.B ipopt
+указать какую нибудь IP4 опцию, (R,L,S), подробнее см. parse_ipopts.c;
+.PP
+Вот пример полноценного форматирования ip4 (ipopt не указана),
+.PP
+"ip4, src=local, dst=google.com, ttl=121, ipid=7777, tos=0, df=1"
+
+
+.SH SEE ALSO
+.BR ncsraw (1)
+.BR ncsraw_init (1)
+.BR ncsraw_option (1)
+.BR ncsraw_send (1)

@@ -109,6 +109,7 @@ u32   random_num_u32(u32 min, u32 max);
 u32   random_seed_u32(void);
 char *random_str(int len, const char *dictionary);
 u16   random_check(void);
+long long delayconv(const char *txt);
 u16   random_srcport(void);
 u32   random_u32(void);
 u16   random_u16(void);

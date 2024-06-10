@@ -38,6 +38,63 @@
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
 
+/*
+ * RFC 1928, RFC 1929, RFC 1961
+ * AUTH 0x0A–0x7F IANA Unassigned
+ * AUTH 0x80–0xFE methods reserved for private use
+ */
+
+#define SOCKS5_VERSION                      0x05
+#define SOCKS5_VERSION_AUTH                 0x01
+#define SOCKS5_RESERVED                     0x00
+
+#define SOCKS5_CMD_CONNECT                  0x01
+#define SOCKS5_CMD_BIND                     0x02
+#define SOCKS5_CMD_UDPASSOCIATE             0x03
+
+#define SOCKS5_AUTH_NO                      0x00
+#define SOCKS5_AUTH_GSSAPI                  0x01
+#define SOCKS5_AUTH_USERPASS                0x02
+#define SOCKS5_AUTH_IANA_UNASSIGNED         0x04
+#define SOCKS5_AUTH_IANA_CHALLENGE_HADSHAKE 0x03
+#define SOCKS5_AUTH_IANA_CHALLENGE_RESPONSE 0x05
+#define SOCKS5_AUTH_IANA_SEC_SOCKETS_LAYER  0x06
+#define SOCKS5_AUTH_IANA_NDS                0x07
+#define SOCKS5_AUTH_IANA_MULTI_FRAMEWORK    0x08
+#define SOCKS5_AUTH_IANA_JSON_PARAM_BLOCK   0x09
+#define SOCKS5_AUTH_NOT_FOUND               0xFF
+
+#define SOCKS5_CODE_SUCCEEDED               0x00
+#define SOCKS5_CODE_GENERAL_FAILURE         0x01
+#define SOCKS5_CODE_CONNCTION_NOW_ALLOWED   0x02
+#define SOCKS5_CODE_NETWORK_UNCREACHABLE    0x03
+#define SOCKS5_CODE_HOST_UNCREACHABLE       0x04
+#define SOCKS5_CODE_CONNECTION_REFUSED      0x05
+#define SOCKS5_CODE_TTL_EXPIRED             0x06
+#define SOCKS5_CODE_COMMAND_NOT_SUPPORT     0x07
+#define SOCKS5_CODE_ADDR_NOT_SUPPORT        0x08
+
+#define SOCKS5_ADDR_TYPE_IP4                0x01
+#define SOCKS5_ADDR_TYPE_DOMAIN             0x03
+#define SOCKS5_ADDR_TYPE_IP6                0x04
+
+struct socks5_hdr
+{
+  u8 version;
+  u8 cmd; /* or reply */
+  u8 reserved;
+  u8 addrtype;
+  
+};
+
+typedef struct {
+  int fd;
+  const char *proxy, *dst;
+  u16 proxy_port, dstport;
+  const char *login, *pass;
+  u8 addrtype, authtype;
+} socks5_t;
+
 typedef struct
 {
   const char *proxy_host;
@@ -49,16 +106,12 @@ typedef struct
 
 __BEGIN_DECLS
 
-bool socks5_connect(socks_5_connection *connection);
-bool socks5_send(socks_5_connection *connection,
-    const char *data, size_t size);
-void socks5_close(socks_5_connection *connection);
-bool socks5_handshake(socks_5_connection *connection);
-bool socks5_send_command(socks_5_connection *connection);
-bool socks5_verify_response(socks_5_connection *connection);
-double socks5_tcp_ping(const char* dest_ip, int port,
-    const char* proxy_host, int proxy_port, int socket,
-    long long timeoutns);
+socks5_t *socks5_open(long long ns, const char *proxy, u16 proxyport, const char *login, const char *pass);
+u8       *socks5_build(u8 version, u8 cmd, u8 addrtype, const char *data, u32 datalen, u32 *pktlen);
+bool      socks5_bind(socks5_t *s, const char *dst, u16 dstport);
+bool      socks5_send(socks_5_connection *connection, const char *data, size_t size);
+void      socks5_close(socks5_t *s);
+
 
 __END_DECLS
 

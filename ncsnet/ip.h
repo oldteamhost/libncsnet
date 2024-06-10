@@ -146,22 +146,22 @@
 #define IP4_ADDR_MCAST_ALL   (htonl(0xe0000001)) /* 224.0.0.1 */
 #define IP4_ADDR_MCAST_LOCAL (htonl(0xe00000ff)) /* 224.0.0.255 */
 
-#define IP6_HDR_LEN         40      /* ip6 header length */
-#define IP6_LEN_MAX         65535   /* non-jumbo payload */
-#define IP6_MTU_MIN         1280    /* minimum MTU (1024 + 256) */
-#define IP6_VERSION_MASK    0xf0    /* ip6_vfc version */
-#define IP6_NXT             ip6_ctlun.ip6_un1.ip6_un1_nxt
-#define IP6_ADDR_LEN        16
-#define IP6_ADDR_BITS       128
-#define IP6_LEN_MIN         IP6_HDR_LEN
-#define IP6_VFC             ip6_ctlun.ip6_un2_vfc
-#define IP6_FLOW            ip6_ctlun.ip6_un1.ip6_un1_flow
-#define IP6_PKTLEN          ip6_ctlun.ip6_un1.ip6_un1_plen
-#define IP6_HLIM            ip6_ctlun.ip6_un1.ip6_un1_hlim
-#define IP6_VERSION         0x60
-#define IP6_VERSION_MASK    0xf0 /* ip6_vfc version */
-#define IP6_HLIM_DEFAULT    64
-#define IP6_HLIM_MAX        255
+#define IP6_HDR_LEN           40      /* ip6 header length */
+#define IP6_LEN_MAX           65535   /* non-jumbo payload */
+#define IP6_MTU_MIN           1280    /* minimum MTU (1024 + 256) */
+#define IP6_VERSION_MASK      0xf0    /* ip6_vfc version */
+#define IP6_NXT               ip6_ctlun.ip6_un1.ip6_un1_nxt
+#define IP6_ADDR_LEN          16
+#define IP6_ADDR_BITS         128
+#define IP6_LEN_MIN           IP6_HDR_LEN
+#define IP6_VFC               ip6_ctlun.ip6_un2_vfc
+#define IP6_FLOW              ip6_ctlun.ip6_un1.ip6_un1_flow
+#define IP6_PKTLEN            ip6_ctlun.ip6_un1.ip6_un1_plen
+#define IP6_HLIM              ip6_ctlun.ip6_un1.ip6_un1_hlim
+#define IP6_VERSION           0x60
+#define IP6_VERSION_MASK      0xf0 /* ip6_vfc version */
+#define IP6_HLIM_DEFAULT      64
+#define IP6_HLIM_MAX          255
 #if (defined(LITTLE_ENDIAN_SYSTEM))
   #define IP6_FLOWINFO_MASK   0xffffff0f /* ip6_flow info (28 bits) */
   #define IP6_FLOWLABEL_MASK  0xffff0f00 /* ip6_flow label (20 bits) */

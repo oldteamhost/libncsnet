@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "eth.h"
+#include "ip.h"
 
 #include "../ncsnet-config.h"
 #include "sys/types.h"
