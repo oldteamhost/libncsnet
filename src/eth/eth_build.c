@@ -35,9 +35,8 @@ u8 *eth_build(mac_t src, mac_t dst, u16 type, const char *data,
   pkt = (u8*)malloc(packetlen);
   if (!pkt)
     return NULL;
-  eth = (struct eth_hdr*)pkt;
 
-  memset(eth, 0, ETH_HDR_LEN);
+  eth = (struct eth_hdr*)pkt;
   eth->dst  = dst;
   eth->src  = src;
   eth->type = htons(type);
