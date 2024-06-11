@@ -24,58 +24,21 @@
 
 #include <ncsnet/icmp.h>
 
-#ifndef MIN
-  #define MIN(a,b) ((a) <= (b) ? (a) : (b))
-#endif
-
-u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
-                    bool df, u8 *ipopt, int ipoptlen, u16 seq, u16 id, u8 type,
-                    u8 code, const char *data, u16 datalen, u32 *pktlen,
-                    bool badsum)
+u8 *icmp4_msg_redir_build(u32 gateway, u8 *data, u16 datalen, u16 *msglen)
 {
-  struct icmp4_hdr_ icmphdr;
-  int dlen = 0, icmplen = 0;
-  u8 *datastart;
-  char *ping;
+  struct icmp4_msg_redir *icmp_r;
+  u8 *res;
 
-  datastart = icmphdr.data;
-  dlen = sizeof(icmphdr.data);
-  ping = (char*)&icmphdr;
+  *msglen = sizeof(struct icmp4_msg_redir) + datalen;
+  res = (u8*)malloc(*msglen);
+  if (!res)
+    return NULL;
 
-  icmphdr.type = type;
-  icmphdr.code = code;
+  icmp_r = (struct icmp4_msg_redir*)res;
+  icmp_r->gateway = htonl(gateway); /* htonl ??? */
 
-  if (type == 8)
-    icmplen = 8;
-  else if (type == 13 && code == 0) {
-    icmplen = 20;
-    memset(datastart, 0, 12);
-    datastart += 12;
-    dlen -= 12;
-  }
-  else if (type == 17 && code == 0) {
-    icmplen = 12;
-    memset(datastart, 0, 4);
-    datastart += 4;
-    dlen -= 4;
-  }
-
-  if (datalen > 0) {
-    icmplen += MIN(dlen, datalen);
-    if (!data)
-      memset(datastart, 0, MIN(dlen, datalen));
-    else
-      memcpy(datastart, data, MIN(dlen, datalen));
-  }
-
-  icmphdr.id = htons(id);
-  icmphdr.seq = htons(seq);
-  icmphdr.check = 0;
-  icmphdr.check = in_check((u16*)ping, icmplen);
-
-  if (badsum)
-    --icmphdr.check;
-
-  return ip4_build(src, dst, IPPROTO_ICMP, ttl,
-      ipid, tos, df, ipopt, ipoptlen, ping, icmplen, pktlen);
+  if (data && datalen)
+    memcpy((u8*)icmp_r + sizeof(struct icmp4_msg_redir), data, datalen);
+  
+  return res;
 }
