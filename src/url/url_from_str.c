@@ -24,6 +24,19 @@
 
 #include <ncsnet/url.h>
 
+#define URL_SCHEME_DEL ':'
+#define URL_SCHEME_DICT "abcdefghijklmnopqrstuvwxyz123456789+-."
+#define URL_SCHEME_DICT_INTER						\
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789+-."
+#define USERINFO_DEL    '@'
+#define PORT_DEL        ':'
+#define PATH_DEL        '/'
+#define QUERY_DEL       '?'
+#define QUERYVAL_DEL    '='
+#define QUERYOPT_DEL    '&'
+#define FRAGMENT_DEL    '#'
+#define AUTHORITY_DEL   "//"
+
 struct preproc_url {
   char *scheme, *authority, *path, *query, *fragment;
   int type;
@@ -36,6 +49,7 @@ static void parse_authority(struct url_authority *url_auth, const char *authorit
 url_t *url_from_str(const char *url)
 {
   struct preproc_url *pu;
+  bool tmp = false;
   url_t *res;
 
   res = ___url_init();
@@ -54,8 +68,15 @@ url_t *url_from_str(const char *url)
     free(pu->fragment);
   }
   if (pu->path) {
+    if (pu->path[strlen(pu->path)-1] == '/') {
+      tmp = true;
+      pu->path[strlen(pu->path)-1] = '\0';
+    }
     ___url_add_path(res, pu->path);
     free(pu->path);
+    if (tmp)
+      ___url_add_path(res, "/");
+
   }
   if (pu->query) {
     ___url_add_query(res, pu->query);
@@ -74,7 +95,8 @@ url_t *url_from_str(const char *url)
   return NULL;
 }
 
-static bool validate_dict(const char *str, const char *dict)
+static bool
+validate_dict(const char *str, const char *dict)
 {
   while (*str) {
     if (!strchr(dict, *str))
@@ -84,7 +106,8 @@ static bool validate_dict(const char *str, const char *dict)
   return true;
 }
 
-static struct preproc_url *preprocurl(const char *url)
+static struct preproc_url *
+preprocurl(const char *url)
 {
   struct preproc_url *parsed_url;
   const char *pos, *start;
@@ -108,6 +131,8 @@ static struct preproc_url *preprocurl(const char *url)
       goto fail;
     pos++;
   }
+  else
+    goto fail;
 
   if (*pos == '/' && *(pos + 1) == '/') {
     if (*(pos + 2) != '/') {
@@ -125,7 +150,6 @@ static struct preproc_url *preprocurl(const char *url)
   }
   else
     parsed_url->type = URL_INTER_TYPE_SCHEMEPATH;
-
   if (*pos) {
     start = pos;
     for (;*pos && *pos != '?' && *pos != '#'; pos++);
@@ -133,7 +157,6 @@ static struct preproc_url *preprocurl(const char *url)
     if (!parsed_url->path)
       goto fail;
   }
-
   if (*pos == '?') {
     pos++;
     start = pos;
@@ -142,7 +165,6 @@ static struct preproc_url *preprocurl(const char *url)
     if (!parsed_url->query)
       goto fail;
   }
-
   if (*pos == '#') {
     pos++;
     start = pos;
@@ -169,7 +191,8 @@ static struct preproc_url *preprocurl(const char *url)
   return NULL;
 }
 
-static void parse_authority(struct url_authority *url_auth, const char *authority)
+static void
+parse_authority(struct url_authority *url_auth, const char *authority)
 {
   const char *p, *port;
   char *at;
@@ -215,40 +238,50 @@ url_t *___url_init(void)
   return NULL;
 }
 
-void ___url_add_path(url_t *url, char *path)
+static void url_add_path_general(url_t *url, char *path)
 {
   struct url_path *new, *current;
+  new = (struct url_path*)malloc(sizeof(struct url_path));
+  if (!new)
+    return;
+  memset(new, 0, sizeof(struct url_path));
+  
+  if (path)
+    new->path = strdup(path);
+  else
+    new->path = NULL;
+  new->nxt = NULL;
+  
+  if (!url->path)
+    url->path = new;
+  else {
+    current = url->path;
+    while (current->nxt)
+      current = current->nxt;
+    current->nxt = new;
+  }
+}
+
+void ___url_add_path(url_t *url, char *path)
+{
   char *token;
 
-  current = NULL;
-  new = NULL;
-
+  if (path[0] == '/' && path[1] == '\0') {
+    url_add_path_general(url, "/");
+    return;
+  }
+  
   if (*path == '\0')
     return;
-
   token = strtok(path, "/");
   while (token) {
-    new = (struct url_path*)malloc(sizeof(struct url_path));
-    if (!new)
-      return;
-    memset(new, 0, sizeof(struct url_path));
-    
-    new->path = strdup(token);
-    new->nxt = NULL;
-    
-    if (!url->path)
-      url->path = new;
-    else {
-      current = url->path;
-      while (current->nxt)
-	current = current->nxt;
-      current->nxt = new;
-    }
+    url_add_path_general(url, token);
     token = strtok(NULL, "/");
   }
 }
 
-void url_add_query_general(url_t *url, char *query, char *value)
+
+static void url_add_query_general(url_t *url, char *query, char *value)
 {
   struct url_query *new, *current;
   new = (struct url_query *)malloc(sizeof(struct url_query));

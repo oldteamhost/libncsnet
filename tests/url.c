@@ -36,15 +36,25 @@ void usage(char **argv)
 
 int main(int argc, char **argv)
 {
-  int i = 1;
   url_t *u = NULL;
+  int i = 1;
+  
   if (argc <= 1)
     usage(argv);
+
+  /*
+  u = url_build("ftp", "/", "localhost", "admin:222",
+		"21", NULL, URL_INTER_TYPE_DEFAULT);
+  url_print(u);
+  url_free(u);
+  return 0;
+  */
   
   for (; i < argc; i++) {
     u = url_from_str(argv[i]);
+    printf("origlen = %ld\n", strlen(argv[i]));
     if (!u)
-      printf("Failed format...,\n");
+      printf("Failed format!\n");
     else {
       url_print(u);
       url_free(u);

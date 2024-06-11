@@ -43,7 +43,9 @@ static void url_print_query(struct url_query *query, int indent)
     return;
   for (i = 0; i < indent; ++i)
     printf(" ");
-  printf("\\_query = %s%s%s\n", query->query, (!query->value) ?  "" : ", val = ", (!query->value) ?  "" : query->value);
+  printf("\\_query = %s%s%s\n", query->query,
+	 (IS_NULL_OR_EMPTY(query->value)) ?  "" : ", val = ",
+	 (IS_NULL_OR_EMPTY(query->value)) ?  "" : query->value);
   if (query->nxt)
     url_print_query(query->nxt, indent + 4);
 }
@@ -54,7 +56,7 @@ void url_print(url_t *url)
   int indent = 0, i;
   
   url_to_str(url, __url, sizeof(__url));
-  printf("checksum = %s\n", __url);
+  printf("(%ld len) checksum = %s\n", sizeof(__url), __url);
   if (url->scheme)
     printf(" \\_scheme = %s\n", url->scheme);
   if (url->authority) {

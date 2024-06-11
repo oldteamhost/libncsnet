@@ -24,35 +24,48 @@
 
 #include <ncsnet/url.h>
 
-#define safe_strlen(str) \
-  (str ? strlen(str) : 0)
-
 static size_t get_query_length(struct url_query *query)
 {
   size_t res;
+  int is_first;
   res = 0;
+  is_first = 1;
   if (!query)
     return res;
   res += 1; /* ? */
   while (query) {
-    res += safe_strlen(query->value) + safe_strlen(query->query);
-    res += 1; /* & */
-    query = query->nxt;
+    if (query->query) {
+      if (!is_first)
+	res += 1; /* & */
+      else
+	is_first = 0;
+      if (query->value)
+	res++; /* = */
+      res += safe_strlen(query->value) + safe_strlen(query->query);
+      query = query->nxt;
+    }
   }
   return res;
 }
 
-static size_t get_path_length(struct url_path *path)
+static size_t get_path_length(struct url_path *path, int type)
 {
+  int skipfirst;
   size_t res;
+  skipfirst =
+    ((type == URL_INTER_TYPE_SCHEMEPATH || type == URL_INTER_TYPE_SCHEMEPATHSLASH));
   res = 0;
   if (!path)
     return res;
+  if (path && !path->nxt && path->path[0] == '/' && path->path[1] == '\0')
+    return ++res;
   while (path) {
-    if (path->path){
-      res += safe_strlen(path->path);
+    res += safe_strlen(path->path);
+    if (!skipfirst)
       res += 1; /* / */
-    }
+    skipfirst = 0;
+    if (!path->nxt && path->path[strlen(path->path)-1] == '/')
+      res--;
     path = path->nxt;
   }
   return res;
@@ -62,31 +75,31 @@ size_t url_len(url_t *url)
 {
   size_t res;
   res = 0;
-  
   if (!url)
     return res;
-  
   res += safe_strlen(url->scheme);
+  res++; /* : */
   if (url->authority) {
-    if (url->authority->host) {
+    if (url->type == URL_INTER_TYPE_SCHEMEPATHSLASH)
+      res += 3; /* /// */
+    else if (url->type == URL_INTER_TYPE_DEFAULT)
+      res += 2; /* // */
+    if (url->authority->host)
       res += safe_strlen(url->authority->host);
-      res += 3; /* :// */
-    }
     if (url->authority->userinfo) {
       res += safe_strlen(url->authority->userinfo);
-      res += 2; /* : and @ */
+      res++; /* @ */
     }
     if (url->authority->port) {
       res += safe_strlen(url->authority->port);
       res += 1; /* : */
     }
   }
-  res += get_path_length(url->path);
+  res += get_path_length(url->path, url->type);
   res += get_query_length(url->query);
   if (url->fragment) {
     res += safe_strlen(url->fragment);
     res += 1; /* # */
   }
-  
   return res;
 }

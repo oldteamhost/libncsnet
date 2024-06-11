@@ -27,16 +27,18 @@
 static void url_write_path(struct url_path *path, char *buf, int type)
 {
   int skipfirst;
-
-  skipfirst = (type == URL_INTER_TYPE_SCHEMEPATH);
+  skipfirst =
+    ((type == URL_INTER_TYPE_SCHEMEPATH || type == URL_INTER_TYPE_SCHEMEPATHSLASH));
   if (!path)
     return;
   while (path) {
     if (!skipfirst)
       strcat(buf, "/");
-    strcat(buf, path->path);
-    path = path->nxt;
     skipfirst = 0;
+    strcat(buf, path->path);
+    if (!path->nxt && path->path[strlen(path->path)-1] == '/')
+      buf[strlen(buf)-1] = '\0';
+    path = path->nxt;
   }
 }
 
@@ -58,7 +60,7 @@ static void url_write_query(struct url_query *query, char *buf)
       else
         is_first = 0;
       strcat(buf, query->query);
-      if (query->value) {
+      if (!IS_NULL_OR_EMPTY(query->value)) {
         strcat(buf, "=");
         strcat(buf, query->value);
       }
@@ -72,15 +74,16 @@ void url_to_str(url_t *url, char *buf, size_t buflen)
   if (buflen < url_len(url))
     return;
 
-  if (url->scheme)
+  if (url->scheme) {
     strcpy(buf, url->scheme);
-  
-  if (url->type == URL_INTER_TYPE_SCHEMEPATHSLASH)
-    strcat(buf, ":///");
-  else if (url->type == URL_INTER_TYPE_DEFAULT)
-    strcat(buf, "://");
-  else if (url->type == URL_INTER_TYPE_SCHEMEPATH)
     strcat(buf, ":");
+  }
+  if (url->type == URL_INTER_TYPE_SCHEMEPATHSLASH)
+    strcat(buf, "///");
+  else if (url->type == URL_INTER_TYPE_DEFAULT)
+    strcat(buf, "//");
+  else if (url->type == URL_INTER_TYPE_SCHEMEPATH)
+    strcat(buf, "");
   
   if (url->authority) {
     if (url->authority->userinfo) {
@@ -102,5 +105,4 @@ void url_to_str(url_t *url, char *buf, size_t buflen)
     strcat(buf, "#");
     strcat(buf, url->fragment);
   }
-
 }

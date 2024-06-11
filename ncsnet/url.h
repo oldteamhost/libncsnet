@@ -37,33 +37,11 @@
 #include "../ncsnet-config.h"
 
 /*
- * RFC 3986
- * RFC 4248
- * RFC 4266
- * RFC 6270
- * RFC 6067 | 50%
- * RFC 1738 | 50%
+ * RFC 3986 * RFC 4248 * RFC 4266 * RFC 6270 * RFC 1738
+ * supports the following types of URLs, FTP, FILE, HTTP,
+ * GOPHER, MAILTO, NEWS, TELNET, WAIS;
+ * not supports, PROSPERO.
  */
-
-/* file:///path<..,> */
-#define URL_INTER_TYPE_SCHEMEPATHSLASH 0
-/* scheme://<etc. ...,> */
-#define URL_INTER_TYPE_DEFAULT         1
-/* scheme:<etc. ...,> */
-#define URL_INTER_TYPE_SCHEMEPATH      2
-
-#define URL_SCHEME_DEL ':'
-#define URL_SCHEME_DICT "abcdefghijklmnopqrstuvwxyz123456789+-."
-#define URL_SCHEME_DICT_INTER						\
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789+-."
-#define USERINFO_DEL    '@'
-#define PORT_DEL        ':'
-#define PATH_DEL        '/'
-#define QUERY_DEL       '?'
-#define QUERYVAL_DEL    '='
-#define QUERYOPT_DEL    '&'
-#define FRAGMENT_DEL    '#'
-#define AUTHORITY_DEL   "//"
 
 #define URL_SCHEME               1
 #define URL_PATH                 2
@@ -73,8 +51,15 @@
 #define URL_QUERY                6
 #define URL_FRAGMENT             7
 
-struct url_query { char *query; char *value; struct url_query *nxt; };
-struct url_path { char *path; struct url_path *nxt; };
+/* file:///path<..,> */
+#define URL_INTER_TYPE_SCHEMEPATHSLASH 0
+/* scheme://<etc. ...,> */
+#define URL_INTER_TYPE_DEFAULT         1
+/* scheme:<etc. ...,> */
+#define URL_INTER_TYPE_SCHEMEPATH      2
+
+struct url_query     { char *query; char *value; struct url_query *nxt; };
+struct url_path      { char *path; struct url_path *nxt; };
 struct url_authority { char *host; char *userinfo; char *port; };
 
 typedef struct url_addr
@@ -98,15 +83,15 @@ void    url_field(url_t *url, const char *txt, int field);
 #define url_fragment(url, fragment)  url_field((url), (fragment), URL_FRAGMENT)
 #define url_scheme(url, scheme)      url_field((url), (scheme), URL_SCHEME)
 void    url_free(url_t *url);
-
 url_t  *url_from_str(const char *url);
 void    url_to_str(url_t *url, char *buf, size_t buflen);
 size_t  url_len(url_t *url);
 void    url_print(url_t *url);
 url_t  *url_build(const char *scheme, const char *paths,
 		 const char *host, const char *userinfo,
-		 const char *port, const char *querys);
+		  const char *port, const char *querys, int type);
 
+/* dev */
 url_t * ___url_init(void);
 void    ___url_add_path(url_t *url, char *path);
 void    ___url_add_query(url_t *url, char *query);

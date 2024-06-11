@@ -26,14 +26,13 @@
 
 url_t *url_build(const char *scheme, const char *paths,
 		 const char *host, const char *userinfo,
-		 const char *port, const char *querys)
+		 const char *port, const char *querys, int type)
 {
   url_t *res;
-
   res = ___url_init();
   if (!res)
     return NULL;
-  
+  res->type = type;
   if (scheme)
     url_scheme(res, scheme);
   if (paths)
@@ -46,6 +45,5 @@ url_t *url_build(const char *scheme, const char *paths,
     url_port(res, port);
   if (querys)
     url_query(res, querys);
-
   return res;
 }

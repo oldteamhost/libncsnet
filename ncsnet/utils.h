@@ -55,6 +55,8 @@
 #define BALANCED_SPEED   2
 #define NOT_SPEED        1
 
+#define safe_strlen(str) (str ? strlen(str) : 0)
+
 #define IS_NULL_OR_EMPTY(str)			\
   ((str == NULL) || (*str == '\0'))
 
