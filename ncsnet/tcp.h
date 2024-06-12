@@ -144,21 +144,25 @@ __BEGIN_DECLS
 u8 *tcp_build(u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
               u16 win, u16 urp, const u8 *opt, int optlen, const char *data,
               u16 datalen, u32 *pktlen);
+
 u8 *tcp4_build_pkt(u32 src, u32 dst, u8 ttl, u16 id, u8 tos, bool df,
                    const u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
                    const u8 *opt, int optlen, const char *data, u16 datalen,
                    u32 *pktlen, bool badsum);
+
 u8 *tcp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
                    const u8 *opt, int optlen, const char *data, u16 datalen,
                    u32 *pktlen, bool badsum);
+
 int tcp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                   int ttl, bool df, u8 *ipops, int ipoptlen, u16 srcport,
                   u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags, u16 win,
                   u16 urp, u8 *opt, int optlen, const char *data, u16 datalen,
                   int mtu, bool badsum);
+
 int tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
                    u16 dstport, u8 flags, const char *data, u16 datalen);
 

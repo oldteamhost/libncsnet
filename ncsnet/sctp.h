@@ -141,8 +141,8 @@ u8 *sctp_build(u16 srcport, u16 dstport, u32 vtag, const char *chunks,
                int chunkslen, const char *data, u16 datalen, u32 *pktlen,
                bool adler32sum, bool badsum);
 
-/* chunks (INIT, INITACK, COOKIE, COOKIEACK, ABORT, ERROR, HEARTBEAT,
- * HEARTBEATACK, SHUTDOWN, SHUTDOWNACK, SHUTDOWNCOMPLETE)
+/* INIT, INITACK, COOKIE, COOKIEACK, ABORT, ERROR, HEARTBEAT,
+ * HEARTBEATACK, SHUTDOWN, SHUTDOWNACK, SHUTDOWNCOMPLETE
  */
 u8 *sctp_init_build(u8 type, u8 flags, u32 itag, u32 arwnd, u16 nos, u16 nis, u32 itsn, u16 *chunklen);
 u8 *sctp_cookie_build(u8 type, u8 flags, u8 *cookie, u16 cookielen, u16 *chunklen);
@@ -164,10 +164,15 @@ u8 *sctp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u16 datalen, u32 *pktlen, bool adler32sum, bool badsum);
 
 int sctp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, bool df, u8 *ipops, int ipoptlen, u16 srcport,
-                   u16 dstport, char *chunks, int chunkslen, u32 vtag,
+                   int ttl, u16 ipid, u8 tos, bool df, u8 *ipops, int ipoptlen,
+		   u16 srcport, u16 dstport, char *chunks, int chunkslen, u32 vtag,
                    const char *data, u16 datalen, int mtu, bool adler32sum,
                    bool badsum);
+
+int sctp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
+		   const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
+		   u16 srcport, u16 dstport, u32 vtag, char *chunks, int chunkslen,
+		   const char *data, u16 datalen, bool adler32sum, bool badsum);
 
 __END_DECLS
 

@@ -22,33 +22,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/sctp.h>
+#include <ncsnet/udp.h>
 
-int sctp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, u16 ipid, u8 tos, bool df, u8 *ipops, int ipoptlen,
-		   u16 srcport, u16 dstport, char *chunks, int chunkslen, u32 vtag,
-                   const char *data, u16 datalen, int mtu, bool adler32sum,
-                   bool badsum)
+int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
+		  const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
+		  u16 srcport, u16 dstport, const char *data, u16 datalen,
+		  bool badsum)
 {
   struct sockaddr_storage _dst;
-  struct sockaddr_in *dst_in;
+  struct sockaddr_in6 *dst_in;
   int res = -1;
   u32 pktlen;
   u8 *pkt;
 
-  pkt = sctp4_build_pkt(src, dst, ttl, ipid, tos, df, ipops,
-      ipoptlen, srcport, dstport, vtag, chunks, chunkslen, data,
-      datalen, &pktlen, adler32sum, badsum);
+  pkt = udp6_build_pkt(src, dst, tc, flowlabel, hoplimit, srcport, dstport, data,
+      datalen, &pktlen, badsum);
   if (!pkt)
     return -1;
 
   memset(&_dst, 0, sizeof(_dst));
-  dst_in = (struct sockaddr_in*)&_dst;
-  dst_in->sin_family = AF_INET;
-  dst_in->sin_addr.s_addr = dst;
-  res = ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
+  dst_in = (struct sockaddr_in6*)&_dst;
+  dst_in->sin6_family = AF_INET6;
+  dst_in->sin6_addr = *dst;
+  
+  res = ip_send(eth, fd, &_dst, 0, pkt, pktlen);
 
   free(pkt);
   return res;
 }
-
