@@ -22,8 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#include <ncsnet/icmp.h>
-#include "../../ncsnet/icmp.h"
+#include <ncsnet/icmp.h>
 
 int icmp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
 		   const struct in6_addr *dst, u8 tc, u32 flowlabel,
