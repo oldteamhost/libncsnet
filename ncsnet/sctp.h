@@ -157,10 +157,12 @@ u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
                     u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
                     char *chunks, int chunkslen, const char *data, u16 datalen,
                     u32 *pktlen, bool adler32sum, bool badsum);
+
 u8 *sctp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
                     u32 vtag, char *chunks, int chunkslen, const char *data,
                     u16 datalen, u32 *pktlen, bool adler32sum, bool badsum);
+
 int sctp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                    int ttl, bool df, u8 *ipops, int ipoptlen, u16 srcport,
                    u16 dstport, char *chunks, int chunkslen, u32 vtag,
