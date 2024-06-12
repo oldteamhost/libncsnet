@@ -22,7 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "ncsnet/ip.h"
 #include <ncsnet/tcp.h>
 
 u8 *tcp4_build_pkt(u32 src, u32 dst, u8 ttl, u16 id, u8 tos, bool df,
@@ -37,6 +36,8 @@ u8 *tcp4_build_pkt(u32 src, u32 dst, u8 ttl, u16 id, u8 tos, bool df,
 
   tcp = (struct tcp_hdr*)tcp_build(srcport, dstport, seq, ack, reserved, flags, win, urp,
       opt, optlen, data, datalen, &tcplen);
+  if (!tcp)
+    return NULL;
   tcp->th_sum = ip4_pseudocheck(src, dst, IPPROTO_TCP, tcplen, tcp);
   if (badsum)
     --tcp->th_sum;

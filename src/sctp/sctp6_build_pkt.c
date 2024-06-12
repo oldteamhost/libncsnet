@@ -23,7 +23,6 @@
 */
 
 #include <ncsnet/sctp.h>
-#include "ncsnet/ip.h"
 
 u8 *sctp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
@@ -35,6 +34,8 @@ u8 *sctp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
 
   sctp = sctp_build(srcport, dstport, vtag, chunks, chunkslen, data, datalen,
       &sctplen, adler32sum, badsum);
+  if (!sctp)
+    return NULL;
   pkt = ip6_build(src, dst, tc, flowlabel, IPPROTO_SCTP,
       hoplimit, (char*)sctp, sctplen, pktlen);
 

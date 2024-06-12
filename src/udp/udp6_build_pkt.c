@@ -33,6 +33,8 @@ u8 *udp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
   u8 *pkt;
 
   udp = (struct udp_hdr*)udp_build(srcport, dstport, data, datalen, &udplen);
+  if (!udp)
+    return NULL;
   udp->check = ip6_pseudocheck(src, dst, IPPROTO_UDP, udplen, udp);
   if (badsum)
     udp->check = 0xffff;

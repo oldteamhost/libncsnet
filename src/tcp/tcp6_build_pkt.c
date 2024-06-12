@@ -23,7 +23,6 @@
 */
 
 #include <ncsnet/tcp.h>
-#include "ncsnet/ip.h"
 
 u8 *tcp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
@@ -37,6 +36,8 @@ u8 *tcp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
 
   tcp = (struct tcp_hdr*)tcp_build(srcport, dstport, seq, ack, reserved, flags, win, urp,
       opt, optlen, data, datalen, &tcplen);
+  if (!tcp)
+    return NULL;
   tcp->th_sum = ip6_pseudocheck(src, dst, IPPROTO_TCP, tcplen, tcp);
   if (badsum)
     --tcp->th_sum;

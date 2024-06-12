@@ -33,6 +33,8 @@ u8 *udp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
   u8 *pkt;
 
   udp = (struct udp_hdr*)udp_build(srcport, dstport, data, datalen, &udplen);
+  if (!udp)
+    return NULL;
   udp->check = ip4_pseudocheck(src, dst, IPPROTO_UDP, udplen, udp);
   if (badsum)
     udp->check = 0xffff;

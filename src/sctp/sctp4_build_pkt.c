@@ -34,6 +34,8 @@ u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
 
   sctp = sctp_build(srcport, dstport, vtag, chunks, chunkslen, data,
       datalen, &sctplen, adler32sum, badsum);
+  if (!sctp)
+    return NULL;
   pkt = ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
       tos, df, ipopt, ipoptlen, (char*)sctp, sctplen, pktlen);
 

@@ -77,6 +77,8 @@ struct igmp_hdr
 
 __BEGIN_DECLS
 
+u8 *igmp_build();
+
 u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
                    bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code,
                    const char *data, u16 datalen, u32 *pktlen, bool badsum);

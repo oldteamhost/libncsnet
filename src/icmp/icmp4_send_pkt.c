@@ -25,9 +25,8 @@
 #include <ncsnet/icmp.h>
 
 int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, bool df, u8 *ipops, int ipoptlen, u32 seq, u8 code,
-                   u8 type, const char *data, u16 datalen, int mtu,
-                   bool badsum)
+                   int ttl, u16 ipid, u8 tos, bool df, u8 *ipopt, int ipoptlen,
+		   u8 type, u8 code, u8 *msg, u16 msglen, int mtu, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
@@ -35,8 +34,8 @@ int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
   u32 pktlen;
   u8 *pkt;
 
-  pkt = icmp4_build_pkt(src, dst, ttl, random_u16(), 0, df, ipops, ipoptlen,
-      seq, random_u16(), type, code, data, datalen, &pktlen, badsum);
+  pkt = icmp4_build_pkt(src, dst, ttl, ipid, tos, df, ipopt, ipoptlen, type,
+      code, msg, msglen, &pktlen, badsum);
   if (!pkt)
     return -1;
 

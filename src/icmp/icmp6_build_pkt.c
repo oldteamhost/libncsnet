@@ -23,7 +23,6 @@
 */
 
 #include <ncsnet/icmp.h>
-#include "ncsnet/ip.h"
 
 u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u16 seq, u16 id, u8 type,

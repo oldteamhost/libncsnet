@@ -266,9 +266,10 @@ u8 *icmp4_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen, bool badsum)
 u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, u16 *msglen);
 u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, u16 datalen, u16 *msglen);
 u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *data, u16 datalen, u16 *msglen);
-u8 *icmp4_msg_info_build(u16 id, u16 seq, u16 *msglen);
 u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, u16 *msglen);
 u8 *icmp4_msg_redir_build(u32 gateway, u8 *data, u16 datalen, u16 *msglen);
+#define icmp4_msg_info_build(id, seq, msglen)		\
+  icmp4_msg_echo_build((id), (seq), NULL, 0, (msglen))
 #define icmp4_msg_quench_build(unsed, data, datalen, msglen)	\
   icmp4_msg_redir_build((unsed), (data), (datalen), (msglen))
 #define icmp4_msg_timexeed_build(unsed, data, datalen, msglen)	\
@@ -279,17 +280,19 @@ u8 *icmp4_msg_redir_build(u32 gateway, u8 *data, u16 datalen, u16 *msglen);
   icmp4_msg_redir_build((ptr_unsed), (data), (datalen), (msglen))
 
 u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
-                    bool df, u8 *ipopt, int ipoptlen, u16 seq, u16 id, u8 type,
-                    u8 code, const char *data, u16 datalen, u32 *pktlen,
-                    bool badsum);
+                    bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
+		    u16 msglen, u32 *pktlen, bool badsum);
+
+int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
+                   int ttl, u16 ipid, u8 tos, bool df, u8 *ipopt, int ipoptlen,
+		   u8 type, u8 code, u8 *msg, u16 msglen, int mtu, bool badsum);
+
 u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u16 seq, u16 id, u8 type,
                     u8 code, const char *data, u16 datalen, u32 *pktlen,
                     bool badsum);
-int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, bool df, u8 *ipops, int ipoptlen, u32 seq, u8 code,
-                   u8 type, const char *data, u16 datalen, int mtu,
-                   bool badsum);
+
+
 __END_DECLS
 
 #endif

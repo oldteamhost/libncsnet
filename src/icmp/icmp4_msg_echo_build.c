@@ -36,7 +36,7 @@ u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, u16 datalen, u16 *ms
 
   icmp_e = (struct icmp4_msg_echo*)res;
   icmp_e->id  = htons(id);
-  icmp_e->seq = htons(id);
+  icmp_e->seq = htons(seq);
 
   if (data && datalen)
     memcpy((u8*)icmp_e + sizeof(struct icmp4_msg_echo), data, datalen);
