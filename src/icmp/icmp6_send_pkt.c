@@ -22,28 +22,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/icmp.h>
+//#include <ncsnet/icmp.h>
+#include "../../ncsnet/icmp.h"
 
-u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                    u8 tc, u32 flowlabel, u8 hoplimit, u8 type, u8 code,
-		    u8 *msg, u16 msglen, u32 *pktlen, bool badsum)
+int icmp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
+		   const struct in6_addr *dst, u8 tc, u32 flowlabel,
+		   u8 hoplimit, u8 type, u8 code, u8 *msg, u16 msglen,
+		   bool badsum)
 {
-  struct icmp6_hdr *icmp;
-  u32 icmplen;
+  struct sockaddr_storage _dst;
+  struct sockaddr_in6 *dst_in;
+  int res = -1;
+  u32 pktlen;
   u8 *pkt;
 
-  icmp = (struct icmp6_hdr*)icmp6_build(type, code, msg, msglen, &icmplen);
-  if (!icmp)
-    return NULL;
+  pkt = icmp6_build_pkt(src, dst, tc, flowlabel, hoplimit, type, code, msg,
+      msglen, &pktlen, badsum);
+  if (!pkt)
+    return -1;
+
+  memset(&_dst, 0, sizeof(_dst));
+  dst_in = (struct sockaddr_in6*)&_dst;
+  dst_in->sin6_family = AF_INET6;
+  dst_in->sin6_addr = *dst;
   
-  icmp->check = 0;
-  icmp->check = ip6_pseudocheck(src, dst, IPPROTO_ICMPV6, icmplen, icmp);
-  if (badsum)
-    icmp->check--;
+  res = ip_send(eth, fd, &_dst, 0, pkt, pktlen);
 
-  pkt = ip6_build(src, dst, tc, flowlabel, IPPROTO_ICMPV6,
-      hoplimit, (char*)icmp, icmplen, pktlen);
-
-  free(icmp);
-  return pkt;
+  free(pkt);
+  return res;
 }

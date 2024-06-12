@@ -141,14 +141,17 @@ struct icmp4_hdr
   /* message */
 };
 
+struct icmp6_hdr
+{
+  u8  type;
+  u8  code;
+  u16 check;
+  /* message */
+};
+
 struct icmp4_msg_echo {
   u16 id, seq;
   /* data */
-};
-
-struct icmp4_msg_quote {
-  u32 zero;
-  /* ip */
 };
 
 struct icmp4_msg_redir {
@@ -166,20 +169,19 @@ struct icmp4_msg_mask {
   u32 mask;
 };
 
+struct icmp4_msg_tstamp {
+  u16 id, seq;
+  u32 orig, rx, tx;
+};
+
 struct icmp4_msg_rtr_data {
   u32 zero, pref;
 };
-
 struct icmp4_msg_rtradvert {
   u8  numaddrs;
   u8  wpa;
   u16 lifetime;
   struct icmp4_msg_rtr_data adv[ICMP4_MAX_ROUTER_ADVERT_ENTRIES];
-};
-
-struct icmp4_msg_tstamp {
-  u16 id, seq;
-  u32 orig, rx, tx;
 };
 
 struct icmp4_msg_traceroute {
@@ -199,69 +201,31 @@ struct icmp4_msg_dnsreply {
   u8 names[ICMP4_PAYLOAD_MAXLEN-8];
 };
 
-union icmp4_msg
-{
-  struct icmp4_msg_echo       echo;
-  struct icmp4_msg_quote      unreach;
-  struct icmp4_msg_needfrag   needfrag;
-  struct icmp4_msg_quote      srcquench;
-  struct icmp4_msg_sec_fails  sec_failures;
-  struct icmp4_msg_quote      redirect;
-  u32                         rtrsolicit;
-  struct icmp4_msg_rtradvert  rtradvert;
-  struct icmp4_msg_quote      timexceed;
-  struct icmp4_msg_quote      paramprob;
-  struct icmp4_msg_tstamp     tstamp;
-  struct icmp4_msg_echo       info;
-  struct icmp4_msg_mask       mask;
-  struct icmp4_msg_traceroute traceroute;
-  struct icmp4_msg_echo       dns;
-  struct icmp4_msg_dnsreply   dnsreply;
-};
-
-struct icmp4_hdr_
-{
-  u8  type;
-  u8  code;
-  u16 check;
+struct icmp6_msg_echo {
   u16 id;
   u16 seq;
-  u8  data[ICMP4_PAYLOAD_MAXLEN];
+  /* data */
 };
 
-struct icmp6_hdr
-{
-  u8  type;
-  u8  code;
-  u16 check;
-  u8  data[ICMP6_MAX_MESSAGE];
+struct icmp6_msg_nd {
+  u32     flags;
+  ip6_t   target;
+  u8      opttype;
+  u8      optlen;
+  mac_t   mac;
 };
 
-struct icmp6_msg_echo
-{
-  u16 icmpv6_id;
-  u16 icmpv6_seq;
-  u8  icmpv6_data[];
-};
-
-struct icmp6_msg_nd
-{
-  uint32_t   icmpv6_flags;
-  ip6_t      icmpv6_target;
-  uint8_t    icmpv6_option_type;
-  uint8_t    icmpv6_option_length;
-  mac_t      icmpv6_mac;
-};
-
-union icmp6_msg
-{
-  struct icmp6_msg_echo echo;
-  struct icmp6_msg_nd nd;
+/* tmp */
+struct icmp4_hdr_ {
+  u8 type, code;
+  u16 check, seq, id;
+  u8 data[ICMP4_PAYLOAD_MAXLEN];
 };
 
 __BEGIN_DECLS
 
 u8 *icmp4_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen, bool badsum);
+u8 *icmp6_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen);
 
 u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, u16 *msglen);
 u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, u16 datalen, u16 *msglen);
@@ -278,20 +242,24 @@ u8 *icmp4_msg_redir_build(u32 gateway, u8 *data, u16 datalen, u16 *msglen);
   icmp4_msg_redir_build((unsed), (data), (datalen), (msglen))
 #define icmp4_msg_paramprob_build(ptr_unsed, data, datalen, msglen)	\
   icmp4_msg_redir_build((ptr_unsed), (data), (datalen), (msglen))
+u8 *icmp6_msg_echo_build(u16 seq, u16 id, const char *data, u16 datalen, u16 *msglen);
 
 u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
                     bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
 		    u16 msglen, u32 *pktlen, bool badsum);
 
+u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
+                    u8 tc, u32 flowlabel, u8 hoplimit, u8 type, u8 code,
+		    u8 *msg, u16 msglen, u32 *pktlen, bool badsum);
+
 int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                    int ttl, u16 ipid, u8 tos, bool df, u8 *ipopt, int ipoptlen,
 		   u8 type, u8 code, u8 *msg, u16 msglen, int mtu, bool badsum);
 
-u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                    u8 tc, u32 flowlabel, u8 hoplimit, u16 seq, u16 id, u8 type,
-                    u8 code, const char *data, u16 datalen, u32 *pktlen,
-                    bool badsum);
-
+int icmp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
+		   const struct in6_addr *dst, u8 tc, u32 flowlabel,
+		   u8 hoplimit, u8 type, u8 code, u8 *msg, u16 msglen,
+		   bool badsum);
 
 __END_DECLS
 
