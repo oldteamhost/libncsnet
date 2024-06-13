@@ -51,11 +51,11 @@
 #define URL_QUERY                6
 #define URL_FRAGMENT             7
 
-/* file:///path<..,> */
+/* scheme:/// */
 #define URL_INTER_TYPE_SCHEMEPATHSLASH 0
-/* scheme://<etc. ...,> */
+/* scheme:// */
 #define URL_INTER_TYPE_DEFAULT         1
-/* scheme:<etc. ...,> */
+/* scheme: */
 #define URL_INTER_TYPE_SCHEMEPATH      2
 
 struct url_query     { char *query; char *value; struct url_query *nxt; };
@@ -74,29 +74,38 @@ typedef struct url_addr
 
 __BEGIN_DECLS
 
-void    url_field(url_t *url, const char *txt, int field);
-#define url_query(url, query)        url_field((url), (query), URL_QUERY)
-#define url_path(url, path)          url_field((url), (path), URL_PATH)
-#define url_host(url, host)          url_field((url), (host), URL_AUTHORITY_HOST)
-#define url_port(url, port)          url_field((url), (port), URL_AUTHORITY_PORT)
-#define url_userinfo(url, userinfo)  url_field((url), (userinfo), URL_AUTHORITY_USERINFO)
-#define url_fragment(url, fragment)  url_field((url), (fragment), URL_FRAGMENT)
-#define url_scheme(url, scheme)      url_field((url), (scheme), URL_SCHEME)
-void    url_free(url_t *url);
-url_t  *url_from_str(const char *url);
-void    url_to_str(url_t *url, char *buf, size_t buflen);
-size_t  url_len(url_t *url);
-void    url_print(url_t *url);
-url_t  *url_build(const char *scheme, const char *paths,
-		 const char *host, const char *userinfo,
-		  const char *port, const char *querys, int type);
-
-/* dev */
 url_t * ___url_init(void);
 void    ___url_add_path(url_t *url, char *path);
 void    ___url_add_query(url_t *url, char *query);
 void    ___url_free_path(struct url_path *path);
 void    ___url_free_query(struct url_query *query);
+
+void    url_free(url_t *url);
+url_t  *url_from_str(const char *url);
+void    url_to_str(url_t *url, char *buf, size_t buflen);
+size_t  url_len(url_t *url);
+void    url_print(url_t *url);
+void    url_field(url_t *url, const char *txt, int field);
+
+url_t  *url_build(const char *scheme, const char *paths,
+		  const char *host, const char *userinfo,
+		  const char *port, const char *querys,
+		  int type);
+
+#define url_scheme(url, scheme)			\
+  url_field((url), (scheme), URL_SCHEME)
+#define url_query(url, query)			\
+  url_field((url), (query), URL_QUERY)
+#define url_path(url, path)			\
+  url_field((url), (path), URL_PATH)
+#define url_host(url, host)			\
+  url_field((url), (host), URL_AUTHORITY_HOST)
+#define url_port(url, port)			\
+  url_field((url), (port), URL_AUTHORITY_PORT)
+#define url_userinfo(url, userinfo)			\
+  url_field((url), (userinfo), URL_AUTHORITY_USERINFO)
+#define url_fragment(url, fragment)		\
+  url_field((url), (fragment), URL_FRAGMENT)
 
 __END_DECLS
 

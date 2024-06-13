@@ -1,0 +1,76 @@
+.\" Copyright (c) 2024, oldteam. All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright notice, this
+.\"    list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright notice,
+.\"    this list of conditions and the following disclaimer in the documentation
+.\"    and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+.\" ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH URL_FIELD 3 "13 June 2024"
+.SH NAME
+url_field \- change the specified field of the url_t* object
+.SH SYNOPSIS
+.nf
+.ft B
+#include <ncsnet/url.h>
+void    url_field(url_t *url, const char *txt, int field);
+#define url_scheme(url, scheme)                 \\
+  url_field((url), (scheme), URL_SCHEME)
+#define url_query(url, query)                   \\
+  url_field((url), (query), URL_QUERY)
+#define url_path(url, path)                     \\
+  url_field((url), (path), URL_PATH)
+#define url_host(url, host)                     \\
+  url_field((url), (host), URL_AUTHORITY_HOST)
+#define url_port(url, port)                     \\
+  url_field((url), (port), URL_AUTHORITY_PORT)
+#define url_userinfo(url, userinfo)                     \\
+  url_field((url), (userinfo), URL_AUTHORITY_USERINFO)
+#define url_fragment(url, fragment)             \\
+  url_field((url), (fragment), URL_FRAGMENT)
+.ft
+.fi
+.SH DESCRIPTION
+.BR url_field ()
+changes the specified
+.B field
+of the
+.B url_t*
+object to
+.BR txt ,
+the numbers used as the field are the same as the following macros,
+.IP
+.ft B
+.nf
+#define URL_SCHEME               1
+#define URL_PATH                 2
+#define URL_AUTHORITY_HOST       3
+#define URL_AUTHORITY_PORT       4
+#define URL_AUTHORITY_USERINFO   5
+#define URL_QUERY                6
+#define URL_FRAGMENT             7
+.ft
+.fi
+.PP
+.B NOTE:
+also, if the specified field is not filled in, it will create it instead of replacing it.
+.PP
+.BR url_<field> ()
+all other macro functions are a simplified version of the previous function,
+these simply specify the
+.B field
+at once

@@ -35,7 +35,6 @@ int ip4_send_eth(struct ethtmp *eth, const u8 *pkt, u32 pktlen)
       (char*)pkt, pktlen, &packetlen);
   if (!ethframe)
     return -1;
-
   if (!eth->ethsd)
     ethsd = eth_open_cached(eth->devname);
   else

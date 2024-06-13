@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include "../ncsnet/icmp.h"
+#include "../ncsnet/eth.h"
+#include "../ncsnet/mac.h"
 
 int main(void)
 {
   u16 msglen = 0;
   u8 *msg;
   int fd;
-
+  
   fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
   
   msg = icmp4_msg_echo_build(random_u16(), 10, "kek", 3, &msglen);
@@ -40,6 +42,7 @@ int main(void)
 		 msglen, 0, false);
   
   free(msg);
-  close(fd);  
+  close(fd);
+  
   return 0;
 }

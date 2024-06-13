@@ -1,0 +1,88 @@
+.\" Copyright (c) 2024, oldteam. All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright notice, this
+.\"    list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright notice,
+.\"    this list of conditions and the following disclaimer in the documentation
+.\"    and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+.\" ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH URL.H 3 "13 June 2024"
+.SH NAME
+url.h \- contains tools for working with URL specification addresses
+.SH SYNOPSIS
+.nf
+.ft B
+#include <ncsnet/url.h>
+.ft
+.fi
+.SH DESCRIPTION
+The
+.I <url.h>
+provides a convenient interface for working with addresses of the
+.B URL
+specification,
+which, by the way, is approved in the following documents, (
+.B RFC 3986, RFC 4248, RFC 4266, RFC 6270, RFC 1738
+). The interface in
+.B url.h
+has almost full support
+for them, except for
+.B URLs
+of the
+.B PROSPERO
+type, even so, you can hardly
+find
+.B PROSPERO URLs
+anywhere but
+.BR RFCs .
+.PP
+The
+.B url_t
+structure is used to store addresses, and it is with objects of this structure that all functions of this header work; it looks like this,
+.PP
+.nf
+.ft B
+struct url_query     { char *query; char *value; struct url_query *nxt; };
+struct url_path      { char *path; struct url_path *nxt; };
+struct url_authority { char *host; char *userinfo; char *port; };
+
+typedef struct url_addr
+{
+  char*                 scheme;
+  struct url_authority *authority;
+  struct url_path      *path;
+  struct url_query     *query;
+  char                 *fragment;
+  int                   type;
+} url_t;
+.ft
+.fi
+.PP
+.B NOTE:
+to familiarize yourself with the fields you can read the
+.B RFC
+versions of which were mentioned above, especially
+.BR 1738 .
+.SH SEE ALSO
+.BR url_build (3)
+.BR url_free (3)
+.BR url_print (3)
+.BR url_field (3)
+.BR url_from_str (3)
+.BR url_len (3)
+.BR url_to_str (3)
+

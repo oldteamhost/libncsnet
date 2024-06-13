@@ -45,6 +45,7 @@ int main(int argc, char **argv)
   /*
   u = url_build("ftp", "/", "localhost", "admin:222",
 		"21", NULL, URL_INTER_TYPE_DEFAULT);
+  url_path(u, "kek/sdfas/sa/");
   url_print(u);
   url_free(u);
   return 0;
