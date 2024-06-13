@@ -19,8 +19,11 @@ addr:       IP4, IP6, MAC, CIDR, RANGE, URL;
 random:     CMWC, MT19937, MSM;
 
 The library's work with transport, network, and data link prototocols can be
-quite complex. But there are always examples in [tests/], and [RFCs];
-documentation of some functions and clauses can be found in [docs/]
+quite complex. But there are always examples in [tests/], and [RFCs].
+
+Documentation of some functions and clauses can be found in [docs/], to view
+it you need to call [man ./<file.3>] on the required documentation file, for
+example, [man ./url.h];
 
 To compile, run the following commands in the library's source directory:
 
