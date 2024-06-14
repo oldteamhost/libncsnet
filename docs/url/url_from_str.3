@@ -25,16 +25,14 @@
 url_from_str \- get url_t from string
 .SH SYNOPSIS
 .nf
-.ft B
-#include <ncsnet/url.h>
-url_t  *url_from_str(const char *url);
-.ft
+.B #include <ncsnet/url.h>
+\fBurl_t  *url_from_str(const char *\fP\fIurl\fP\fB);\fP
 .fi
 .SH DESCRIPTION
 .BR url_from_str ()
 parse
 .B const char *
-URL address into
+\fIURL\fP address into
 .B url_t*
 representation;
 if successful, returns the

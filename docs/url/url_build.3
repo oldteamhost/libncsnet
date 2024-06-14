@@ -25,14 +25,12 @@
 url_build \- creates an url_t* object with the specified fields
 .SH SYNOPSIS
 .nf
-.ft B
-#include <ncsnet/url.h>
-url_t  *url_build(const char *scheme, const char *paths,
-                  const char *host, const char *userinfo,
-                  const char *port, const char *querys,
-                  int type);
+.B #include <ncsnet/url.h>
+\fBurl_t  *url_build(const char *\fP\fIscheme\fP\fB, const char *\fP\fIpaths\fP\fB,
+                  const char *\fP\fIhost\fP\fB, const char *\fP\fIuserinfo\fP\fB,
+                  const char *\fP\fIport\fP\fB, const char *\fP\fIquerys\fP\fB,
+                  int \fP\fItype\fP);
 
-.ft
 .fi
 .SH DESCRIPTION
 .BR url_build ()

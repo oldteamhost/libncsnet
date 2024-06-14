@@ -25,16 +25,14 @@
 url_to_str \- gets the URL as a string from url_t*
 .SH SYNOPSIS
 .nf
-.ft B
-#include <ncsnet/url.h>
-void    url_to_str(url_t *url, char *buf, size_t buflen);
-.ft
+.B #include <ncsnet/url.h>
+\fBvoid    url_to_str(url_t *\fP\fIurl\fP\fB, char *\fP\fIbuf\fP\fB, size_t \fP\fIbuflen\fP\fB);\fP
 .fi
 .SH DESCRIPTION
 .BR url_to_str ()
 assembles the fields of the
 .B url_t*
-object into a string representation of the URL address, which it writes to the
+object into a string representation of the \fIURL\fP address, which it writes to the
 .B buf
 buffer with size
 .BR buflen .

@@ -25,16 +25,14 @@
 url_len \- get the length (size) of URL address inside url_t*
 .SH SYNOPSIS
 .nf
-.ft B
-#include <ncsnet/url.h>
-size_t  url_len(url_t *url);
-.ft
+.B #include <ncsnet/url.h>
+\fBsize_t  url_len(url_t\fP \fI*url\fP\fB);\fP
 .fi
 .SH DESCRIPTION
 .BR url_len ()
 counts the length
 .B (size)
-of the URL address inside the
+of the \fIURL\fP address inside the
 .B url_t*
 object; in case of success returns the
 .B length,

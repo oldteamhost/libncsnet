@@ -25,28 +25,26 @@
 url_print \- outputs information about the object url_t*
 .SH SYNOPSIS
 .nf
-.ft B
-#include <ncsnet/url.h>
-void    url_print(url_t *url);
-.ft
+.B #include <ncsnet/url.h>
+\fBvoid    url_print(url_t *\fP\fIurl\fP\fB);\fP
 .fi
 .SH DESCRIPTION
 .BR url_print ()
 writes all information about the
 .B url_t*
 object to the stdout stream, among this information, fields,
-length, and the full URL;
+length, and the full \fIURL\fP;
 example of its
 .BR output :
 .IP
 .nf
 (42 len) checksum = http://google.com/kuda/tuda?skdjf=dfdf#mtu
- \_scheme = http
-    \_host = google.com
-    \_path = kuda
-        \_path = tuda
-    \_query = skdjf, val = dfdf
-    \_fragment = mtu
+ \\_scheme = http
+    \\_host = google.com
+    \\_path = kuda
+        \\_path = tuda
+    \\_query = skdjf, val = dfdf
+    \\_fragment = mtu
 .fi
 .PP
 .B NOTE:

@@ -25,24 +25,17 @@
 url_field \- change the specified field of the url_t* object
 .SH SYNOPSIS
 .nf
-.ft B
-#include <ncsnet/url.h>
-void    url_field(url_t *url, const char *txt, int field);
-#define url_scheme(url, scheme)                 \\
-  url_field((url), (scheme), URL_SCHEME)
-#define url_query(url, query)                   \\
-  url_field((url), (query), URL_QUERY)
-#define url_path(url, path)                     \\
-  url_field((url), (path), URL_PATH)
-#define url_host(url, host)                     \\
-  url_field((url), (host), URL_AUTHORITY_HOST)
-#define url_port(url, port)                     \\
-  url_field((url), (port), URL_AUTHORITY_PORT)
-#define url_userinfo(url, userinfo)                     \\
-  url_field((url), (userinfo), URL_AUTHORITY_USERINFO)
-#define url_fragment(url, fragment)             \\
-  url_field((url), (fragment), URL_FRAGMENT)
-.ft
+.B #include <ncsnet/url.h>
+.PP
+\fBvoid    url_field(url_t *\fP\fIurl\fP\fB, const char *\fP\fItxt\fP\fB, int \fP\fIfield\fP\fB);\fP
+.PP
+\fB#define url_scheme(\fP\fIurl\fP\fB, \fP\fIscheme\fP\fB)\fP \fBurl_field((url), (scheme), URL_SCHEME)\fP
+\fB#define url_query(\fP\fIurl\fP\fB, \fP\fIquery\fP\fB)\fP \fBurl_field((url), (query), URL_QUERY)\fP
+\fB#define url_path(\fP\fIurl\fP\fB, \fP\fIpath\fP\fB)\fP \fBurl_field((url), (path), URL_PATH)\fP
+\fB#define url_host(\fP\fIurl\fP\fB, \fP\fIhost\fP\fB)\fP \fBurl_field((url), (host), URL_AUTHORITY_HOST)\fP
+\fB#define url_port(\fP\fIurl\fP\fB, \fP\fIport\fP\fB)\fP \fBurl_field((url), (port), URL_AUTHORITY_PORT)\fP
+\fB#define url_userinfo(\fP\fIurl\fP\fB, \fP\fIuserinfo\fP\fB)\fP \fBurl_field((url), (userinfo), URL_AUTHORITY_USERINFO)\fP
+\fB#define url_fragment(\fP\fIurl\fP\fB, \fP\fIfragment\fP\fB)\fP \fBurl_field((url), (fragment), URL_FRAGMENT)\fP
 .fi
 .SH DESCRIPTION
 .BR url_field ()
