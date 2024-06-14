@@ -28,6 +28,7 @@ u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
               u32 flowlabel, u8 nexthdr, int hoplimit, const char *data,
               u16 datalen, u32 *pktlen)
 {
+  struct ip6_hdr *ip6;
   u8 *pkt;
   
   *pktlen= sizeof(struct ip6_hdr) + datalen;
@@ -35,9 +36,20 @@ u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
   if (!pkt)
     return NULL;
 
-  ip6_hdr(pkt, tc, flowlabel, datalen, nexthdr,
-      hoplimit, *src, *dst);
-  memcpy(pkt + sizeof(struct ip6_hdr), data, datalen);
+  ip6 = (struct ip6_hdr*)pkt;
+  ip6->IP6_FLOW   = htonl(((u32)(tc) << 20)
+	  | (0x000fffff & (flowlabel)));
+  ip6->IP6_VFC    = (IP6_VERSION | ((flowlabel) >> 4));
+  ip6->IP6_PKTLEN = htons((datalen)); /* ??? */
+  ip6->IP6_NXT    = nexthdr;
+  ip6->IP6_HLIM   = hoplimit;
+  
+  memmove(&ip6->ip6_src, &(src), IP6_ADDR_LEN);
+  memmove(&ip6->ip6_dst, &(dst), IP6_ADDR_LEN);
+
+  if (data && datalen)
+    memcpy(pkt + sizeof(struct ip6_hdr),
+	   data, datalen);
 
   return pkt;
 }

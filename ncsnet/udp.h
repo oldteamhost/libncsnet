@@ -70,7 +70,6 @@ int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
 		  u16 srcport, u16 dstport, const char *data, u16 datalen,
 		  bool badsum);
 
-
 __END_DECLS
 
 #endif

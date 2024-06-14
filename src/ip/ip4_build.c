@@ -29,22 +29,35 @@ u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos,
 	      u16 datalen, u32 *pktlen)
 {
   struct ip4_hdr *ip;
-  int packetlen = 0;
   u8 *pkt;
 
-  packetlen = sizeof(struct ip4_hdr) + optlen + datalen;
-  pkt = (u8*)malloc(packetlen);
+  assert(optlen % 4 == 0);
+  *pktlen = sizeof(struct ip4_hdr) + optlen + datalen;
+  pkt = (u8*)malloc(*pktlen);
   if (!pkt)
     return NULL;
-  ip = (struct ip4_hdr *)pkt;
-  assert(optlen % 4 == 0);
 
-  ip4_hdr(ip, packetlen, opt, optlen, tos, id,
-      df ? IP4_DF : 0, ttl, proto, src, dst);
+  ip = (struct ip4_hdr*)pkt;
+  ip->version = 4;
+  ip->ihl     = 5 + (optlen / 4);
+  ip->tos     = tos;
+  ip->totlen  = htons(*pktlen);
+  ip->id      = htons(id);
+  ip->off     = htons((df ? IP4_DF : 0));
+  ip->ttl     = ttl;
+  ip->proto   = proto;
+  ip->src     = src;
+  ip->dst     = dst;
+  if (opt && optlen)
+    memcpy((u8*)ip + sizeof(struct ip4_hdr),
+	   opt, optlen);
+  ip->check   = 0;
+  ip->check   = ip_check_add((u16*)ip,
+            sizeof(struct ip4_hdr) + optlen, 0);
 
   if (data && datalen)
-    memcpy((u8*) ip + sizeof(struct ip4_hdr) + optlen, data, datalen);
+    memcpy((u8*)ip + sizeof(struct ip4_hdr) + optlen,
+	   data, datalen);
 
-  *pktlen = packetlen;
   return pkt;
 }
