@@ -115,16 +115,6 @@
 
 struct arp_hdr
 {
-  u16 hdr; /* fmt hardware addr */
-  u16 pro; /* fmt protocol addr */
-  u8  hln; /* len hardware addr */
-  u8  pln; /* len protocol addr */
-  u16 op;  /* operation */
-  u8  data[20];
-};
-
-struct _arp_hdr
-{
   u16 hdr;
   u16 pro;
   u8  hln;
@@ -132,24 +122,22 @@ struct _arp_hdr
   u16 op; 
 };
 
-struct arp_ethip4
-{
-  u8 sha[MAC_ADDR_LEN];
-  u8 spa[IP4_ADDR_LEN];
-  u8 tha[MAC_ADDR_LEN];
-  u8 tpa[IP4_ADDR_LEN];
+/* not use, use arp_ethip4_build */
+struct arp_ethip4 {
+  u8 data[ARP_ETHIP_LEN];
 };
 
 __BEGIN_DECLS
 
-u8 *arp4_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op, mac_t sha,
-               ip4_t spa, mac_t tha, ip4_t tpa,
-               u32 *pktlen);
-u8 *arp4_build_pkt(mac_t ethsrc, mac_t ethdst, u16 hdr, u16 pro,
-                   u8 hln, u8 pln, u16 op, mac_t sha, ip4_t spa,
-                   mac_t tha, ip4_t tpa, u32 *pktlen);
-int arp4req_qsend_pkt(eth_t *eth, mac_t ethsrc, ip4_t ipsrc,
-                      ip4_t ipdst);
+u8 *arp_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op,
+	      const char *data, u32 datalen, u32 *pktlen);
+
+u8 *arp_ethip4_build(mac_t sha, ip4_t spa, mac_t tha,
+		    ip4_t tpa, u32 *pktlen);
+
+u8 *arp_ethip4_build_pkt(mac_t src, mac_t dst, u16 op,
+			mac_t sha, ip4_t spa, mac_t tha,
+			ip4_t tpa, u32 *pktlen);
 
 __END_DECLS
 

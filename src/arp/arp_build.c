@@ -24,16 +24,14 @@
 
 #include <ncsnet/arp.h>
 
-u8 *arp4_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op, mac_t sha,
-               ip4_t spa, mac_t tha, ip4_t tpa,
-               u32 *pktlen)
+u8 *arp_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op,
+	      const char *data, u32 datalen, u32 *pktlen)
 {
   struct arp_hdr *arp;
-  int packetlen;
   u8* pkt;
 
-  packetlen = sizeof(struct arp_hdr);
-  pkt = (u8*)malloc(packetlen);
+  *pktlen = sizeof(struct arp_hdr) + datalen;
+  pkt = (u8*)malloc(*pktlen);
   if (!pkt)
     return NULL;
   arp = (struct arp_hdr*)pkt;
@@ -44,11 +42,8 @@ u8 *arp4_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op, mac_t sha,
   arp->pln = pln;
   arp->op  = htons(op);
 
-  memcpy(arp->data,     sha.octet, MAC_ADDR_LEN);
-  memcpy(arp->data+6,   spa.octet,  IP4_ADDR_LEN);
-  memcpy(arp->data+10,  tha.octet, MAC_ADDR_LEN);
-  memcpy(arp->data+16,  tpa.octet,  IP4_ADDR_LEN);
-
-  *pktlen = packetlen;
+  if (data && datalen)
+    memcpy((u8*)arp + sizeof(struct arp_hdr), data, datalen);
+  
   return pkt;
 }

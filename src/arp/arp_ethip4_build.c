@@ -24,26 +24,20 @@
 
 #include <ncsnet/arp.h>
 
-int arp4req_qsend_pkt(eth_t *eth, mac_t ethsrc, ip4_t ipsrc,
-                      ip4_t ipdst)
+u8 *arp_ethip4_build(mac_t sha, ip4_t spa, mac_t tha,
+		    ip4_t tpa, u32 *pktlen)
 {
-  mac_t macdst, macsrc;
-  u32 pktlen;
   u8 *pkt;
-  int res;
-
-  mac_aton(&macdst, MAC_ADDR_BROADCAST);
-  mac_aton(&macsrc, "\x00\x00\x00\x00\x00\x00");
   
-  pkt = arp4_build_pkt(ethsrc, macdst,
-      ARP_HDR_ETH, ARP_PRO_IP, MAC_ADDR_LEN, IP4_ADDR_LEN,
-      ARP_OP_REQUEST, ethsrc, ipsrc, macsrc,
-      ipdst, &pktlen);
+  *pktlen = ARP_ETHIP_LEN;
+  pkt = (u8*)malloc(*pktlen);
   if (!pkt)
-    return -1;
+    return NULL;
 
-  res = eth_send(eth, pkt, pktlen);
+  memcpy(pkt,         sha.octet, MAC_ADDR_LEN);
+  memcpy(pkt+6,       spa.octet, IP4_ADDR_LEN);
+  memcpy(pkt+(4+6),   tha.octet, MAC_ADDR_LEN);
+  memcpy(pkt+(4+6+6), tpa.octet, IP4_ADDR_LEN);
 
-  free(pkt);
-  return res;
+  return pkt;
 }
