@@ -43,7 +43,8 @@ u8 *arp_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op,
   arp->op  = htons(op);
 
   if (data && datalen)
-    memcpy((u8*)arp + sizeof(struct arp_hdr), data, datalen);
+    memcpy((u8*)arp + sizeof(struct arp_hdr),
+	    data, datalen);
   
   return pkt;
 }
