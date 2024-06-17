@@ -1,0 +1,14 @@
+.TH MAC_ATON 3 "16 June 2024"
+.SH NAME
+mac_aton () \- converts MAC address from const char * to mac_t *
+.SH SYNOPSIS
+.nf
+.B #include <ncsnet/mac.h>
+\fBint mac_aton(mac_t *\fIaddr\fB, const char *\fItxt\fB);\fP
+.fi
+.SH DESCRIPTION
+.BR mac_aton ()
+converts the \fIMAC\fP specification address from a string
+representation of \fBconst char *\fP, to an object of type \fBmac_t\fP.
+.B NOTE:
+In case of success returns 0, in case of error -1

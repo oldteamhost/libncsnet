@@ -251,7 +251,7 @@ struct ip4_hdr
   u16 id;        /* identificator */
   u16 off;       /* fragment offset */
   u8  ttl;       /* time to live */
-  u8  proto;     /* see addr.h */
+  u8  proto;
   u16 check;     /* 16 bit checksum */
   u32 src;       /* source ip address */
   u32 dst;       /* dest ip address */
@@ -304,12 +304,14 @@ __BEGIN_DECLS
 u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
               const u8 *opt, int optlen, const char *data, u16 datalen,
               u32 *pktlen);
+
 char *ip4_util_strsrc(void);
 int ip4_util_strdst(const char* dns, char* ipbuf, size_t buflen);
 
 u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
               u32 flowlabel, u8 nexthdr, int hoplimit, const char *data,
               u16 datalen, u32 *pktlen);
+
 char *ip6_util_strsrc(void);
 int ip6_util_strdst(const char *dns, char *ipbuf, size_t buflen);
 
