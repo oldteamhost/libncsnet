@@ -100,6 +100,7 @@ int   parse_ipopts(const char *txt, u8 *data, int datalen,
 		   int* firsthopoff, int* lasthopoff, char *errstr,
 		   size_t errstrlen);
 char *mkstr(const char *start, const char *end);
+size_t del_spaces(char *str);
 void  parse_tcpopts(u8 *optp, int len, char *result, int bufsize);
 u8   *hexbin(char *str, size_t *outlen);
 int   find_word(const char* buffer, const char* word);

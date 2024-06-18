@@ -84,7 +84,6 @@ int descriptor_general(char *buf, size_t buflen, int fd, const char *openq,
       return -1;
   if (!____add(fd, buf, buflen, key))
     return -1;
-
   if (fmt && *fmt != '\0') {
     if (!____add(fd, buf, buflen, " "))
       return -1;
