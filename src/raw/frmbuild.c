@@ -22,8 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#include <ncsnet/raw.h>
-#include "../../ncsnet/raw.h"
+#include <ncsnet/raw.h>
 
 u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...)
 {
