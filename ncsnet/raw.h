@@ -55,18 +55,34 @@ __BEGIN_DECLS
  * 
  * [[<datatype>(<value>)], [<datatype>(<value>)], etc. (...,)]
  */
-u8 *build_frame(size_t *frmlen, char *errbuf, const char *fmt, ...);
+u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...);
+
+/*
+ * Adds the specified data to an existing internet frame and
+ * returns a new one. The "fmtlen" is the current length of
+ * the internet frame, which will then be replaced by a new one,
+ * you can use the same variable that stores the old frame.
+ */
+u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ...);
+
+/*
+ * Adds one internet frame to another, the length of the added
+ * frame is "frmlen", the new length will be written to it after
+ * the addition.
+ */
+u8 *frmbuild_addfrm(u8 *frame, size_t *frmlen, u8 *oldframe, size_t oldfrmlen, char *errbuf);
 
 typedef struct __fmtopt {
-# define TYPE_U8  0
-# define TYPE_U16 1
-# define TYPE_U32 2
-# define TYPE_U64 3
-# define TYPE_STR 4    
+# define TYPE_U8   0
+# define TYPE_U16  1
+# define TYPE_U32  2
+# define TYPE_U64  3
+# define TYPE_STR  4
   int type;
   const char *val;
 } fmtopt;
 
+u8    *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap);
 fmtopt __fmtoptparse(const char *txt, char *errbuf);
 int    __fmtopttype(const char *type);
 
@@ -76,7 +92,7 @@ int    __fmtopttype(const char *type);
  * error returns -1 and writes the error to errbuf, in case of success
  * the number is greater than 0. Uses the write system call.
  */
-ssize_t write_frame(int fd, char *errbuf, u8 *frame, size_t frmlen);
+ssize_t frmwrite(int fd, char *errbuf, u8 *frame, size_t frmlen);
 
 /*
  * Reads an internet frame from the file descriptor specified in fd,
@@ -84,7 +100,7 @@ ssize_t write_frame(int fd, char *errbuf, u8 *frame, size_t frmlen);
  * error returns -1 and writes it to errbuf, in case of success returns
  * purely greater than 0.Uses the read system call.
  */
-ssize_t read_frame(int fd, char *errbuf, u8 *buf, size_t buflen);
+ssize_t frmread(int fd, char *errbuf, u8 *buf, size_t buflen);
 
 __END_DECLS
 

@@ -24,31 +24,31 @@
 
 #include <ncsnet/raw.h>
 
-ssize_t write_frame(int fd, char *errbuf, u8 *frame, size_t frmlen)
+ssize_t frmread(int fd, char *errbuf, u8 *buf, size_t buflen)
 {
   ssize_t ret;
   
   if (fd == -1) {
     snprintf(errbuf, ERRBUF_MAXLEN,
-      "File descriptor error \"write_frame\"");
+      "File descriptor error \"read_frame\"");
     return -1;
   }
-  if (!frame) {
+  if (!buf) {
     snprintf(errbuf, ERRBUF_MAXLEN,
-      "Frame error, it is NULL \"write_frame\"");
+      "Buffer error, it is NULL \"read_frame\"");
     return -1;
   }
-  if (frmlen <= 0) {
+  if (buflen <= 0) {
      snprintf(errbuf, ERRBUF_MAXLEN,
-       "Frame len error, it is \"%ld\" in \"write_frame\"",
-       frmlen);
+       "Buffer len error, it is \"%ld\" in \"read_frame\"",
+       buflen);
     return -1;
   }
   
-  ret = write(fd, frame, frmlen);
+  ret = read(fd, buf, buflen);
   if (ret < 0) {
     snprintf(errbuf, ERRBUF_MAXLEN,
-      "Write error, errno \"%s\" in \"write_frame\"",
+      "Read error, errno \"%s\" in \"read_frame\"",
       strerror(errno));
   }
 

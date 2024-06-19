@@ -6,13 +6,17 @@ int main(void)
 {
   char errbuf[ERRBUF_MAXLEN];
   size_t pktlen = 0;
-  u8 *res;
+  u8 *res, *res1;
   u8 *pkt;
   u32 pktlen_;
+  size_t res1len;
 
-  res = build_frame(&pktlen, errbuf,
-		    "u16(%hu), u16(%hu), str(kek)",
-		    htons(random_u16()), htons(1));
+  /* ECHO MESSAGE */
+  res = frmbuild(&pktlen, errbuf, "u16(%hu)", htons(random_u16())); /* add id */
+  res = frmbuild_add(&pktlen, res, errbuf, "u16(%hu)", htons(1));   /* add seq */
+  res1 = frmbuild(&res1len, errbuf, "str(kek)");
+  res = frmbuild_addfrm(res1, &res1len, res, pktlen, errbuf);
+  pktlen = res1len;
   if (!res) {
     printf("errbuf = %s\n", errbuf);
     return -1;
@@ -32,7 +36,6 @@ int main(void)
 
   free(pkt);    
   close(fd);
-  
   free(res);
   
   return 0;

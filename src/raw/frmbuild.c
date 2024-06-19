@@ -22,14 +22,70 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/raw.h>
+//#include <ncsnet/raw.h>
+#include "../../ncsnet/raw.h"
 
-u8 *build_frame(size_t *frmlen, char *errbuf, const char *fmt, ...)
+u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...)
+{
+  va_list ap;
+  u8 *ret;
+
+  va_start(ap, fmt);
+  ret = __frmbuild_generic(frmlen, errbuf, fmt, ap);
+  va_end(ap);
+
+  return ret;
+}
+
+u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ...)
+{
+  u8 *newframe, *res;
+  size_t newfrmlen;
+  va_list ap;
+
+  va_start(ap, fmt);
+  newframe = __frmbuild_generic(&newfrmlen, errbuf, fmt, ap);
+  va_end(ap);
+  if (!newframe)
+    return NULL;
+
+  res = (u8*)malloc(*frmlen + newfrmlen);
+  if (!res) {
+    snprintf(errbuf, ERRBUF_MAXLEN, "Allocation failed");
+    free(newframe);
+    return NULL;
+  }
+  
+  memcpy(res, oldframe, *frmlen);
+  memcpy(res + *frmlen, newframe, newfrmlen);
+  *frmlen += newfrmlen;
+  
+  free(newframe);
+  return res;
+}
+
+u8 *frmbuild_addfrm(u8 *frame, size_t *frmlen, u8 *oldframe, size_t oldfrmlen, char *errbuf)
+{
+  u8 *res;
+  
+  res = (u8*)malloc(*frmlen + oldfrmlen);
+  if (!res) {
+    snprintf(errbuf, ERRBUF_MAXLEN, "Allocation failed");
+    return NULL;
+  }
+  
+  memcpy(res, oldframe, *frmlen);
+  memcpy(res + *frmlen, frame, oldfrmlen);
+  *frmlen += oldfrmlen;
+  
+  return res;
+}
+
+u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap)
 {
   char buf[FMTBUF_MAXLEN];
   char tmp[FMTBUF_MAXLEN];
   size_t curlen;
-  va_list ap;
   fmtopt opt;
   char *tok;
   u8 *res, *cur;
@@ -40,10 +96,7 @@ u8 *build_frame(size_t *frmlen, char *errbuf, const char *fmt, ...)
   else
     return NULL;
 
-  va_start(ap, fmt);
   vsnprintf(buf, FMTBUF_MAXLEN, fmt, ap);
-  va_end(ap);
-  
   to_lower(buf); /* XXX */
   del_spaces(buf);
 
@@ -171,6 +224,7 @@ u8 *build_frame(size_t *frmlen, char *errbuf, const char *fmt, ...)
   
   return res;
 }
+
 
 int __fmtopttype(const char *type)
 {
