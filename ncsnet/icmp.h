@@ -33,6 +33,7 @@
 #include "udp.h"
 #include "tcp.h"
 #include "ip.h"
+#include "raw.h"
 #include "utils.h"
 #include "mt19937.h"
 
@@ -138,7 +139,6 @@ struct icmp4_hdr
   u8  type;
   u8  code;
   u16 check;
-  /* message */
 };
 
 struct icmp6_hdr
@@ -146,103 +146,79 @@ struct icmp6_hdr
   u8  type;
   u8  code;
   u16 check;
-  /* message */
 };
 
-struct icmp4_msg_echo {
+typedef struct icmp4_message_echo {
+  u16 id, seq; /* and data */
+} icmp4_msg_echo;
+
+typedef struct icmp4_message_mask {
+  u16 id, seq; u32 mask;
+} icmp4_msg_mask;
+
+typedef struct icmp4_message_needfrag {
+  u16 zero, mtu; /* and ip */
+} icmp4_msg_needfrag;
+
+typedef struct icmp4_message_tstamp {
+  u16 id, seq; u32 orig, rx, tx;
+} icmp4_msg_tstamp;
+
+typedef struct icmp4_message_redir {
+  u32 gateway; /* and ip */
+} icmp4_msg_redir;
+
+typedef struct icmp4_message_info {
   u16 id, seq;
-  /* data */
-};
+} icmp4_msg_info;
 
-struct icmp4_msg_redir {
-  u32 gateway;
-  /* ip */
-};
+typedef struct icmp4_message_quench {
+  u32 unsed; /* and ip */
+} icmp4_msg_quench;
 
-struct icmp4_msg_needfrag {
-  u16 zero, mtu;
-  /* ip */
-};
+typedef struct icmp4_message_timexeed {
+  u32 unsed; /* and ip */
+} icmp4_msg_timexeed;
 
-struct icmp4_msg_mask {
-  u16 id, seq;
-  u32 mask;
-};
+typedef struct icmp4_message_dstunreach {
+  u32 unsed; /* and ip */
+} icmp4_msg_dstunreach;
 
-struct icmp4_msg_tstamp {
-  u16 id, seq;
-  u32 orig, rx, tx;
-};
+typedef struct icmp4_message_paramprob {
+  u32 ptr_unsed;
+} icmp4_msg_paramprob;
 
-struct icmp4_msg_rtr_data {
-  u32 zero, pref;
-};
-struct icmp4_msg_rtradvert {
-  u8  numaddrs;
-  u8  wpa;
-  u16 lifetime;
-  struct icmp4_msg_rtr_data adv[ICMP4_MAX_ROUTER_ADVERT_ENTRIES];
-};
+typedef struct icmp6_message_echo {
+  u16 id, seq; /* and data */
+} icmp6_msg_echo;
 
-struct icmp4_msg_traceroute {
-  u16 id, zero, ohc, rhc;
-  u32 speed, mtu;
-};
-
-struct icmp4_msg_sec_fails {
-  u16 reserved;
-  u16 pointer;
-  /* orighdrs */
-};
-
-struct icmp4_msg_dnsreply {
-  u16 id, seq;
-  u32 tl;
-  u8 names[ICMP4_PAYLOAD_MAXLEN-8];
-};
-
-struct icmp6_msg_echo {
-  u16 id;
-  u16 seq;
-  /* data */
-};
-
-struct icmp6_msg_nd {
-  u32     flags;
-  ip6_t   target;
-  u8      opttype;
-  u8      optlen;
-  mac_t   mac;
-};
-
-/* tmp */
-struct icmp4_hdr_ {
-  u8 type, code;
-  u16 check, seq, id;
-  u8 data[ICMP4_PAYLOAD_MAXLEN];
-};
+typedef struct icmp6_msg_nd {
+  u32 flags; ip6_t target; u8 opttype, optlen; mac_t mac;
+} icmp6_msg_nd;
 
 __BEGIN_DECLS
 
 u8 *icmp4_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen, bool badsum);
 u8 *icmp6_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen);
 
-u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, u16 *msglen);
-u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, u16 datalen, u16 *msglen);
-u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *data, u16 datalen, u16 *msglen);
-u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, u16 *msglen);
-u8 *icmp4_msg_redir_build(u32 gateway, u8 *data, u16 datalen, u16 *msglen);
+u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, size_t *msglen);
+u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen);
+u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *frame, size_t frmlen, size_t *msglen);
+u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, size_t *msglen);
+u8 *icmp4_msg_redir_build(u32 gateway, u8 *frame, size_t frmlen, size_t *msglen);
+
 #define icmp4_msg_info_build(id, seq, msglen)		\
-  icmp4_msg_echo_build((id), (seq), NULL, 0, (msglen))
-#define icmp4_msg_quench_build(unsed, data, datalen, msglen)	\
-  icmp4_msg_redir_build((unsed), (data), (datalen), (msglen))
-#define icmp4_msg_timexeed_build(unsed, data, datalen, msglen)	\
-  icmp4_msg_redir_build((unsed), (data), (datalen), (msglen))
-#define icmp4_msg_dstunreach_build(unsed, data, datalen, msglen)	\
-  icmp4_msg_redir_build((unsed), (data), (datalen), (msglen))
-#define icmp4_msg_paramprob_build(ptr_unsed, data, datalen, msglen)	\
-  icmp4_msg_redir_build((ptr_unsed), (data), (datalen), (msglen))
-u8 *icmp6_msg_echo_build(u16 seq, u16 id, const char *data, u16 datalen, u16 *msglen);
+  icmp4_msg_echo_build((id), (seq), NULL, (msglen))
+#define icmp4_msg_quench_build(unsed, frame, frmlen, msglen)	\
+  icmp4_msg_redir_build((unsed), (frame), (frmlen), (msglen))
+#define icmp4_msg_timexeed_build(unsed, frame, frmlen, msglen)	\
+  icmp4_msg_redir_build((unsed), (frame), (frmlen), (msglen))
+#define icmp4_msg_dstunreach_build(unsed, frame, frmlen, msglen)	\
+  icmp4_msg_redir_build((unsed), (frame), (frmlen), (msglen))
+#define icmp4_msg_paramprob_build(ptr_unsed, frame, frmlen, msglen)	\
+  icmp4_msg_redir_build((ptr_unsed), (frame), (frmlen), (msglen))
+#define icmp6_msg_echo_build(id, seq, data, msglen)	\
+  icmp4_msg_echo_build((id), (seq), (data), (msglen))
 
 u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
                     bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
@@ -262,5 +238,36 @@ int icmp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
 		   bool badsum);
 
 __END_DECLS
+
+
+/* tmp */
+struct icmp4_hdr_ {
+  u8 type, code;
+  u16 check, seq, id;
+  u8 data[ICMP4_PAYLOAD_MAXLEN];
+};
+struct icmp4_msg_rtr_data {
+  u32 zero, pref;
+};
+struct icmp4_msg_rtradvert {
+  u8  numaddrs;
+  u8  wpa;
+  u16 lifetime;
+  struct icmp4_msg_rtr_data adv[ICMP4_MAX_ROUTER_ADVERT_ENTRIES];
+};
+struct icmp4_msg_traceroute {
+  u16 id, zero, ohc, rhc;
+  u32 speed, mtu;
+};
+struct icmp4_msg_sec_fails {
+  u16 reserved;
+  u16 pointer;
+  /* orighdrs */
+};
+struct icmp4_msg_dnsreply {
+  u16 id, seq;
+  u32 tl;
+  u8 names[ICMP4_PAYLOAD_MAXLEN-8];
+};
 
 #endif

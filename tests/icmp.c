@@ -5,14 +5,14 @@
 
 int main(void)
 {
-  u16 msglen = 0;
+  size_t msglen = 0;
   u8 *msg;
   int fd;
   
   fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
   
-  msg = icmp4_msg_echo_build(random_u16(), 10, "kek", 3, &msglen);
-  icmp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.38"),
+  msg = icmp4_msg_echo_build(random_u16(), 10, "kek", &msglen);
+  icmp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.34"),
 		 ncs_inet_addr("173.194.222.138"), 121, random_u16(),
 		 0, false, NULL, 0, ICMP4_ECHO, 0, msg,
 		 msglen, 0, false);
@@ -35,7 +35,7 @@ int main(void)
 		 0, false, NULL, 0, ICMP4_UNREACH, ICMP4_UNREACH_NEEDFRAG, msg,
 		 msglen, 0, false);
 
-  msg = icmp4_msg_mask_build(123, 1, 98348, &msglen);
+  msg = icmp4_msg_mask_build(123, 1, inet_addr("192.168.1.38"), &msglen);
   icmp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.38"),
 		 ncs_inet_addr("173.194.222.138"), 121, random_u16(),
 		 0, false, NULL, 0, ICMP4_MASK, 0, msg,

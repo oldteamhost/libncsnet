@@ -24,22 +24,11 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *data, u16 datalen, u16 *msglen)
+u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *frame, size_t frmlen, size_t *msglen)
 {
-  struct icmp4_msg_needfrag *icmp_nf;
   u8 *res;
-
-  *msglen = sizeof(struct icmp4_msg_needfrag) + datalen;
-  res = (u8*)malloc(*msglen);
-  if (!res)
-    return NULL;
-
-  icmp_nf = (struct icmp4_msg_needfrag*)res;
-  icmp_nf->zero = 0;
-  icmp_nf->mtu = htons(mtu);
-
-  if (data && datalen)
-    memcpy((u8*)icmp_nf + sizeof(struct icmp4_msg_needfrag), data, datalen);
-  
+  res = frmbuild(msglen, NULL, "u16(%hu), u16(%hu)", htons(mtu), 0);
+  if (frame && frmlen)
+    res = frmbuild_addfrm(frame, frmlen, res, msglen, NULL);
   return res;
 }

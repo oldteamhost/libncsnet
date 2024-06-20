@@ -24,21 +24,11 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_redir_build(u32 gateway, u8 *data, u16 datalen, u16 *msglen)
+u8 *icmp4_msg_redir_build(u32 gateway, u8 *frame, size_t frmlen, size_t *msglen)
 {
-  struct icmp4_msg_redir *icmp_r;
   u8 *res;
-
-  *msglen = sizeof(struct icmp4_msg_redir) + datalen;
-  res = (u8*)malloc(*msglen);
-  if (!res)
-    return NULL;
-
-  icmp_r = (struct icmp4_msg_redir*)res;
-  icmp_r->gateway = htonl(gateway); /* htonl ??? */
-
-  if (data && datalen)
-    memcpy((u8*)icmp_r + sizeof(struct icmp4_msg_redir), data, datalen);
-  
+  res = frmbuild(msglen, NULL, "u32(%u)", htonl(gateway)); /* htonl ??? */
+  if (frame && frmlen)
+    res = frmbuild_addfrm(frame, frmlen, res, msglen, NULL);
   return res;
 }

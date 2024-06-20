@@ -24,22 +24,8 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, u16 *msglen)
+u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, size_t *msglen)
 {
-  struct icmp4_msg_tstamp *icmp_tst;
-  u8 *res;
-
-  *msglen = sizeof(struct icmp4_msg_tstamp);
-  res = (u8*)malloc(*msglen);
-  if (!res)
-    return NULL;
-
-  icmp_tst = (struct icmp4_msg_tstamp*)res;
-  icmp_tst->id   = htons(id);
-  icmp_tst->seq  = htons(seq);
-  icmp_tst->orig = htonl(orig);
-  icmp_tst->rx   = htonl(rx);
-  icmp_tst->tx   = htonl(tx);    
-  
-  return res;
+  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(%u), u32(%u)",
+		   htons(id), htons(seq), htonl(orig), htonl(rx), htonl(tx)));
 }

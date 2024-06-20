@@ -24,20 +24,12 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, u16 *msglen)
+u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen)
 {
-  struct icmp4_msg_mask *icmp_m;
-  u8 *res;
-
-  *msglen = sizeof(struct icmp4_msg_mask);
-  res = (u8*)malloc(*msglen);
-  if (!res)
-    return NULL;
-
-  icmp_m = (struct icmp4_msg_mask*)res;
-  icmp_m->id = htons(id);
-  icmp_m->seq = htons(seq);
-  icmp_m->mask = htonl(mask);    
-  
-  return res;
+  /*
+   * Mask is not passed through htonl because it is supposed to be
+   * passed through the inet_addr function
+   */
+  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u)", htons(id),
+		   htons(seq), mask));
 }

@@ -24,22 +24,11 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, u16 datalen, u16 *msglen)
+u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, size_t *msglen)
 {
-  struct icmp4_msg_echo *icmp_e;
   u8 *res;
-
-  *msglen = sizeof(struct icmp4_msg_echo) + datalen;
-  res = (u8*)malloc(*msglen);
-  if (!res)
-    return NULL;
-
-  icmp_e = (struct icmp4_msg_echo*)res;
-  icmp_e->id  = htons(id);
-  icmp_e->seq = htons(seq);
-
-  if (data && datalen)
-    memcpy((u8*)icmp_e + sizeof(struct icmp4_msg_echo), data, datalen);
-
+  res = frmbuild(msglen, NULL, "u16(%hu), u16(%hu)", htons(id), htons(seq));
+  if (data)
+    res = frmbuild_add(msglen, res, NULL, "str(%s)", data);
   return res;
 }

@@ -185,7 +185,7 @@ u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap
 	int check;
 	u16 tmp;
 	check = atoi(opt.val);
-	if (check > USHRT_MAX || check < 0) {
+	if (htons(check) > USHRT_MAX || check < 0) {
 	  snprintf(errbuf, ERRBUF_MAXLEN,
             "Field \"%s\" len error, valid range is, (0-%d)",
              tok, USHRT_MAX);
@@ -201,7 +201,7 @@ u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap
 	size_t check;
 	u32 tmp;
 	check = atoi(opt.val);
-	if (check > UINT_MAX || check < 0) {
+	if (htonl(check) > UINT_MAX || check < 0) {
 	  snprintf(errbuf, ERRBUF_MAXLEN,
             "Field \"%s\" len error, valid range is, (0-%u)",
              tok, UINT_MAX);
@@ -217,7 +217,7 @@ u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap
 	ssize_t check;
 	u64 tmp;
 	check = atoll(opt.val);
-	if (check > (ssize_t)ULONG_MAX || check < 0) {
+	if (htonl(check) > (ssize_t)ULONG_MAX || check < 0) {
 	  snprintf(errbuf, ERRBUF_MAXLEN,
             "Field \"%s\" len error, valid range is, (0-%ld)",
              tok, ULONG_MAX);
