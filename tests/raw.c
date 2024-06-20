@@ -2,26 +2,23 @@
 #include "../ncsnet/sctp.h"
 #include "../ncsnet/icmp.h"
 
+static u8 *icmp4_msg(u16 id, u16 seq, const char *data, u16 datalen, size_t *msglen)
+{
+  u8 *res;
+  res = frmbuild(msglen, NULL, "u16(%hu), u16(%hu))", htons(id), htons(seq));
+  res = frmbuild_addfrm((u8*)data, (size_t)datalen, res, msglen, NULL);
+  return res;
+}
+
 int main(void)
 {
-  char errbuf[ERRBUF_MAXLEN];
-  size_t pktlen = 0;
-  u8 *res, *res1;
+  u16 pktlen = 0;
+  u8 *res;
   u8 *pkt;
   u32 pktlen_;
-  size_t res1len;
 
-  /* ECHO MESSAGE */
-  res = frmbuild(&pktlen, errbuf, "u16(%hu)", htons(random_u16())); /* add id */
-  res = frmbuild_add(&pktlen, res, errbuf, "u16(%hu)", htons(1));   /* add seq */
-  res1 = frmbuild(&res1len, errbuf, "str(kek)");
-  res = frmbuild_addfrm(res1, &res1len, res, pktlen, errbuf);
-  pktlen = res1len;
-  if (!res) {
-    printf("errbuf = %s\n", errbuf);
-    return -1;
-  }
-
+  //res = icmp4_msg(100, 1, NULL, 0, (size_t*)&pktlen);  
+  res = icmp4_msg(100, 1, "123", 3, (size_t*)&pktlen);
   pkt = icmp4_build_pkt(inet_addr("192.168.1.34"),
 			inet_addr("173.194.222.138"),
 			121, random_u16(), 0, false,

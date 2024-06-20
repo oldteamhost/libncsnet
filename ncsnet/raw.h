@@ -66,11 +66,14 @@ u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...);
 u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ...);
 
 /*
- * Adds one internet frame to another, the length of the added
- * frame is "frmlen", the new length will be written to it after
- * the addition.
+ * Adds one internet frame to another, the added frame is
+ * specified in frame, its length in frmlen. The old frame is
+ * specified in oldframe, its length in oldfrmlen, where, by the
+ * way, the new length will be written after the addition.
+ *
+ * If frame = NULL, it returns oldframe.
  */
-u8 *frmbuild_addfrm(u8 *frame, size_t *frmlen, u8 *oldframe, size_t oldfrmlen, char *errbuf);
+u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, char *errbuf);
 
 typedef struct __fmtopt {
 # define TYPE_U8   0

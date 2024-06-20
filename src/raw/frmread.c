@@ -26,7 +26,11 @@
 
 ssize_t frmread(int fd, char *errbuf, u8 *buf, size_t buflen)
 {
+  char tmp[ERRBUF_MAXLEN];
   ssize_t ret;
+
+  if (!errbuf)
+    errbuf = tmp;
   
   if (fd == -1) {
     snprintf(errbuf, ERRBUF_MAXLEN,

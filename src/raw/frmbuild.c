@@ -26,9 +26,13 @@
 
 u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...)
 {
+  char tmp[ERRBUF_MAXLEN];
   va_list ap;
   u8 *ret;
 
+  if (!errbuf)
+    errbuf = tmp;
+  
   va_start(ap, fmt);
   ret = __frmbuild_generic(frmlen, errbuf, fmt, ap);
   va_end(ap);
@@ -38,9 +42,13 @@ u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...)
 
 u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ...)
 {
+  char tmp[ERRBUF_MAXLEN];
   u8 *newframe, *res;
   size_t newfrmlen;
   va_list ap;
+
+  if (!errbuf)
+    errbuf = tmp;
 
   va_start(ap, fmt);
   newframe = __frmbuild_generic(&newfrmlen, errbuf, fmt, ap);
@@ -63,19 +71,28 @@ u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ..
   return res;
 }
 
-u8 *frmbuild_addfrm(u8 *frame, size_t *frmlen, u8 *oldframe, size_t oldfrmlen, char *errbuf)
+u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, char *errbuf)
 {
+  char tmp[ERRBUF_MAXLEN];
   u8 *res;
+
+  if (!errbuf)
+    errbuf = tmp;
+
+  if (!frame) {
+    snprintf(errbuf, ERRBUF_MAXLEN, "Frame is NULL");
+    return oldframe;
+  }
   
-  res = (u8*)malloc(*frmlen + oldfrmlen);
+  res = (u8*)malloc(frmlen + *oldfrmlen);
   if (!res) {
     snprintf(errbuf, ERRBUF_MAXLEN, "Allocation failed");
     return NULL;
   }
   
-  memcpy(res, oldframe, *frmlen);
-  memcpy(res + *frmlen, frame, oldfrmlen);
-  *frmlen += oldfrmlen;
+  memcpy(res, oldframe, *oldfrmlen);
+  memcpy(res + *oldfrmlen, frame, frmlen);
+  *oldfrmlen += frmlen;
   
   return res;
 }
@@ -90,6 +107,7 @@ u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap
   u8 *res, *cur;
 
   *frmlen = 0;
+
   if (errbuf)
     *errbuf = '\0';
   else

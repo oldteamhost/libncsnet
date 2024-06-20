@@ -26,7 +26,11 @@
 
 ssize_t frmwrite(int fd, char *errbuf, u8 *frame, size_t frmlen)
 {
+  char tmp[ERRBUF_MAXLEN];
   ssize_t ret;
+
+  if (!errbuf)
+    errbuf = tmp;
   
   if (fd == -1) {
     snprintf(errbuf, ERRBUF_MAXLEN,
