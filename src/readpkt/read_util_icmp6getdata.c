@@ -24,7 +24,7 @@
 
 #include <ncsnet/readpkt.h>
 
-const void *read_util_icmp6getdata(const struct icmp6_hdr *icmp, u32 *len)
+const void *read_util_icmp6getdata(const icmp6h_t *icmp, u32 *len)
 {
   u32 hdrlen = 0;
   if (icmp->type == ICMP6_TIMEXCEED || icmp->type == ICMP6_UNREACH)

@@ -24,27 +24,11 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen, bool badsum)
+u8 *icmp_build(u8 type, u8 code, u8 *msg, size_t msglen, size_t *pktlen)
 {
-  struct icmp4_hdr *icmp;
   u8 *res;
-
-  *pktlen = sizeof(struct icmp4_hdr) + msglen;
-  res = (u8*)malloc(*pktlen);
-  if (!res)
-    return NULL;
-
-  icmp = (struct icmp4_hdr*)res;
-  icmp->code = code;
-  icmp->type = type;
-
-  if (msg && msglen)
-    memcpy((u8*)icmp + sizeof(struct icmp4_hdr), msg, msglen);
-
-  icmp->check = 0;
-  icmp->check = in_check((u16*)res, *pktlen);
-  if (badsum)
-    --icmp->check;
-
+  res = frmbuild(pktlen, NULL, "u8(%hhu), u8(%hhu), u16(0)", type, code);
+  if (msg && msglen && res)
+    res = frmbuild_addfrm(msg, msglen, res, pktlen, NULL);
   return res;
 }

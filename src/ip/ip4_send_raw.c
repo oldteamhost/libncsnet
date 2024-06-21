@@ -24,25 +24,24 @@
 
 #include <ncsnet/ip.h>
 
-int ip4_send_raw(int fd, const struct sockaddr_in *dst, const u8 *pkt,
-                 u32 pktlen)
+int ip4_send_raw(int fd, const struct sockaddr_in *dst, const u8 *frame, size_t frmlen)
 {
   struct sockaddr_in sock;
   struct tcp_hdr *tcp;
   struct udp_hdr *udp;
-  struct ip4_hdr *ip;
+  ip4h_t *ip;
   int res;
 
-  ip = (struct ip4_hdr*)pkt;
+  ip = (ip4h_t*)frame;
   assert(fd >= 0);
   sock = *dst;
 
-  if (pktlen >= 20) {
-    if (ip->proto == IPPROTO_TCP && pktlen >= (u32)ip->ihl * 4 + 20) {
+  if (frmlen >= 20) {
+    if (ip->proto == IPPROTO_TCP && frmlen >= (u32)ip->ihl * 4 + 20) {
       tcp = (struct tcp_hdr*)((u8*)ip + ip->ihl * 4);
       sock.sin_port = tcp->th_dport;
     }
-    else if (ip->proto == IPPROTO_UDP && pktlen >= (u32) ip->ihl  * 4 + 8) {
+    else if (ip->proto == IPPROTO_UDP && frmlen >= (u32) ip->ihl  * 4 + 8) {
       udp = (struct udp_hdr*)((u8*)ip + ip->ihl * 4);
       sock.sin_port = udp->dstport;
     }
@@ -53,7 +52,7 @@ int ip4_send_raw(int fd, const struct sockaddr_in *dst, const u8 *pkt,
   ip->off = ntohs(ip->off);
 #endif
 
-  res = sendto(fd, pkt, pktlen, 0, (struct sockaddr*)&sock,
+  res = sendto(fd, frame, frmlen, 0, (struct sockaddr*)&sock,
 		 (int)sizeof(struct sockaddr_in));
 
 #if (defined(IS_BSD) || (IS_BSD && (__FreeBSD_version < 1100030)))

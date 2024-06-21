@@ -78,14 +78,8 @@ struct eth_hdr
   u16   type;
 };
 
-#define eth_pack_hdr(h, _dst, _src, _type)				\
-  do {									\
-    struct eth_header *eth_pack_p = (struct eth_header *)(h);		\
-    memmove(&eth_pack_p->dst, &(_dst), ETH_ADDR_LEN);			\
-    memmove(&eth_pack_p->src, &(_src), ETH_ADDR_LEN);			\
-    eth_pack_p->type = htons(_type);					\
-  } while (0)
-
+typedef struct eth_hdr ethh_t;
+typedef struct eth_hdr mach_t;
 typedef struct eth_handle eth_t;
 
 struct ethtmp
@@ -103,8 +97,8 @@ int      eth_fd(eth_t *e);
 ssize_t  eth_read(eth_t *e, u8 *buf, ssize_t len);
 ssize_t  eth_send(eth_t *e, const void *buf, size_t len);
 eth_t   *eth_close(eth_t *e);
-u8      *eth_build(mac_t src, mac_t dst, u16 type, const char *data,
-		   u16 datalen, u32 *pktlen);
+u8      *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
+		   size_t frmlen, size_t *pktlen);
 eth_t   *eth_open_cached(const char *device);
 void     eth_close_cached(void);
 

@@ -25,11 +25,9 @@
 #include <ncsnet/tcp.h>
 
 int tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
-                   u16 dstport, u8 flags, const char *data, u16 datalen)
+                   u16 dstport, u8 flags, const char *data)
 {
   return tcp4_send_pkt(NULL, fd, ncs_inet_addr(src), ncs_inet_addr(dst), ttl, false, 0, 0,
                        random_srcport(), dstport, random_u32(), 0, 0, flags, 1024,
-		       0, NULL, 0, data, datalen, 0, false);
-  
-
+		       0, NULL, 0, data, 0, false);
 }

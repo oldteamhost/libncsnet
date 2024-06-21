@@ -26,23 +26,18 @@
 
 u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u8 type, u8 code,
-		    u8 *msg, u16 msglen, u32 *pktlen, bool badsum)
+		    u8 *msg, size_t msglen, size_t *pktlen, bool badsum)
 {
-  struct icmp6_hdr *icmp;
-  u32 icmplen;
+  size_t icmplen;
+  icmp6h_t *icmp;
   u8 *pkt;
 
-  icmp = (struct icmp6_hdr*)icmp6_build(type, code, msg, msglen, &icmplen);
+  icmp = (icmp6h_t*)icmp_build(type, code, msg, msglen, &icmplen);
   if (!icmp)
     return NULL;
-  
-  icmp->check = 0;
-  icmp->check = ip6_pseudocheck(src, dst, IPPROTO_ICMPV6, icmplen, icmp);
-  if (badsum)
-    icmp->check--;
-
+  icmp6_check((u8*)icmp, icmplen, src, dst, badsum);
   pkt = ip6_build(src, dst, tc, flowlabel, IPPROTO_ICMPV6,
-      hoplimit, (char*)icmp, icmplen, pktlen);
+      hoplimit, (u8*)icmp, icmplen, pktlen);
 
   free(icmp);
   return pkt;

@@ -30,6 +30,6 @@ u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen)
    * Mask is not passed through htonl because it is supposed to be
    * passed through the inet_addr function
    */
-  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u)", htons(id),
-		   htons(seq), mask));
+  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u)",
+    htons(id), htons(seq), mask));
 }

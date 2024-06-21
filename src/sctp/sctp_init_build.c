@@ -25,26 +25,17 @@
 #include <ncsnet/sctp.h>
 
 u8 *sctp_init_build(u8 type, u8 flags, u32 itag, u32 arwnd, u16 nos, u16 nis, u32 itsn,
-		    u16 *chunklen)
+		    size_t *chunklen)
 {
-  struct sctp_chunk_hdr_init *sctp_i;
-  u8 *res;
-  
-  *chunklen = sizeof(struct sctp_chunk_hdr_init);
-  res = (u8*)malloc(*chunklen);
-  if (!res)
+  u8 *chunk, *value;
+  size_t valuelen;
+
+  value = frmbuild(&valuelen, NULL, "u32(%u), u32(%u), u16(%hu), u16(%hu), u32(%u)",
+    htonl(itag), htonl(arwnd), htons(nos), htons(nis), htonl(itsn));
+  if (!value)
     return NULL;
+  chunk = sctp_chunk_build(type, flags, value, valuelen, chunklen);
 
-  sctp_i = (struct sctp_chunk_hdr_init*)res;
-  sctp_i->arwnd = htonl(arwnd);
-  sctp_i->itag = htonl(itag);
-  sctp_i->itsn = htonl(itsn);
-  sctp_i->nis = htons(nis);
-  sctp_i->nos = htons(nos);
-  sctp_i->chunkhdr.flags = flags;
-  sctp_i->chunkhdr.type = SCTP_INIT;
-  sctp_i->chunkhdr.len = htons(*chunklen);
-  sctp_i->chunkhdr.type = type;
-
-  return res;
+  free(value);
+  return chunk;
 }

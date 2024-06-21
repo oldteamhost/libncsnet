@@ -51,8 +51,6 @@
 #define MEDIUM_DETAIL  2
 #define HIGH_DETAIL    3
 
-__BEGIN_DECLS
-
 struct abstract_iphdr {
   u8 version, proto, ttl;
   struct sockaddr_storage src, dst;
@@ -66,6 +64,8 @@ struct link_header {
   u8 header[MAX_LINK_HEADERSZ];
 };
 
+__BEGIN_DECLS
+
 void        read_util_tracepkt(int pdir, const u8 *pkt, u32 len, double rtt, int detail);
 const char *read_ippktinfo(const u8 *pkt, u32 len, int detail);
 bool        read_util_validate_tcp(const u8 *tcpc, unsigned len);
@@ -74,8 +74,8 @@ int         read_util_datalinkoffset(int datalink);
 const void *read_util_getip4data_pr(const void *pkt, u32 *len, struct abstract_iphdr *hdr, bool upperlayer_onl);
 const void *read_util_getip6data_pr(const struct ip6_hdr *ip6, u32 *len, u8 *nxt, bool upperlayer_only);
 const void *read_util_ip4getdata_up(const struct ip4_hdr *ip, u32 *len);
-const void *read_util_icmp4getdata(const struct icmp4_hdr_ *icmp, u32 *len);
-const void *read_util_icmp6getdata(const struct icmp6_hdr *icmp, u32 *len);
+const void *read_util_icmp4getdata(const icmp4h_t *icmp, u32 *len);
+const void *read_util_icmp6getdata(const icmp6h_t *icmp, u32 *len);
 char       *read_util_nexthdrtoa(u8 nxthdr, int acronym);
 void        read_util_tcpoptinfo(u8 *optp, int len, char *result, int bufsize);
 char       *read_util_fmtipopt(const u8 *ipopt, int ipoptlen);
@@ -85,7 +85,6 @@ char       *read_util_fmtipopt(const u8 *ipopt, int ipoptlen);
 #define     read_util_ip6getdata_any(ip6, len, nxt) read_util_getip6data_pr((ip6), (len), (nxt), false)
 
 __END_DECLS
-
 
 #endif
 

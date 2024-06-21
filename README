@@ -1,9 +1,3 @@
-██      ██ ██████  ███    ██  ██████ ███████ ███    ██ ███████ ████████ 
-██      ██ ██   ██ ████   ██ ██      ██      ████   ██ ██         ██    
-██      ██ ██████  ██ ██  ██ ██      ███████ ██ ██  ██ █████      ██    
-██      ██ ██   ██ ██  ██ ██ ██           ██ ██  ██ ██ ██         ██    
-███████ ██ ██████  ██   ████  ██████ ███████ ██   ████ ███████    ██    
-
 libncsnet (nesca network library): a free set of [low-level and no] networking tools;
 works on linux and bsd systems. Library provides the most flexible, fastest, and
 largest set of tools for its tasks.
@@ -17,6 +11,8 @@ crypt:      MD5, SHA-512, SHA-256, ADLER32, BASE64, CRC-8,
 addr:       IP4, IP6, MAC, CIDR, RANGE, URL;
 
 random:     CMWC, MT19937, MSM;
+
+syntax:     HTML;
 
 The library's work with transport, network, and data link prototocols can be
 quite complex. But there are always examples in [tests/], and [RFCs].

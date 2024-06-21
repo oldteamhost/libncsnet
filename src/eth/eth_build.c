@@ -24,27 +24,25 @@
 
 #include <ncsnet/eth.h>
 
-u8 *eth_build(mac_t src, mac_t dst, u16 type, const char *data,
-              u16 datalen, u32 *pktlen)
+u8 *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
+	      size_t frmlen, size_t *pktlen)
 {
-  struct eth_hdr *eth;
-  u32 packetlen;
+  mach_t *eth;
   u8 *pkt;
 
-  packetlen = ETH_HDR_LEN + datalen;
-  pkt = (u8*)malloc(packetlen);
+  *pktlen = ETH_HDR_LEN + frmlen;
+  pkt = (u8*)malloc(*pktlen);
   if (!pkt)
     return NULL;
 
-  eth = (struct eth_hdr*)pkt;
+  eth = (mach_t*)pkt;
   eth->dst  = dst;
   eth->src  = src;
   eth->type = htons(type);
   
-  if (data && datalen)
+  if (frame && frmlen)
     memcpy((u8*)eth + ETH_HDR_LEN,
-	   data, datalen);
+	   frame, frmlen);
 
-  *pktlen = packetlen;
   return pkt;
 }

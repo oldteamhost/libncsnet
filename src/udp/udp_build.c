@@ -24,25 +24,22 @@
 
 #include <ncsnet/udp.h>
 
-u8 *udp_build(u16 srcport, u16 dstport, const char *data, u16 datalen, u32 *pktlen)
+u8 *udp_build(u16 srcport, u16 dstport, const char *data, size_t *pktlen)
 {
-  struct udp_hdr *udp;
+  size_t datalen;
   u8 *pkt;
-
-  *pktlen = sizeof(*udp) + datalen;
-  pkt = (u8*)malloc(*pktlen);
+  
+  if (data)
+    datalen = strlen(data);
+  else
+    datalen = 0;
+  
+  pkt = frmbuild(pktlen, NULL, "u16(%hu), u16(%hu), u16(%hu), u16(0)",
+    htons(srcport), htons(dstport), htons(sizeof(udph_t) + datalen));
+  if (data && pkt)
+    pkt = frmbuild_add(pktlen, pkt, NULL, "str(%s)", data);
   if (!pkt)
     return NULL;
-  udp = (struct udp_hdr*)pkt;
-
-  memset(udp, 0, sizeof(*udp));
-  udp->srcport = htons(srcport);
-  udp->dstport = htons(dstport);
-  udp->len     = htons(*pktlen);
-
-  if (data && datalen)
-    memcpy(pkt + sizeof(*udp), data, datalen);
-
-  udp->check = 0;
+  
   return pkt;
 }

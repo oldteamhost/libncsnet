@@ -32,6 +32,7 @@
 
 #include "eth.h"
 #include "ip.h"
+#include "raw.h"
 
 #include "../ncsnet-config.h"
 #include "sys/types.h"
@@ -47,28 +48,33 @@ struct udp_hdr
   u16 check;   /* udp checksum */
 };
 
+typedef struct udp_hdr udph_t;
+
 __BEGIN_DECLS
 
-u8 *udp_build(u16 srcport, u16 dstport, const char *data, u16 datalen,
-              u32 *pktlen);
+u8 *udp_build(u16 srcport, u16 dstport, const char *data, size_t *pktlen);
+
+void udp4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, bool badsum);
+void udp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
+		const struct in6_addr *dst, bool badsum);
+
+const char* udp_info(const u8 *frame, size_t frmlen, int detail);
 
 u8 *udp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
                    bool df, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
-                   const char *data, u16 datalen, u32 *pktlen, bool badsum);
+                   const char *data, size_t *pktlen, bool badsum);
 
 u8 *udp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                   const char *data, u16 datalen, u32 *pktlen, bool badsum);
+                   const char *data, size_t *pktlen, bool badsum);
 
 int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                   int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
-                  u16 dstport, bool df, const char *data, u16 datalen, int mtu,
-                  bool badsum);
+                  u16 dstport, bool df, const char *data, int mtu, bool badsum);
 
 int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
 		  const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
-		  u16 srcport, u16 dstport, const char *data, u16 datalen,
-		  bool badsum);
+		  u16 srcport, u16 dstport, const char *data, bool badsum);
 
 __END_DECLS
 

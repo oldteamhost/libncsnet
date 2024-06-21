@@ -25,7 +25,7 @@
 #include <ncsnet/ip.h>
 
 int ip6_send(struct ethtmp *eth, int fd, const struct sockaddr_in6 *dst,
-             const u8 *pkt, u32 pktlen)
+             const u8 *frame, size_t frmlen)
 {
-  return (IP6_SEND_ETH_OR_SD(fd, eth, (struct sockaddr*)dst, pkt, pktlen));
+  return (IP6_SEND_ETH_OR_SD(fd, eth, (struct sockaddr*)dst, frame, frmlen));
 }

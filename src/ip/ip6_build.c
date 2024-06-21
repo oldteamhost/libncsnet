@@ -25,31 +25,31 @@
 #include <ncsnet/ip.h>
 
 u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
-              u32 flowlabel, u8 nexthdr, int hoplimit, const char *data,
-              u16 datalen, u32 *pktlen)
+              u32 flowlabel, u8 nexthdr, int hoplimit, u8 *frame, size_t frmlen,
+	      size_t *pktlen)
 {
-  struct ip6_hdr *ip6;
+  ip6h_t *ip6;
   u8 *pkt;
   
-  *pktlen= sizeof(struct ip6_hdr) + datalen;
+  *pktlen= sizeof(ip6h_t) + frmlen;
   pkt = (u8*)malloc(*pktlen);
   if (!pkt)
     return NULL;
 
-  ip6 = (struct ip6_hdr*)pkt;
+  ip6 = (ip6h_t*)pkt;
   ip6->IP6_FLOW   = htonl(((u32)(tc) << 20)
 	  | (0x000fffff & (flowlabel)));
   ip6->IP6_VFC    = (IP6_VERSION | ((flowlabel) >> 4));
-  ip6->IP6_PKTLEN = htons((datalen)); /* ??? */
+  ip6->IP6_PKTLEN = htons((frmlen)); /* ??? */
   ip6->IP6_NXT    = nexthdr;
   ip6->IP6_HLIM   = hoplimit;
   
   memmove(&ip6->ip6_src, &(src), IP6_ADDR_LEN);
   memmove(&ip6->ip6_dst, &(dst), IP6_ADDR_LEN);
 
-  if (data && datalen)
+  if (frame && frmlen)
     memcpy(pkt + sizeof(struct ip6_hdr),
-	   data, datalen);
+	   frame, frmlen);
 
   return pkt;
 }

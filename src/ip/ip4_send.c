@@ -25,19 +25,15 @@
 #include <ncsnet/ip.h>
 
 int ip4_send(struct ethtmp *eth, int fd, const struct sockaddr_in *dst, int mtu,
-             const u8 *pkt, u32 pktlen)
+             const u8 *pkt, size_t frmlen)
 {
-  struct ip4_hdr *ip;
-  int res;
-
-  ip = (struct ip4_hdr*)pkt;
+  ip4h_t *ip;
+  
+  ip = (ip4h_t*)pkt;
   assert(pkt);
-  assert((int)pktlen > 0);
+  assert((int)frmlen > 0);
 
-  if (mtu && !(ntohs(ip->off) & IP4_DF) && (pktlen - ip->ihl * 4 > (u32)mtu))
-    res = ip4_send_frag(fd, dst, pkt, pktlen, mtu);
-  else
-    res = IP4_SEND_ETH_OR_SD(fd, eth, dst, pkt, pktlen);
-
-  return res;
+  if (mtu && !(ntohs(ip->off) & IP4_DF) && (frmlen - ip->ihl * 4 > (u32)mtu))
+    return (ip4_send_frag(fd, dst, pkt, frmlen, mtu));
+  return(IP4_SEND_ETH_OR_SD(fd, eth, dst, pkt, frmlen));
 }

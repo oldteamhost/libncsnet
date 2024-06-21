@@ -92,90 +92,99 @@ struct sctp_hdr
   u32 check;   /* checksum */
 };
 
-struct sctp_error_cause_op_hdr {
-  u16 code, len;
-};
+typedef struct sctp_hdr sctph_t;
 
-struct sctp_chunk_hdr {
+typedef struct sctp_chunk_hdr {
   u8  type, flags;
   u16 len;
-};
+} sctp_chunk;
 
-struct sctp_chunk_hdr_init {
-  struct sctp_chunk_hdr chunkhdr;
-  u32 itag;  /* Initiate Tag */
-  u32 arwnd; /* Advertised Receiver Window Credit */
-  u16 nos;   /* Number of Outbound Streams */
-  u16 nis;   /* Number of Inbound Streams */
-  u32 itsn;  /* Initial TSN */
-};
+typedef struct sctp_error_cause_op_hdr {
+  u16 code, len;
+} sctp_error_cause_op;
 
-struct sctp_chunk_hdr_abort {
-  struct sctp_chunk_hdr chunkhdr;
-  struct sctp_error_cause_op_hdr ec;
-};
+typedef struct sctp_chunk_hdr_abort {
+  sctp_chunk chunkhdr;
+  sctp_error_cause_op ec;
+} sctp_chunk_abort;
 
-struct sctp_chunk_hdr_shutdown {
-  struct sctp_chunk_hdr chunkhdr;
+typedef struct sctp_chunk_hdr_shutdown {
+  sctp_chunk chunkhdr;
   u32 tsnack;
-};
+} sctp_chunk_shutdown;
 
-struct sctp_chunk_hdr_heartbeat_info {
-  u8 type;
-  u16 infolen;
-};
+typedef struct sctp_chunk_hdr_heartbeat_info {
+  u16 type, infolen;
+} sctp_chunk_heartbeat_info;
 
-struct sctp_chunk_hdr_heartbeat {
-  struct sctp_chunk_hdr chunkhdr;
-  struct sctp_chunk_hdr_heartbeat_info hi;
-};
+typedef struct sctp_chunk_hdr_heartbeat {
+  sctp_chunk chunkhdr;
+  sctp_chunk_heartbeat_info hi;
+} sctp_chunk_heartbeat;
 
-struct sctp_chunk_hdr_error {
-  struct sctp_chunk_hdr chunkhdr;
-  struct sctp_error_cause_op_hdr ec;
-};
+typedef struct sctp_chunk_hdr_error {
+  sctp_chunk chunkhdr;
+  sctp_error_cause_op ec;
+} sctp_chunk_error;
+
+typedef struct sctp_chunk_hdr_init {
+  sctp_chunk chunkhdr;
+  u32 itag;
+  u32 arwnd;
+  u16 nos;
+  u16 nis;
+  u32 itsn;
+} sctp_chunk_init;
+
+typedef struct sctp_chunk_hdr_data {
+  sctp_chunk chunkhdr;
+  u32 tsn;
+  u16 s, n;
+  u32 protoload; /* and data */
+} sctp_chunk_data;
 
 __BEGIN_DECLS
 
-u8 *sctp_build(u16 srcport, u16 dstport, u32 vtag, const char *chunks,
-               int chunkslen, const char *data, u16 datalen, u32 *pktlen,
-               bool adler32sum, bool badsum);
+u8 *sctp_build(u16 srcport, u16 dstport, u32 vtag, u8 *chunks,
+               size_t chunkslen, size_t *pktlen);
 
-/* INIT, INITACK, COOKIE, COOKIEACK, ABORT, ERROR, HEARTBEAT,
- * HEARTBEATACK, SHUTDOWN, SHUTDOWNACK, SHUTDOWNCOMPLETE
- */
-u8 *sctp_init_build(u8 type, u8 flags, u32 itag, u32 arwnd, u16 nos, u16 nis, u32 itsn, u16 *chunklen);
-u8 *sctp_cookie_build(u8 type, u8 flags, u8 *cookie, u16 cookielen, u16 *chunklen);
-u8 *sctp_abort_build(u8 code, u8 flags, u8 *info, u16 infolen, u16 *chunklen);
-u8 *sctp_shutdown_build(u8 flags, u32 tsnack, u16 *chunklen);
-u8 *sctp_shutdown_ack_build(u8 flags, u16 *chunklen);
-u8 *sctp_shutdown_complete_build(u8 flags, u16 *chunklen);
-u8 *sctp_heartbeat_build(u8 type, u8 flags, u8 *info, u16 infolen, u16 *chunklen);
-u8 *sctp_error_build(u8 flags, u8 code, u8 *info, u16 infolen, u16 *chunklen);
+void sctp_check(u8 *frame, size_t frmlen, bool adler32sum, bool badsum);
+
+u8 *sctp_chunk_build(u8 type, u8 flags, u8 *value, size_t valuelen, size_t *chunklen);
+u8 *sctp_init_build(u8 type, u8 flags, u32 itag, u32 arwnd, u16 nos, u16 nis, u32 itsn, size_t *chunklen);
+u8 *sctp_data_build(u8 reserved, u32 tsn, u16 s, u16 n, u32 protoload, u8 *data, size_t datalen, size_t *chunklen);
+u8 *sctp_cookie_build(u8 type, u8 flags, u8 *cookie, size_t cookielen, size_t *chunklen);
+u8 *sctp_abort_build(u16 code, u8 flags, u8 *info, size_t infolen, size_t *chunklen);
+u8 *sctp_heartbeat_build(u8 type, u8 flags, u8 *info, size_t infolen, size_t *chunklen);
+u8 *sctp_error_build(u8 flags, u8 code, u8 *info, size_t infolen, size_t *chunklen);
+u8 *sctp_shutdown_build(u8 flags, u32 tsnack, size_t *chunklen);
+
+#define sctp_shutdown_ack_build(flags, chunklen)		\
+  sctp_chunk_build(SCTP_SHUTDOWN_ACK, flags, NULL, 0, chunklen)
+#define sctp_shutdown_complete_build(flags, chunklen)			\
+  sctp_chunk_build(SCTP_SHUTDOWN_COMPLETE, flags, NULL, 0, chunklen)
 
 u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
                     u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
-                    char *chunks, int chunkslen, const char *data, u16 datalen,
-                    u32 *pktlen, bool adler32sum, bool badsum);
+                    u8 *chunks, size_t chunkslen, size_t *pktlen, bool adler32sum,
+		    bool badsum);
 
 u8 *sctp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                    u32 vtag, char *chunks, int chunkslen, const char *data,
-                    u16 datalen, u32 *pktlen, bool adler32sum, bool badsum);
+                    u32 vtag, u8 *chunks, size_t chunkslen, size_t *pktlen,
+		    bool adler32sum, bool badsum);
 
 int sctp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                    int ttl, u16 ipid, u8 tos, bool df, u8 *ipops, int ipoptlen,
-		   u16 srcport, u16 dstport, char *chunks, int chunkslen, u32 vtag,
-                   const char *data, u16 datalen, int mtu, bool adler32sum,
-                   bool badsum);
+		   u16 srcport, u16 dstport, u8 *chunks, size_t chunkslen, u32 vtag,
+                   int mtu, bool adler32sum, bool badsum);
 
 int sctp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
 		   const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
-		   u16 srcport, u16 dstport, u32 vtag, char *chunks, int chunkslen,
-		   const char *data, u16 datalen, bool adler32sum, bool badsum);
+		   u16 srcport, u16 dstport, u32 vtag, u8 *chunks, size_t chunkslen,
+		   bool adler32sum, bool badsum);
 
 __END_DECLS
-
 
 #endif
 

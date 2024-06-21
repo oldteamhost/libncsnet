@@ -24,15 +24,15 @@
 
 #include <ncsnet/ip.h>
 
-int ip6_send_eth(struct ethtmp *eth, const u8 *pkt, u32 pktlen)
+int ip6_send_eth(struct ethtmp *eth, const u8 *frame, size_t frmlen)
 {
-  u32 packetlen;
+  size_t packetlen;
   eth_t *ethsd;
   u8 *ethframe;
   int res;
 
   ethframe = eth_build(eth->src, eth->dst, ETH_TYPE_IPV6,
-      (char*)pkt, pktlen, &packetlen);
+    (u8*)frame, frmlen, &packetlen);
   if (!ethframe)
     return -1;
 

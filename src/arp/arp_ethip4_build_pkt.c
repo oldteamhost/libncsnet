@@ -26,22 +26,22 @@
 
 u8 *arp_ethip4_build_pkt(mac_t src, mac_t dst, u16 op,
 			mac_t sha, ip4_t spa, mac_t tha,
-			ip4_t tpa, u32 *pktlen)
+			ip4_t tpa, size_t *pktlen)
 {
   u8 *arp, *ethip, *pkt;
-  u32 ethiplen, arplen;
+  size_t ethiplen, arplen;
 
   ethip = arp_ethip4_build(sha, spa, tha, tpa, &ethiplen);
   if (!ethip)
     return NULL;
   
   arp = arp_build(ARP_HDR_ETH, ARP_PRO_IP, MAC_ADDR_LEN,
-      IP4_ADDR_LEN, op, (char*)ethip, ethiplen, &arplen);
+      IP4_ADDR_LEN, op, (u8*)ethip, ethiplen, &arplen);
   free(ethip);
   if (!arp)
     return NULL;
   
-  pkt = eth_build(src, dst, ETH_TYPE_ARP, (char*)arp,
+  pkt = eth_build(src, dst, ETH_TYPE_ARP, (u8*)arp,
       arplen, pktlen);
   free(arp);
   if (!pkt)

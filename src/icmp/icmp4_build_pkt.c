@@ -26,16 +26,18 @@
 
 u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
                     bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
-		    u16 msglen, u32 *pktlen, bool badsum)
+		    size_t msglen, size_t *pktlen, bool badsum)
 {
-  u8 *icmp, *pkt;
-  u32 icmplen;
+  size_t icmplen;
+  icmp4h_t *icmp;
+  u8 *pkt;
 
-  icmp = icmp4_build(type, code, msg, msglen, &icmplen, badsum);
+  icmp = (icmp4h_t*)icmp_build(type, code, msg, msglen, &icmplen);
   if (!icmp)
     return NULL;
+  icmp4_check((u8*)icmp, icmplen, badsum);
   pkt = ip4_build(src, dst, IPPROTO_ICMP, ttl, ipid, tos, df, ipopt,
-      ipoptlen, (char*)icmp, icmplen, pktlen);
+    ipoptlen, (u8*)icmp, icmplen, pktlen);
   
   free(icmp);
   return pkt;

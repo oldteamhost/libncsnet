@@ -24,25 +24,20 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp_heartbeat_build(u8 type, u8 flags, u8 *info, u16 infolen, u16 *chunklen)
+u8 *sctp_heartbeat_build(u8 type, u8 flags, u8 *info, size_t infolen,
+			 size_t *chunklen)
 {
-  struct sctp_chunk_hdr_heartbeat *sctp_hb;
-  u8 *res;
+  u8 *chunk, *value;
+  size_t valuelen;
   
-  *chunklen = sizeof(struct sctp_chunk_hdr_heartbeat) + infolen;
-  res = (u8*)malloc(*chunklen);
-  if (!res)
+  value = frmbuild(&valuelen, NULL, "u16(%hu), u16(%hu)",
+    htons(SCTP_TYPEFLAG_REPORT), htons(sizeof(sctp_chunk_heartbeat_info) + infolen));
+  if (info && infolen && value)
+    value = frmbuild_addfrm(info, infolen, value, &valuelen, NULL);
+  if (!value)
     return NULL;
-  
-  sctp_hb = (struct sctp_chunk_hdr_heartbeat*)res;
-  sctp_hb->hi.infolen = htons(sizeof(struct sctp_chunk_hdr_heartbeat_info) + infolen);
-  sctp_hb->hi.type = SCTP_TYPEFLAG_REPORT;
-  sctp_hb->chunkhdr.flags = flags;
-  sctp_hb->chunkhdr.type = type;
-  sctp_hb->chunkhdr.len = htons(*chunklen);
-  
-  if (info && infolen)
-    memcpy((u8*)sctp_hb + sizeof(struct sctp_chunk_hdr_heartbeat), info, infolen);
-  
-  return res;
+  chunk = sctp_chunk_build(type, flags, value, valuelen, chunklen);
+
+  free(value);
+  return chunk;
 }

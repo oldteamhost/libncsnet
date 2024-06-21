@@ -22,10 +22,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/icmp.h>
+#include <ncsnet/sctp.h>
 
-u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, size_t *msglen)
+u8 *sctp_data_build(u8 reserved, u32 tsn, u16 s, u16 n, u32 protoload, u8 *data, size_t datalen, size_t *chunklen)
 {
-  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(%u), u32(%u)",
-    htons(id), htons(seq), htonl(orig), htonl(rx), htonl(tx)));
+  u8 *chunk, *value;
+  size_t valuelen;
+
+  value = frmbuild(&valuelen, NULL, "u32(%u), u16(%hu), u16(%hu), u32(%u)",
+    htonl(tsn), htons(s), htons(n), htonl(protoload));
+  if (data && datalen && value)
+    value = frmbuild_addfrm(data, datalen, value, &valuelen, NULL);
+  if (!value)
+    return NULL;
+  chunk = sctp_chunk_build(SCTP_DATA, reserved, value, valuelen, chunklen);
+
+  free(value);
+  return chunk;
 }

@@ -28,7 +28,7 @@ u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, size_t *msglen)
 {
   u8 *res;
   res = frmbuild(msglen, NULL, "u16(%hu), u16(%hu)", htons(id), htons(seq));
-  if (data)
+  if (data && res)
     res = frmbuild_add(msglen, res, NULL, "str(%s)", data);
   return res;
 }

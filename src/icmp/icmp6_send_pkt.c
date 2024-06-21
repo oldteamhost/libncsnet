@@ -32,7 +32,7 @@ int icmp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
   struct sockaddr_storage _dst;
   struct sockaddr_in6 *dst_in;
   int res = -1;
-  u32 pktlen;
+  size_t pktlen;
   u8 *pkt;
 
   pkt = icmp6_build_pkt(src, dst, tc, flowlabel, hoplimit, type, code, msg,

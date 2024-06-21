@@ -35,6 +35,7 @@
 
 #include "eth.h"
 #include "utils.h"
+#include "raw.h"
 #include "mt19937.h"
 
 #include "sys/types.h"
@@ -47,14 +48,14 @@
 #define TCP_HDR_LEN_MAX     (TCP_HDR_LEN + TCP_OPT_LEN_MAX)
 #define TCP_PAYLOAD_LEN_MAX 65495
 
-#define TCP_FLAG_FIN 0x01
-#define TCP_FLAG_SYN 0x02
-#define TCP_FLAG_RST 0x04
-#define TCP_FLAG_PSH 0x08
-#define TCP_FLAG_ACK 0x10
-#define TCP_FLAG_URG 0x20
-#define TCP_FLAG_CWR 0x80
-#define TCP_FLAG_ECE 0x40
+#define TCP_FLAG_FIN        0x01
+#define TCP_FLAG_SYN        0x02
+#define TCP_FLAG_RST        0x04
+#define TCP_FLAG_PSH        0x08
+#define TCP_FLAG_ACK        0x10
+#define TCP_FLAG_URG        0x20
+#define TCP_FLAG_CWR        0x80
+#define TCP_FLAG_ECE        0x40
 
 enum TCP_FLAGS {
   URG = TCP_FLAG_URG,
@@ -109,9 +110,9 @@ struct tcp_hdr
   u16 th_urp;    /* Urgent pointer. */
 };
 
-struct tcp_flags
-{
+typedef struct tcp_hdr tcph_t;
 
+struct tcp_flags {
   u8 syn; /* Synchronize sequence numbers. */
   u8 ack; /* Acknowledgment field significant. */
   u8 rst; /* Reset the connection. */
@@ -122,49 +123,88 @@ struct tcp_flags
   u8 ece; /* Explicit Congestion notification echo. */
 };
 
-struct tcp_opthdr
+typedef struct tcp_opt_hdr
 {
-  u8    opt_type;        /* option type */
-  u8    opt_len;         /* option length >= TCP_OPT_LEN */
-  union tcp_opt_data {
-    u16 mss;          /* TCP_OPT_MSS */
-    u8  wscale;        /* TCP_OPT_WSCALE */
-    u16 sack[19];     /* TCP_OPT_SACK */
-    u32 echo;         /* TCP_OPT_ECHO{REPLY} */
-    u32 timestamp[2]; /* TCP_OPT_TIMESTAMP */
-    u32 cc;           /* TCP_OPT_CC{NEW,ECHO} */
-    u8  cksum;         /* TCP_OPT_ALTSUM */
-    u8  md5[16];       /* TCP_OPT_MD5 */
-    u8  data8[TCP_OPT_LEN_MAX - TCP_OPT_LEN];
-  } opt_data;
-};
+  u8 kind, len;
+} tcp_opt;
+
+typedef struct tcp_opt_hdr_mss
+{
+  tcp_opt opt;
+  u16 mss;
+} tcp_opt_mss;
+
+typedef struct tcp_opt_hdr_nop
+{
+  u8 kind;
+} tcp_opt_nop;
+
+typedef struct tcp_opt_hdr_sackpr
+{
+  tcp_opt opt;
+} tcp_opt_sackpr;
+
+typedef struct tcp_opt_hdr_wscale
+{
+  tcp_opt opt;
+  u8 shift;
+} tcp_opt_wscale;
+
+typedef struct tcp_opt_hdr_tstamp
+{
+  tcp_opt opt;
+  u32 val, erc;
+} tcp_opt_tstamp;
+
+typedef struct tcp_opt_hdr_altcheck_req
+{
+  tcp_opt opt;
+  u8 check;
+} tcp_opt_altcheck_req;
 
 __BEGIN_DECLS
 
 u8 *tcp_build(u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
-              u16 win, u16 urp, const u8 *opt, int optlen, const char *data,
-              u16 datalen, u32 *pktlen);
+              u16 win, u16 urp, const u8 *opt, size_t optlen, const char *data,
+	      size_t *pktlen);
+
+void tcp4_check(u8 *frame, size_t frmlen, u32 src, u32 dst, bool badsum);
+void tcp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
+		const struct in6_addr *dst, bool badsum);
+
+#define tcp_opt_mss_build(mss, optlen)					\
+  frmbuild(optlen, NULL, "u8(2), u8(4), u16(%hu)", htons((mss)))
+#define tcp_opt_nop_build(optlen)		\
+  frmbuild(optlen, NULL, "u8(1)")
+#define tcp_opt_sackpr_build(optlen)		\
+  frmbuild(optlen, NULL, "u8(1), u8(2)")
+#define tcp_opt_wscale_build(shift, optlen)			\
+  frmbuild(optlen, NULL, "u8(3), u8(3), u8(%hhu)", shift)
+#define tcp_opt_tstamp_build(val, erc, optlen)				\
+  frmbuild(optlen, NULL, "u8(8), u8(10), u32(%u), u32(%u)", htonl(val), htonl(erc))
+#define tcp_opt_altcheck_req_build(check, optlen)		\
+  frmbuild(optlen, NULL, "u8(14), u8(3), u8(%hhu)", check)
 
 u8 *tcp4_build_pkt(u32 src, u32 dst, u8 ttl, u16 id, u8 tos, bool df,
-                   const u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
+                   const u8 *ipopt, size_t ipoptlen, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
-                   const u8 *opt, int optlen, const char *data, u16 datalen,
-                   u32 *pktlen, bool badsum);
+                   const u8 *opt, size_t optlen, const char *data, size_t *pktlen,
+		   bool badsum);
 
 u8 *tcp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
-                   const u8 *opt, int optlen, const char *data, u16 datalen,
-                   u32 *pktlen, bool badsum);
+                   const u8 *opt, size_t optlen, const char *data, size_t *pktlen,
+		   bool badsum);
 
 int tcp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                  int ttl, bool df, u8 *ipops, int ipoptlen, u16 srcport,
+                  int ttl, bool df, u8 *ipops, size_t ipoptlen, u16 srcport,
                   u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags, u16 win,
-                  u16 urp, u8 *opt, int optlen, const char *data, u16 datalen,
-                  int mtu, bool badsum);
+                  u16 urp, u8 *opt, size_t optlen, const char *data, int mtu,
+		  bool badsum);
 
 int tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
-                   u16 dstport, u8 flags, const char *data, u16 datalen);
+                   u16 dstport, u8 flags, const char *data);
 
 #define TCP_SYN_PACKET            6
 #define TCP_XMAS_PACKET           7

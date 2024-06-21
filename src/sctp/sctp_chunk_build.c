@@ -22,24 +22,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/icmp.h>
+#include <ncsnet/sctp.h>
 
-u8 *icmp6_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen)
+u8 *sctp_chunk_build(u8 type, u8 flags, u8 *value, size_t valuelen,
+		     size_t *chunklen)
 {
-  struct icmp6_hdr *icmp;
-  u8 *res;
-
-  *pktlen = sizeof(struct icmp6_hdr) + msglen;
-  res = (u8*)malloc(*pktlen);
-  if (!res)
-    return NULL;
-
-  icmp = (struct icmp6_hdr*)res;
-  icmp->code = code;
-  icmp->type = type;
-
-  if (msg && msglen)
-    memcpy((u8*)icmp + sizeof(struct icmp6_hdr), msg, msglen);
-
-  return res;
+  u8 *chunk;
+  chunk = frmbuild(chunklen, NULL, "u8(%hhu), u8(%hhu), u16(%hu)",
+    type, flags, htons(sizeof(sctp_chunk) + valuelen));
+  if (value && valuelen && chunk)
+    chunk = frmbuild_addfrm(value, valuelen, chunk, chunklen, NULL);
+  return chunk;
 }

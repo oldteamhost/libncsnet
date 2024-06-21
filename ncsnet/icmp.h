@@ -134,19 +134,16 @@
 #define	ICMP6_NEIGHBOR_ADVERTISEMENT 136
 #define	ICMP6_INFOTYPE(type) (((type) & 0x80) != 0)
 
-struct icmp4_hdr
+struct icmp_hdr
 {
   u8  type;
   u8  code;
   u16 check;
 };
 
-struct icmp6_hdr
-{
-  u8  type;
-  u8  code;
-  u16 check;
-};
+typedef struct icmp_hdr icmph_t;
+typedef struct icmp_hdr icmp4h_t;
+typedef struct icmp_hdr icmp6h_t;
 
 typedef struct icmp4_message_echo {
   u16 id, seq; /* and data */
@@ -198,8 +195,11 @@ typedef struct icmp6_msg_nd {
 
 __BEGIN_DECLS
 
-u8 *icmp4_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen, bool badsum);
-u8 *icmp6_build(u8 type, u8 code, u8 *msg, u16 msglen, u32 *pktlen);
+u8 *icmp_build(u8 type, u8 code, u8 *msg, size_t msglen, size_t *pktlen);
+
+void icmp4_check(u8 *frame, size_t frmlen, bool badsum);
+void icmp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
+		 const struct in6_addr *dst, bool badsum);
 
 u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, size_t *msglen);
 u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen);
@@ -222,11 +222,11 @@ u8 *icmp4_msg_redir_build(u32 gateway, u8 *frame, size_t frmlen, size_t *msglen)
 
 u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
                     bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
-		    u16 msglen, u32 *pktlen, bool badsum);
+		    size_t msglen, size_t *pktlen, bool badsum);
 
 u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u8 type, u8 code,
-		    u8 *msg, u16 msglen, u32 *pktlen, bool badsum);
+		    u8 *msg, size_t msglen, size_t *pktlen, bool badsum);
 
 int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                    int ttl, u16 ipid, u8 tos, bool df, u8 *ipopt, int ipoptlen,

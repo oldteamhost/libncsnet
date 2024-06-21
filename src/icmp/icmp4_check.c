@@ -24,8 +24,14 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, size_t *msglen)
+void icmp4_check(u8 *frame, size_t frmlen, bool badsum)
 {
-  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(%u), u32(%u)",
-    htons(id), htons(seq), htonl(orig), htonl(rx), htonl(tx)));
+  icmp4h_t *icmp;
+  
+  icmp = (icmp4h_t*)frame;
+  icmp->check = 0;
+  icmp->check = in_check((u16*)frame, (int)frmlen);
+  
+  if (badsum)
+    --icmp->check;
 }

@@ -24,18 +24,24 @@
 
 #include <ncsnet/tcp.h>
 
-  u8 *tcp_build(u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
-              u16 win, u16 urp, const u8 *opt, int optlen, const char *data,
-              u16 datalen, u32 *pktlen)
+u8 *tcp_build(u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
+              u16 win, u16 urp, const u8 *opt, size_t optlen, const char *data,
+	      size_t *pktlen)
 {
-  struct tcp_hdr *tcp;
+  size_t datalen;
+  tcph_t *tcp;
   u8 *pkt;
 
+  if (data)
+    datalen = strlen(data);
+  else
+    datalen = 0;
+  
   *pktlen = sizeof(*tcp) + optlen + datalen;
   pkt = (u8*)malloc(*pktlen);
   if (!pkt)
     return NULL;
-  tcp = (struct tcp_hdr*)pkt;
+  tcp = (tcph_t*)pkt;
 
   memset(tcp, 0, sizeof(*tcp));
   tcp->th_sport = htons(srcport);
@@ -45,24 +51,20 @@
 
   if (seq)
     tcp->th_seq = htonl(seq);
-
   if (ack)
     tcp->th_ack = htonl(ack);
-
   if (reserved)
     tcp->th_x2 = reserved & 0x0F;
-
   if (win)
     tcp->th_win = htons(win);
   else
     tcp->th_win = htons(1024);
-
   if (urp)
     tcp->th_urp = htons(urp);
 
-  if (optlen)
+  if (opt && optlen)
     memcpy(pkt + sizeof(*tcp), opt, optlen);
-  if (data && datalen)
+  if (data)
     memcpy(pkt + sizeof(*tcp) + optlen, data, datalen);
 
   tcp->th_sum = 0;

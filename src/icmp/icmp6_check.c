@@ -24,8 +24,15 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, size_t *msglen)
+void icmp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
+		 const struct in6_addr *dst, bool badsum)
 {
-  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(%u), u32(%u)",
-    htons(id), htons(seq), htonl(orig), htonl(rx), htonl(tx)));
+  icmp6h_t *icmp;
+
+  icmp = (icmp6h_t*)frame;
+  icmp->check = 0;
+  icmp->check = ip6_pseudocheck(src, dst, IPPROTO_ICMPV6, (u32)frmlen, icmp);
+
+  if (badsum)
+    --icmp->check;
 }

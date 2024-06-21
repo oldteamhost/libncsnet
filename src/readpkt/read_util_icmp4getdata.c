@@ -24,7 +24,7 @@
 
 #include <ncsnet/readpkt.h>
 
-const void *read_util_icmp4getdata(const struct icmp4_hdr_ *icmp, u32 *len)
+const void *read_util_icmp4getdata(const icmp4h_t *icmp, u32 *len)
 {
   u32 hdrlen = 0;
   if (icmp->type == ICMP4_TIMEXCEED ||

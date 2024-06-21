@@ -26,21 +26,18 @@
 
 u8 *udp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
                    bool df, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
-                   const char *data, u16 datalen, u32 *pktlen, bool badsum)
+                   const char *data, size_t *pktlen, bool badsum)
 {
-  struct udp_hdr *udp;
-  u32 udplen;
+  size_t udplen;
+  udph_t *udp;
   u8 *pkt;
 
-  udp = (struct udp_hdr*)udp_build(srcport, dstport, data, datalen, &udplen);
+  udp = (udph_t*)udp_build(srcport, dstport, data, &udplen);
   if (!udp)
     return NULL;
-  udp->check = ip4_pseudocheck(src, dst, IPPROTO_UDP, udplen, udp);
-  if (badsum)
-    udp->check = 0xffff;
-
+  udp4_check((u8*)udp, udplen, src, dst, badsum);
   pkt = ip4_build(src, dst, IPPROTO_UDP, ttl, ipid, tos, df, ipopt,
-      ipoptlen, (char*)udp, udplen, pktlen);
+      ipoptlen, (u8*)udp, udplen, pktlen);
 
   free(udp);
   return pkt;

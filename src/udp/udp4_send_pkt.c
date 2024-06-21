@@ -26,17 +26,16 @@
 
 int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                   int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
-                  u16 dstport, bool df, const char *data, u16 datalen, int mtu,
-                  bool badsum)
+                  u16 dstport, bool df, const char *data, int mtu, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
-  int res = -1;
-  u32 pktlen;
+  size_t pktlen;
+  int res;
   u8 *pkt;
 
   pkt = udp4_build_pkt(src, dst, ttl, ipid, IP_TOS_DEFAULT, df, ipopt,
-      ipoptlen, srcport, dstport, data, datalen, &pktlen, badsum);
+    ipoptlen, srcport, dstport, data, &pktlen, badsum);
   if (!pkt)
     return -1;
 

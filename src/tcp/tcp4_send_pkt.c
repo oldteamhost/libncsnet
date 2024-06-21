@@ -23,25 +23,22 @@
 */
 
 #include <ncsnet/tcp.h>
-#include "ncsnet/ip.h"
-#include "ncsnet/utils.h"
 
 int tcp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                  int ttl, bool df, u8 *ipops, int ipoptlen, u16 srcport,
+                  int ttl, bool df, u8 *ipops, size_t ipoptlen, u16 srcport,
                   u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags, u16 win,
-                  u16 urp, u8 *opt, int optlen, const char *data, u16 datalen,
-                  int mtu, bool badsum)
+                  u16 urp, u8 *opt, size_t optlen, const char *data, int mtu,
+		  bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
-  u32 pktlen;
-  int res = -1;
+  size_t pktlen;
+  int res;
   u8 *pkt;
 
   pkt = tcp4_build_pkt(src, dst, ttl, random_u16(), IP_TOS_DEFAULT,
-		       df, ipops, ipoptlen, srcport, dstport, seq,
-		       ack, reserved, flags, win, urp, opt, optlen,
-		       data, datalen, &pktlen, badsum);
+    df, ipops, ipoptlen, srcport, dstport, seq, ack, reserved, flags,
+    win, urp, opt, optlen, data, &pktlen, badsum);
   if (!pkt)
     return -1;
 

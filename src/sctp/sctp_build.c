@@ -24,38 +24,15 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp_build(u16 srcport, u16 dstport, u32 vtag, const char *chunks,
-               int chunkslen, const char *data, u16 datalen, u32 *pktlen,
-               bool adler32sum, bool badsum)
+u8 *sctp_build(u16 srcport, u16 dstport, u32 vtag, u8 *chunks,
+               size_t chunkslen, size_t *pktlen)
 {
-  struct sctp_hdr *sctp;
   u8 *pkt;
 
-  *pktlen = sizeof(*sctp) + chunkslen + datalen;
-  pkt = (u8*)malloc(*pktlen);
-  sctp = (struct sctp_hdr*)pkt;
-
-  memset(sctp, 0, sizeof(*sctp));
-  sctp->srcport = htons(srcport);
-  sctp->dstport = htons(dstport);
-  sctp->vtag  = htonl(vtag);
-  sctp->check = 0;
-
-  if (chunks)
-    memcpy(pkt + sizeof(*sctp), chunks, chunkslen);
-  if (data)
-    memcpy(pkt + sizeof(*sctp) + chunkslen, data, datalen);
-
-  /* RFC 2960 originally defined Adler32 checksums, which was later
-   * revised to CRC32C in RFC 3309 and RFC 4960 respectively.
-   * Nmap uses CRC32C by default, unless --adler32 is given. */
-  if (adler32sum)
-    sctp->check = htonl(adler32(1, pkt, *pktlen));
-  else
-    sctp->check = htonl(crc32c(pkt, *pktlen, NULL));
-
-  if (badsum)
-    --sctp->check;
-
+  pkt = frmbuild(pktlen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(0)",
+    htons(srcport), htons(dstport), htonl(vtag));
+  if (chunks && chunkslen)
+    pkt = frmbuild_addfrm(chunks, chunkslen, pkt, pktlen, NULL);
+  
   return pkt;
 }

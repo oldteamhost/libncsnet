@@ -12,10 +12,10 @@ static u8 *icmp4_msg(u16 id, u16 seq, const char *data, u16 datalen, size_t *msg
 
 int main(void)
 {
-  u16 pktlen = 0;
+  size_t pktlen = 0;
   u8 *res;
   u8 *pkt;
-  u32 pktlen_;
+  size_t pktlen_;
 
   //res = icmp4_msg(100, 1, NULL, 0, (size_t*)&pktlen);  
   res = icmp4_msg(100, 1, "123", 3, (size_t*)&pktlen);

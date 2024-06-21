@@ -75,16 +75,17 @@ struct igmp_hdr
   u8  data[1500];
 };
 
-__BEGIN_DECLS
+typedef struct igmp_hdr igmph_t;
 
-u8 *igmp_build();
+__BEGIN_DECLS
 
 u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
                    bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code,
-                   const char *data, u16 datalen, u32 *pktlen, bool badsum);
+                   const char *data, size_t datalen, size_t *pktlen, bool badsum);
+
 int igmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                    int ttl, bool df, u8 *ipops, int ipoptlen, u16 ipid, u8 tos,
-                   u8 type, u8 code, const char *data, u16 datalen, int mtu,
+                   u8 type, u8 code, const char *data, size_t datalen, int mtu,
                    bool badsum);
 __END_DECLS
 

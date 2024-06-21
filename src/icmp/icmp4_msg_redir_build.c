@@ -28,7 +28,7 @@ u8 *icmp4_msg_redir_build(u32 gateway, u8 *frame, size_t frmlen, size_t *msglen)
 {
   u8 *res;
   res = frmbuild(msglen, NULL, "u32(%u)", htonl(gateway)); /* htonl ??? */
-  if (frame && frmlen)
+  if (frame && frmlen && res)
     res = frmbuild_addfrm(frame, frmlen, res, msglen, NULL);
   return res;
 }

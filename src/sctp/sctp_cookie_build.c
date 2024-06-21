@@ -24,23 +24,8 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp_cookie_build(u8 type, u8 flags, u8 *cookie, u16 cookielen, u16 *chunklen)
+u8 *sctp_cookie_build(u8 type, u8 flags, u8 *cookie, size_t cookielen,
+		      size_t *chunklen)
 {
-  struct sctp_chunk_hdr *sctp_ce;
-  u8 *res;
-
-  *chunklen = sizeof(struct sctp_chunk_hdr) + cookielen;
-  res = (u8*)malloc(*chunklen);
-  if (!res)
-    return NULL;
-
-  sctp_ce = (struct sctp_chunk_hdr*)res;
-  sctp_ce->flags = flags;
-  sctp_ce->type  = type;
-  sctp_ce->len   = htons(*chunklen);
-
-  if (cookie && cookielen && type == SCTP_COOKIE_ECHO)
-    memcpy((u8*)sctp_ce + sizeof(struct sctp_chunk_hdr), cookie, cookielen);
-  
-  return res;
+  return (sctp_chunk_build(type, flags, cookie, cookielen, chunklen));
 }

@@ -638,9 +638,9 @@ icmpbad:
     }
   }
   else if (hdr.proto == IPPROTO_ICMPV6) {
-    if (datalen > sizeof(struct icmp6_hdr)) {
-      const struct icmp6_hdr *icmpv6;
-      icmpv6 = (struct icmp6_hdr *) data;
+    if (datalen > sizeof(icmp6h_t)) {
+      const icmp6h_t *icmpv6;
+      icmpv6 = (icmp6h_t*) data;
       snprintf(protoinfo, sizeof(protoinfo), "ICMPv6 (%d) %s > %s (type=%d/code=%d) %s",
 	       hdr.proto, srchost, dsthost,
 	       icmpv6->type, icmpv6->code, ipinfo);

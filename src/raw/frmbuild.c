@@ -230,7 +230,7 @@ u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap
 	break;
       }
       case TYPE_STR: {
-	curlen = strlen(opt.val) + 1;
+	curlen = strlen(opt.val);
 	memcpy(cur, (char*)opt.val, curlen);
 	cur += curlen; /* next */
 	break;

@@ -24,21 +24,16 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp_shutdown_build(u8 flags, u32 tsnack, u16 *chunklen)
+u8 *sctp_shutdown_build(u8 flags, u32 tsnack, size_t *chunklen)
 {
-  struct sctp_chunk_hdr_shutdown *sctp_s;
-  u8 *res;
-  
-  *chunklen = sizeof(struct sctp_chunk_hdr_shutdown);
-  res = (u8*)malloc(*chunklen);
-  if (!res)
+  u8 *chunk, *value;
+  size_t valuelen;
+
+  value = frmbuild(&valuelen, NULL, "u32(%u)", htonl(tsnack));
+  if (!value)
     return NULL;
+  chunk = sctp_chunk_build(SCTP_ABORT, flags, value, valuelen, chunklen);
 
-  sctp_s = (struct sctp_chunk_hdr_shutdown*)res;
-  sctp_s->tsnack         = htonl(tsnack);
-  sctp_s->chunkhdr.flags = flags;
-  sctp_s->chunkhdr.type  = SCTP_SHUTDOWN;
-  sctp_s->chunkhdr.len   = htons(*chunklen);  
-
-  return res;
+  free(value);
+  return chunk;
 }

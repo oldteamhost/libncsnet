@@ -25,26 +25,16 @@
 #include <ncsnet/arp.h>
 
 u8 *arp_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op,
-	      const char *data, u32 datalen, u32 *pktlen)
+	      u8 *frame, size_t frmlen, size_t *pktlen)
 {
-  struct arp_hdr *arp;
   u8* pkt;
-
-  *pktlen = sizeof(struct arp_hdr) + datalen;
-  pkt = (u8*)malloc(*pktlen);
+  
+  pkt = frmbuild(pktlen, NULL, "u16(%hu), u16(%hu), u8(%huu), u8(%huu), u16(%hu)",
+    htons(hdr), htons(pro), hln, pln, htons(op));
+  if (frame && frmlen && pkt)
+    pkt = frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
   if (!pkt)
     return NULL;
-  arp = (struct arp_hdr*)pkt;
-
-  arp->hdr = htons(hdr);
-  arp->pro = htons(pro);
-  arp->hln = hln;
-  arp->pln = pln;
-  arp->op  = htons(op);
-
-  if (data && datalen)
-    memcpy((u8*)arp + sizeof(struct arp_hdr),
-	    data, datalen);
   
   return pkt;
 }

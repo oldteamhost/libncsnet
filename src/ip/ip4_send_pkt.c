@@ -26,16 +26,16 @@
 #include <ncsnet/utils.h>
 
 int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, bool df,
-                 const u8 *opt, int optlen, const char *data, u16 datalen,
+                 const u8 *opt, int optlen, const char *data, size_t datalen,
                  int mtu)
 {
   struct sockaddr_in dst_in;
-  u32 pktlen;
+  size_t pktlen;
   int res = -1;
   u8 *pkt;
 
   pkt = ip4_build(src, dst, proto, ttl, random_u16(), 5, df,
-      opt, optlen, data, datalen, &pktlen);
+		  opt, optlen, (u8*)data, datalen, &pktlen);
   if (!pkt)
     return -1;
 

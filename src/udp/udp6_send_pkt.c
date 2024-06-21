@@ -26,17 +26,16 @@
 
 int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
 		  const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
-		  u16 srcport, u16 dstport, const char *data, u16 datalen,
-		  bool badsum)
+		  u16 srcport, u16 dstport, const char *data, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in6 *dst_in;
-  int res = -1;
-  u32 pktlen;
+  size_t pktlen;
+  int res;
   u8 *pkt;
 
   pkt = udp6_build_pkt(src, dst, tc, flowlabel, hoplimit, srcport, dstport, data,
-      datalen, &pktlen, badsum);
+    &pktlen, badsum);
   if (!pkt)
     return -1;
 

@@ -30,8 +30,8 @@ int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
-  int res = -1;
-  u32 pktlen;
+  size_t pktlen;
+  int res;
   u8 *pkt;
 
   pkt = icmp4_build_pkt(src, dst, ttl, ipid, tos, df, ipopt, ipoptlen, type,

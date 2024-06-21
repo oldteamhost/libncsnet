@@ -22,22 +22,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/sctp.h>
+#include <ncsnet/ip.h>
 
-u8 *sctp_shutdown_complete_build(u8 flags, u16 *chunklen)
+void ip4_check(u8 *frame, size_t frmlen, bool badsum)
 {
-  struct sctp_chunk_hdr *sctp_sc;
-  u8 *res;
-  
-  *chunklen = sizeof(struct sctp_chunk_hdr);
-  res = (u8*)malloc(*chunklen);
-  if (!res)
-    return NULL;
+  ip4h_t *ip;
 
-  sctp_sc = (struct sctp_chunk_hdr*)res;
-  sctp_sc->flags = flags;
-  sctp_sc->type = SCTP_SHUTDOWN_COMPLETE;  
-  sctp_sc->len = htons(*chunklen);
+  ip = (ip4h_t*)frame;
+  ip->check = 0;
+  ip->check = ip_check_add((u16*)frame, frmlen, 0);
 
-  return res;
+  if (badsum)
+    --ip->check;
 }

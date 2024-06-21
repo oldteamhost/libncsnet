@@ -24,25 +24,21 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp_error_build(u8 flags, u8 code, u8 *info, u16 infolen, u16 *chunklen)
+u8 *sctp_error_build(u8 flags, u8 code, u8 *info, size_t infolen,
+		     size_t *chunklen)
 {
-  struct sctp_chunk_hdr_error *sctp_e;
-  u8 *res;
-  
-  *chunklen = sizeof(struct sctp_chunk_hdr_error) + infolen;
-  res = (u8*)malloc(*chunklen);
-  if (!res)
-    return NULL;
-  
-  sctp_e = (struct sctp_chunk_hdr_error*)res;
-  sctp_e->chunkhdr.flags = flags;
-  sctp_e->chunkhdr.type = SCTP_ERROR;
-  sctp_e->chunkhdr.len = htons(*chunklen);
-  sctp_e->ec.code = code;
-  sctp_e->ec.len = htons(sizeof(struct sctp_error_cause_op_hdr) + infolen);
+  u8 *chunk, *value;
+  size_t valuelen;
 
-  if (info && infolen)
-    memcpy((u8*)sctp_e + sizeof(struct sctp_chunk_hdr_error), info, infolen);
-  
-  return res;
+  value = frmbuild(&valuelen, NULL, "u16(%hu), u16(%hu)",
+    htons(code), htons(sizeof(sctp_error_cause_op) + infolen));
+  if (info && infolen && value)
+    value = frmbuild_addfrm(info, infolen, value, &valuelen, NULL);
+  if (!value)
+    return NULL;
+  chunk = sctp_chunk_build(SCTP_ERROR, flags, value, valuelen, chunklen);
+
+  free(value);
+  return chunk;
+
 }

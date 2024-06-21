@@ -25,7 +25,7 @@
 #include <ncsnet/arp.h>
 
 u8 *arp_ethip4_build(mac_t sha, ip4_t spa, mac_t tha,
-		    ip4_t tpa, u32 *pktlen)
+		    ip4_t tpa, size_t *pktlen)
 {
   u8 *pkt;
   

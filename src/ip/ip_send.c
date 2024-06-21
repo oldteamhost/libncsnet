@@ -25,21 +25,21 @@
 #include <ncsnet/ip.h>
 
 int ip_send(struct ethtmp *eth, int fd, const struct sockaddr_storage *dst,
-            int mtu, const u8 *pkt, u32 pktlen)
+            int mtu, const u8 *frame, size_t frmlen)
 {
-  struct ip4_hdr *ip;
+  ip4h_t *ip;
   
-  ip = (struct ip4_hdr*)pkt;
-  if (pktlen < 1)
+  ip = (ip4h_t*)frame;
+  if (frmlen < 1)
     return -1;
 
   if (ip->version == 4) {
     assert(dst->ss_family == AF_INET);
-    return ip4_send(eth, fd, (struct sockaddr_in*)dst, mtu, pkt, pktlen);
+    return ip4_send(eth, fd, (struct sockaddr_in*)dst, mtu, frame, frmlen);
   }
   else if (ip->version == 6) {
     assert(dst->ss_family == AF_INET6);
-    return ip6_send(eth, fd, (struct sockaddr_in6*)dst, pkt, pktlen);
+    return ip6_send(eth, fd, (struct sockaddr_in6*)dst, frame, frmlen);
   }
 
   return -1;

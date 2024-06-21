@@ -22,10 +22,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/icmp.h>
+#include <ncsnet/udp.h>
 
-u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, size_t *msglen)
+void udp4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, bool badsum)
 {
-  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(%u), u32(%u)",
-    htons(id), htons(seq), htonl(orig), htonl(rx), htonl(tx)));
+  udph_t *udp;
+  
+  udp = (udph_t*)frame;
+  udp->check = 0;
+  udp->check = ip4_pseudocheck(src, dst, IPPROTO_UDP, frmlen, udp);
+
+  if (badsum)
+    udp->check = 0xffff;
 }

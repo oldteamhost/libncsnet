@@ -26,21 +26,18 @@
 
 u8 *udp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                   const char *data, u16 datalen, u32 *pktlen, bool badsum)
+                   const char *data, size_t *pktlen, bool badsum)
 {
-  struct udp_hdr *udp;
-  u32 udplen;
+  size_t udplen;
+  udph_t *udp;
   u8 *pkt;
 
-  udp = (struct udp_hdr*)udp_build(srcport, dstport, data, datalen, &udplen);
+  udp = (udph_t*)udp_build(srcport, dstport, data, &udplen);
   if (!udp)
     return NULL;
-  udp->check = ip6_pseudocheck(src, dst, IPPROTO_UDP, udplen, udp);
-  if (badsum)
-    udp->check = 0xffff;
-
+  udp6_check((u8*)udp, udplen, src, dst, badsum);
   pkt = ip6_build(src, dst, tc, flowlabel, IPPROTO_UDP, hoplimit,
-      (char*)udp, udplen, pktlen);
+      (u8*)udp, udplen, pktlen);
 
   free(udp);
   return pkt;

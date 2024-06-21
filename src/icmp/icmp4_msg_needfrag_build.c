@@ -28,7 +28,7 @@ u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *frame, size_t frmlen, size_t *msglen)
 {
   u8 *res;
   res = frmbuild(msglen, NULL, "u16(%hu), u16(%hu)", htons(mtu), 0);
-  if (frame && frmlen)
+  if (frame && frmlen && res)
     res = frmbuild_addfrm(frame, frmlen, res, msglen, NULL);
   return res;
 }

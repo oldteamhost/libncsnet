@@ -30,7 +30,7 @@
 
 u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
                    bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code,
-                   const char *data, u16 datalen, u32 *pktlen, bool badsum)
+                   const char *data, size_t datalen, size_t *pktlen, bool badsum)
 {
   int dlen = 0, igmplen = 0;
   struct igmp_hdr igmp;
@@ -69,5 +69,5 @@ u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
     --igmp.check;
 
   return ip4_build(src, dst, IPPROTO_IGMP, ttl,
-      ipid, tos, df, ipopt, ipoptlen, pkt, igmplen, pktlen);
+    ipid, tos, df, ipopt, ipoptlen, (u8*)pkt, igmplen, pktlen);
 }
