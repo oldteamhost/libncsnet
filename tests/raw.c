@@ -12,6 +12,28 @@ static u8 *icmp4_msg(u16 id, u16 seq, const char *data, u16 datalen, size_t *msg
 
 int main(void)
 {
+
+  mac_t src, dst;
+
+  mac_fill(&src, 0x1, 0x2, 0x3, 0x4, 0x5, 0x8);
+  mac_fill(&dst, 0x1, 0x2, 0x3, 0x4, 0x5, 0x5);
+  
+  size_t len;
+  mach_t *rrr = (mach_t*)eth_build(src, dst, ETH_TYPE_IPV4, NULL, 0, &len);
+  if (!rrr) {
+    printf("kjfdg\n");
+    return -1;
+  }
+
+  char mac[MAC_ADDR_STRING_LEN];
+  mac_ntoa(&rrr->src, mac);
+  printf("src is: %s\n", mac);
+  mac_ntoa(&rrr->dst, mac);
+  printf("dst is: %s\n", mac);  
+  printf("type is: %hu\n", ntohs(rrr->type));  
+  
+  return 0;
+  
   size_t pktlen = 0;
   u8 *res;
   u8 *pkt;

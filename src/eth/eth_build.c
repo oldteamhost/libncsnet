@@ -24,25 +24,32 @@
 
 #include <ncsnet/eth.h>
 
+/* in header error */
+#include <ncsnet/raw.h>
+
 u8 *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
 	      size_t frmlen, size_t *pktlen)
 {
-  mach_t *eth;
   u8 *pkt;
 
-  *pktlen = ETH_HDR_LEN + frmlen;
-  pkt = (u8*)malloc(*pktlen);
-  if (!pkt)
+  char err[ERRBUF_MAXLEN];
+  pkt = frmbuild(pktlen, err,
+    "u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu)",
+    dst.octet[0], dst.octet[1], dst.octet[2], dst.octet[3],
+    dst.octet[4], dst.octet[5]);
+  if (pkt)
+    pkt = frmbuild_add(pktlen, pkt, err,
+      "u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu)",
+       src.octet[0], src.octet[1], src.octet[2], src.octet[3],
+       src.octet[4], src.octet[5]);
+  if (pkt)  
+    pkt = frmbuild_add(pktlen, pkt, err, "u16(%hu)", htons(type));
+  if (frame && frmlen && pkt)
+    pkt = frmbuild_addfrm(frame, frmlen, pkt, pktlen, err);
+  if (!pkt) {
+    printf("%s\n", err);
     return NULL;
-
-  eth = (mach_t*)pkt;
-  eth->dst  = dst;
-  eth->src  = src;
-  eth->type = htons(type);
-  
-  if (frame && frmlen)
-    memcpy((u8*)eth + ETH_HDR_LEN,
-	   frame, frmlen);
+  }
 
   return pkt;
 }

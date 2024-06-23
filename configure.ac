@@ -22,16 +22,40 @@ case "$host_os" in
   *bsd*)
     OS_TYPE=bsd
     AC_DEFINE([IS_BSD], [1], [Define if this is a BSD system])
+    AC_MSG_RESULT([$OS_TYPE])
     ;;
   *linux*)
     OS_TYPE=linux
     AC_DEFINE([IS_LINUX], [1], [Define if this is a Linux system])
+    AC_MSG_RESULT([$OS_TYPE])
+    dnl void linux
+    AC_MSG_CHECKING([if this is Void Linux])
+    VOID_LINUX=no
+    if test -f /etc/os-release; then
+        . /etc/os-release
+        if test "$ID" = "void"; then
+            VOID_LINUX=yes
+        fi
+    fi
+    if test "$VOID_LINUX" = "no"; then
+        AC_PATH_PROG([LSB_RELEASE], [lsb_release], [no])
+        if test "$LSB_RELEASE" != "no"; then
+            distro=$(lsb_release -i | cut -f 2)
+            if test "$distro" = "Void"; then
+                VOID_LINUX=yes
+            fi
+        fi
+    fi
+    AC_MSG_RESULT([$VOID_LINUX])
+    if test "$VOID_LINUX" = "yes"; then
+        AC_DEFINE([IS_VOID_LINUX], [1], [Define if this is Void Linux])
+    fi
     ;;
   *)
     OS_TYPE=unknown
     ;;
 esac
-AC_MSG_RESULT([$OS_TYPE])
+
 
 dnl check make util
 MAKE_P="make"
