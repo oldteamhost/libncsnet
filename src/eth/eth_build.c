@@ -32,24 +32,21 @@ u8 *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
 {
   u8 *pkt;
 
-  char err[ERRBUF_MAXLEN];
-  pkt = frmbuild(pktlen, err,
+  pkt = frmbuild(pktlen, NULL,
     "u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu)",
     dst.octet[0], dst.octet[1], dst.octet[2], dst.octet[3],
     dst.octet[4], dst.octet[5]);
   if (pkt)
-    pkt = frmbuild_add(pktlen, pkt, err,
+    pkt = frmbuild_add(pktlen, pkt, NULL,
       "u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu)",
        src.octet[0], src.octet[1], src.octet[2], src.octet[3],
        src.octet[4], src.octet[5]);
   if (pkt)  
-    pkt = frmbuild_add(pktlen, pkt, err, "u16(%hu)", htons(type));
+    pkt = frmbuild_add(pktlen, pkt, NULL, "u16(%hu)", htons(type));
   if (frame && frmlen && pkt)
-    pkt = frmbuild_addfrm(frame, frmlen, pkt, pktlen, err);
-  if (!pkt) {
-    printf("%s\n", err);
+    pkt = frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
+  if (!pkt)
     return NULL;
-  }
 
   return pkt;
 }
