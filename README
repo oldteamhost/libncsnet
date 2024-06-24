@@ -19,7 +19,7 @@ quite complex. But there are always examples in [tests/], and [RFCs].
 
 Documentation of some functions and clauses can be found in [docs/], to view
 it you need to call [man ./<file.3>] on the required documentation file, for
-example, [man ./url.h];
+example, [man ./url.h]; OR, see [https://oldteamhost.github.io/database/main.html]
 
 To compile, run the following commands in the library's source directory:
 
