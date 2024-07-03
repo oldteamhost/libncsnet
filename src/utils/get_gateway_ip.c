@@ -37,7 +37,10 @@ int get_gateway_ip(char* buf, size_t len)
   if (!file)
     return -1;
 
-  fgets(line, BUF_SIZE, file);
+  if (!(fgets(line, BUF_SIZE, file))) {
+    fclose(file);
+    return -1;
+  }
   while (fgets(line, BUF_SIZE, file)) {
     if (sscanf(line, "%s %s %s", iface, dest, gw) == 3) {
       if (strcmp(dest, "00000000") == 0 && strcmp(gw, "00000000") != 0) {

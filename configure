@@ -648,7 +648,6 @@ ac_header_c_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 MAKE_P
-LSB_RELEASE
 host_os
 host_vendor
 host_cpu
@@ -1801,7 +1800,7 @@ else $as_nop
 #define $2 innocuous_$2
 
 /* System header to define __stub macros and hopefully few prototypes,
-   which can conflict with char $2 (); below.  */
+   which can conflict with char $2 (void); below.  */
 
 #include <limits.h>
 #undef $2
@@ -1812,7 +1811,7 @@ else $as_nop
 #ifdef __cplusplus
 extern "C"
 #endif
-char $2 ();
+char $2 (void);
 /* The GNU C library defines this for functions which it implements
     to always fail with ENOSYS.  Some functions are actually named
     something starting with __ and the normal name is an alias.  */
@@ -2153,9 +2152,7 @@ struct stat;
 /* Most of the following tests are stolen from RCS 5.7 src/conf.sh.  */
 struct buf { int x; };
 struct buf * (*rcsopen) (struct buf *, struct stat *, int);
-static char *e (p, i)
-     char **p;
-     int i;
+static char *e (char **p, int i)
 {
   return p[i];
 }
@@ -2206,6 +2203,7 @@ extern int puts (const char *);
 extern int printf (const char *, ...);
 extern int dprintf (int, const char *, ...);
 extern void *malloc (size_t);
+extern void free (void *);
 
 // Check varargs macros.  These examples are taken from C99 6.10.3.5.
 // dprintf is used instead of fprintf to avoid needing to declare
@@ -3995,82 +3993,11 @@ printf "%s\n" "#define IS_LINUX 1" >>confdefs.h
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $OS_TYPE" >&5
 printf "%s\n" "$OS_TYPE" >&6; }
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if this is Void Linux" >&5
-printf %s "checking if this is Void Linux... " >&6; }
-    VOID_LINUX=no
-    if test -f /etc/os-release; then
-        . /etc/os-release
-        if test "$ID" = "void"; then
-            VOID_LINUX=yes
-        fi
-    fi
-    if test "$VOID_LINUX" = "no"; then
-        # Extract the first word of "lsb_release", so it can be a program name with args.
-set dummy lsb_release; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_LSB_RELEASE+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  case $LSB_RELEASE in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_LSB_RELEASE="$LSB_RELEASE" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_LSB_RELEASE="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_path_LSB_RELEASE" && ac_cv_path_LSB_RELEASE="no"
-  ;;
-esac
-fi
-LSB_RELEASE=$ac_cv_path_LSB_RELEASE
-if test -n "$LSB_RELEASE"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $LSB_RELEASE" >&5
-printf "%s\n" "$LSB_RELEASE" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-        if test "$LSB_RELEASE" != "no"; then
-            distro=$(lsb_release -i | cut -f 2)
-            if test "$distro" = "Void"; then
-                VOID_LINUX=yes
-            fi
-        fi
-    fi
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $VOID_LINUX" >&5
-printf "%s\n" "$VOID_LINUX" >&6; }
-    if test "$VOID_LINUX" = "yes"; then
-
-printf "%s\n" "#define IS_VOID_LINUX 1" >>confdefs.h
-
-    fi
     ;;
   *)
     OS_TYPE=unknown
     ;;
 esac
-
 
 MAKE_P="make"
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for make util" >&5
@@ -4081,34 +4008,6 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MAKE_P" >&5
 printf "%s\n" "$MAKE_P" >&6; }
 
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for DLT_EN10MB" >&5
-printf %s "checking for DLT_EN10MB... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-        #include <pcap.h>
-        #ifndef DLT_EN10MB
-        #error DLT_EN10MB is not defined
-        #endif
-
-int
-main (void)
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-
-printf "%s\n" "#define HAVE_DLT_HDR 1" >>confdefs.h
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_dlt_en10mb" >&5
-printf "%s\n" "$enable_dlt_en10mb" >&6; }
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the processor supports DIVIDE instruction" >&5
 printf %s "checking whether the processor supports DIVIDE instruction... " >&6; }

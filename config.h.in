@@ -6,9 +6,6 @@
 /* Define if processor supports DIVIDE instruction */
 #undef HAVE_DIVIDE_SUPPORT
 
-/* Define if DLT_HDR is available */
-#undef HAVE_DLT_HDR
-
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #undef HAVE_FSEEKO
 
@@ -50,9 +47,6 @@
 
 /* Define if this is a Linux system */
 #undef IS_LINUX
-
-/* Define if this is Void Linux */
-#undef IS_VOID_LINUX
 
 /* System is little-endian */
 #undef LITTLE_ENDIAN_SYSTEM

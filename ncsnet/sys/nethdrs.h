@@ -56,7 +56,5 @@
     #include <linux/if_ether.h>
   #endif
 #endif
-#if defined(HAVE_DLT_HDR) || defined (IS_VOID_LINUX)
-  #include "dlt.h"
-#endif
+#include "dlt.h"
 #endif

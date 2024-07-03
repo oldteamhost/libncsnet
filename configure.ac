@@ -28,34 +28,11 @@ case "$host_os" in
     OS_TYPE=linux
     AC_DEFINE([IS_LINUX], [1], [Define if this is a Linux system])
     AC_MSG_RESULT([$OS_TYPE])
-    dnl void linux
-    AC_MSG_CHECKING([if this is Void Linux])
-    VOID_LINUX=no
-    if test -f /etc/os-release; then
-        . /etc/os-release
-        if test "$ID" = "void"; then
-            VOID_LINUX=yes
-        fi
-    fi
-    if test "$VOID_LINUX" = "no"; then
-        AC_PATH_PROG([LSB_RELEASE], [lsb_release], [no])
-        if test "$LSB_RELEASE" != "no"; then
-            distro=$(lsb_release -i | cut -f 2)
-            if test "$distro" = "Void"; then
-                VOID_LINUX=yes
-            fi
-        fi
-    fi
-    AC_MSG_RESULT([$VOID_LINUX])
-    if test "$VOID_LINUX" = "yes"; then
-        AC_DEFINE([IS_VOID_LINUX], [1], [Define if this is Void Linux])
-    fi
     ;;
   *)
     OS_TYPE=unknown
     ;;
 esac
-
 
 dnl check make util
 MAKE_P="make"
@@ -65,19 +42,6 @@ if test "$OS_TYPE" = "bsd"; then
 fi
 AC_MSG_RESULT([$MAKE_P])
 AC_SUBST(MAKE_P)
-
-dnl check dlt
-AC_MSG_CHECKING([for DLT_EN10MB])
-AC_COMPILE_IFELSE(
-    [AC_LANG_PROGRAM([[
-        #include <pcap.h>
-        #ifndef DLT_EN10MB
-        #error DLT_EN10MB is not defined
-        #endif
-    ]])],
-    [AC_DEFINE([HAVE_DLT_HDR], [1], [Define if DLT_HDR is available])],
-    [])
-AC_MSG_RESULT([$enable_dlt_en10mb])
 
 dnl check devide op
 AC_MSG_CHECKING([whether the processor supports DIVIDE instruction])
