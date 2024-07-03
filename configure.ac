@@ -85,5 +85,21 @@ if test "x$ac_cv_func_htons" = "xno"; then
   AC_DEFINE([HAVE_NETDB_HOST], [1], [Define to 1 if you have no htons function.])
 fi
 
+dnl linux read
+AC_ARG_ENABLE([linuxread],
+    AS_HELP_STRING([--disable-linuxread],
+                   [Disable linuxread support (default is enabled)]),
+    [linuxread_disable=yes],
+    [linuxread_disable=no])
+
+AC_DEFINE([HAVE_LINUX_READ], [1], [Enable linuxread support by default])
+AC_MSG_NOTICE([linuxread support is enabled by default])
+if test "x$linuxread_disable" = "xyes"; then
+    AC_DEFINE_UNQUOTED([HAVE_LINUX_READ], [0], [linuxread support disabled])
+    AC_MSG_NOTICE([linuxread support is disabled])
+else
+    AC_MSG_NOTICE([linuxread support is enabled])
+fi
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

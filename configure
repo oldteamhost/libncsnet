@@ -707,6 +707,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_largefile
+enable_linuxread
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1339,6 +1340,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-largefile     omit support for large files
+  --disable-linuxread     Disable linuxread support (default is enabled)
 
 Some influential environment variables:
   CC          C compiler command
@@ -4132,6 +4134,31 @@ if test "x$ac_cv_func_htons" = "xno"; then
 
 printf "%s\n" "#define HAVE_NETDB_HOST 1" >>confdefs.h
 
+fi
+
+# Check whether --enable-linuxread was given.
+if test ${enable_linuxread+y}
+then :
+  enableval=$enable_linuxread; linuxread_disable=yes
+else $as_nop
+  linuxread_disable=no
+fi
+
+
+
+printf "%s\n" "#define HAVE_LINUX_READ 1" >>confdefs.h
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: linuxread support is enabled by default" >&5
+printf "%s\n" "$as_me: linuxread support is enabled by default" >&6;}
+if test "x$linuxread_disable" = "xyes"; then
+
+printf "%s\n" "#define HAVE_LINUX_READ 0" >>confdefs.h
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: linuxread support is disabled" >&5
+printf "%s\n" "$as_me: linuxread support is disabled" >&6;}
+else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: linuxread support is enabled" >&5
+printf "%s\n" "$as_me: linuxread support is enabled" >&6;}
 fi
 
 ac_config_files="$ac_config_files Makefile"

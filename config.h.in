@@ -15,6 +15,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* linuxread support disabled */
+#undef HAVE_LINUX_READ
+
 /* Define to 1 if you have no htons function. */
 #undef HAVE_NETDB_HOST
 
