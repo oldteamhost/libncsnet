@@ -24,7 +24,7 @@
 
 #ifndef NCSCONFIGHDR
 #  define NCSCONFIGHDR
-#    ifdef ONLY_COMPILE
+#    ifdef HAVE_CONFIG_H
 #      include "config.h"
 #    endif
 #endif

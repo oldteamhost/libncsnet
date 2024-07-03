@@ -6,7 +6,7 @@ dnl check compiler
 AC_PROG_CC
 
 dnl flags
-CFLAGS="-Wall -fPIC -DONLY_COMPILE -march=native -mtune=native -g -flto"
+CFLAGS="-Wall -fPIC -DHAVE_CONFIG_H -march=native -mtune=native -g -flto"
 OCFLAGS="-O3 -fforce-addr"
 AC_SUBST(CFLAGS)
 AC_SUBST(OCFLAGS)
