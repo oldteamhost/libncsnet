@@ -57,29 +57,35 @@ ssize_t linuxread_live(linuxread_t *lr, u8 **buf, size_t buflen)
   struct sockaddr_in6 *dest6, source6;
   struct sockaddr_in  *dest, source;
   time_t run, current;
-  bool ip6, fuckyeah;
+  bool ip6_c, fuckyeah;
+  ip4h_t *ip4;
+  ip6h_t *ip6;
   ssize_t res;
   int elapsed;
   u8 *tmpbuf;
 
   tmpbuf = *buf;
   if (lr->src->ss_family == AF_INET6)
-    ip6 = true;
+    ip6_c = true;
   else
-    ip6 = false;
-  if (ip6)
+    ip6_c = false;
+  if (ip6_c)
     dest6 = (struct sockaddr_in6*)lr->src;
   else
     dest = (struct sockaddr_in*)lr->src;
-
+  
+  memset(&source6, 0, sizeof(source6));
+  memset(&source, 0, sizeof(source));
+  
   run = time(NULL);
+  gettimeofday(&lr->tstamp_s, NULL);
   for (;;) {
     res = recv(lr->fd, tmpbuf, buflen, 0);
+    gettimeofday(&lr->tstamp_e, NULL);
     if (res == -1)
       return -1;
-    if (!ip6) {
-      ip4h_t *ip4 = (ip4h_t*)(tmpbuf + sizeof(ethh_t));
-      memset(&source, 0, sizeof(source));
+    if (!ip6_c) {
+      ip4 = (ip4h_t*)(tmpbuf + sizeof(ethh_t));
       source.sin_addr.s_addr = ip4->src;
       if (source.sin_addr.s_addr == dest->sin_addr.s_addr)
         fuckyeah = true;
@@ -87,8 +93,7 @@ ssize_t linuxread_live(linuxread_t *lr, u8 **buf, size_t buflen)
 	fuckyeah = false;
     }
     else {
-      ip6h_t *ip6 = (ip6h_t*)(tmpbuf + sizeof(ethh_t));
-      memset(&source6, 0, sizeof(source6));
+      ip6 = (ip6h_t*)(tmpbuf + sizeof(ethh_t));
       memcpy(&source6.sin6_addr.s6_addr, ip6->ip6_src.octet, sizeof(ip6->ip6_src.octet));
       if (memcmp(&source6.sin6_addr, &dest6->sin6_addr, sizeof(struct in6_addr)) == 0)
         fuckyeah = true;
@@ -104,6 +109,8 @@ ssize_t linuxread_live(linuxread_t *lr, u8 **buf, size_t buflen)
     }
     else {
       *buf = tmpbuf;
+      lr->rtt = (lr->tstamp_e.tv_sec-lr->tstamp_s.tv_sec)*1000.0+
+	(lr->tstamp_e.tv_usec-lr->tstamp_s.tv_usec)/1000.0;
       return res;
     }
   }

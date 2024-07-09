@@ -44,6 +44,8 @@ typedef struct linuxread_hdr
   int proto;
   struct sockaddr_storage *src;
   int ms;
+  double rtt;
+  struct timeval tstamp_s, tstamp_e;
 } linuxread_t;
 
 __BEGIN_DECLS

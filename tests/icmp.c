@@ -36,6 +36,7 @@ int main(void)
   res = (u8*)calloc(4096, sizeof(u8));
 
   linuxread_live(lr, &res, 4096);
+  printf("%f\n", lr->rtt);
   linuxread_close(lr);
   free(res);
   
