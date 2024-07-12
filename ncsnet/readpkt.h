@@ -68,6 +68,7 @@ __BEGIN_DECLS
 
 void        read_util_tracepkt(int pdir, const u8 *pkt, u32 len, double rtt, int detail);
 const char *read_ippktinfo(const u8 *pkt, u32 len, int detail);
+char       *read_hexdump(const u8 *txt, size_t txtlen);
 bool        read_util_validate_tcp(const u8 *tcpc, unsigned len);
 bool        read_util_validate_pkt(const u8 *ipc, unsigned *len);
 int         read_util_datalinkoffset(int datalink);
