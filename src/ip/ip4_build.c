@@ -25,35 +25,35 @@
 #include <ncsnet/ip.h>
 
 u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
-              const u8 *opt, int optlen, u8 *frame, size_t frmlen,
+              const u8 *opts, int optslen, u8 *frame, size_t frmlen,
               size_t *pktlen)
 {
   ip4h_t *ip;
   u8 *pkt;
 
-  assert(optlen % 4 == 0);
-  *pktlen = sizeof(ip4h_t) + optlen + frmlen;
+  assert(optslen<=IP4_OPT_LEN_MAX);
+  *pktlen = sizeof(ip4h_t) + optslen + frmlen;
   pkt = (u8*)malloc(*pktlen);
   if (!pkt)
     return NULL;
 
-  ip = (struct ip4_hdr*)pkt;
+  ip = (ip4h_t*)pkt;
   ip->version = 4;
-  ip->ihl     = 5 + (optlen / 4);
+  ip->ihl     = 5+(optslen/4);
   ip->tos     = tos;
   ip->totlen  = htons(*pktlen);
   ip->id      = htons(id);
-  ip->off     = htons((df ? IP4_DF : 0));
+  ip->off     = htons((df?IP4_DF:0));
   ip->ttl     = ttl;
   ip->proto   = proto;
   ip->src     = src;
   ip->dst     = dst;
-  if (opt && optlen)
-    memcpy((u8*)ip + sizeof(ip4h_t), opt, optlen);
-  ip4_check((u8*)ip, sizeof(ip4h_t) + optlen, false);
+  if (opts && optslen)
+    memcpy((u8*)ip+sizeof(ip4h_t), opts, optslen);
+  ip4_check((u8*)ip, sizeof(ip4h_t)+optslen, false);
   
   if (frame && frmlen)
-    memcpy((u8*)ip + sizeof(ip4h_t) + optlen,
+    memcpy((u8*)ip+sizeof(ip4h_t)+optslen,
 	   frame, frmlen);
 
   return pkt;

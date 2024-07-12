@@ -304,7 +304,7 @@ typedef struct ip6_hdr ip6h_t;
 __BEGIN_DECLS
 
 u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
-              const u8 *opt, int optlen, u8 *frame, size_t frmlen,
+              const u8 *opts, int optslen, u8 *frame, size_t frmlen,
               size_t *pktlen);
 
 u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
