@@ -139,6 +139,10 @@ bool read_util_validate_pkt(const u8 *ipc, unsigned *len)
     if (datalen < sizeof(struct udp_hdr))
       return false;
     break;
+  case IPPROTO_ICMP:
+    if (datalen < ICMP4_LEN_MIN)
+      return false;
+    break    
   default:
     break;
   }
