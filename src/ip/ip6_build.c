@@ -43,10 +43,10 @@ u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
   ip6->IP6_PKTLEN = htons((frmlen)); /* ??? */
   ip6->IP6_NXT    = nexthdr;
   ip6->IP6_HLIM   = hoplimit;
-  
-  memmove(&ip6->ip6_src, &(src), IP6_ADDR_LEN);
-  memmove(&ip6->ip6_dst, &(dst), IP6_ADDR_LEN);
 
+  memcpy(&ip6->ip6_src, src->s6_addr, 16);
+  memcpy(&ip6->ip6_dst, dst->s6_addr, 16);
+  
   if (frame && frmlen)
     memcpy(pkt + sizeof(struct ip6_hdr),
 	   frame, frmlen);
