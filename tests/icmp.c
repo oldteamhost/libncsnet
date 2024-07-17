@@ -5,16 +5,30 @@
 #include "../ncsnet/readpkt.h"
 #include "../ncsnet/linuxread.h"
 
+struct sockaddr_in src;
+
+bool callback(u8 *frame, size_t frmlen)
+{
+  struct sockaddr_in dst;
+  ip4h_t *ip;
+  
+  ip=(ip4h_t*)(frame + ETH_HDR_LEN);
+  dst.sin_addr.s_addr=ip->dst;
+  if (dst.sin_addr.s_addr==src.sin_addr.s_addr)
+    return true;
+  return false;
+}
+
 int main(void)
 {
   size_t msglen = 0;
   u8 *msg;
   int fd;
-  linuxread_t *lr;
-  struct sockaddr_in src;
+  lr_t *lr;
+
   
   fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-  lr = linuxread_open(to_ns(1000));
+  lr = lr_open(to_ns(1000));
   if (!lr)
     puts("Not support???");
   else
@@ -24,8 +38,6 @@ int main(void)
   src.sin_family = AF_INET;
   src.sin_addr.s_addr = ncs_inet_addr("173.194.222.138");
 
-  linuxread_filter(lr, IPPROTO_ICMP, (struct sockaddr_storage*)&src);
-    
   msg = icmp4_msg_echo_build(random_u16(), 10, "kek", &msglen);
   icmp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.36"),
 		 src.sin_addr.s_addr, 121, random_u16(),
@@ -35,9 +47,10 @@ int main(void)
   u8 *res;
   res = (u8*)calloc(4096, sizeof(u8));
 
-  linuxread_live(lr, &res, 4096);
-  printf("%f\n", lr->rtt);
-  linuxread_close(lr);
+  lr_callback(lr, callback);
+  lr_live(lr, &res, 4096);
+  printf("%lld\n", lr->ns);
+  lr_close(lr);
   free(res);
   
   /*

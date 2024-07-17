@@ -26,19 +26,22 @@
 
 #if defined(IS_LINUX) && (HAVE_LINUX_READ == 1)
 #include <linux/if_ether.h>
-linuxread_t *linuxread_open(long long ns)
+lr_t *lr_open(long long ns)
 {
-  linuxread_t *lr;
+  lr_t *lr;
   
-  lr = calloc(1, sizeof(linuxread_t));
+  lr=calloc(1, sizeof(lr_t));
   if (!lr)
     return NULL;
-  lr->fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-  if (lr->fd == -1)
+  lr->fd=socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+  if (lr->fd==-1)
     goto fail;
   if (!(sock_util_timeoutns(lr->fd, ns, true, true)))
     goto fail;
-  lr->ms = to_ms(ns);
+  lr->ns=ns;
+  memset(&lr->tstamp_s, 0, sizeof(struct timeval));
+  memset(&lr->tstamp_e, 0, sizeof(struct timeval));
+  lr->callback=NULL;
   
   return lr;
  fail:
@@ -46,85 +49,73 @@ linuxread_t *linuxread_open(long long ns)
   return NULL;
 }
 
-void linuxread_filter(linuxread_t *lr, int proto, struct sockaddr_storage *src) 
+void lr_callback(lr_t *lr, lrcall_t callback)
 {
-  lr->proto = proto;
-  lr->src = src;
+  lr->callback=callback;
 }
 
-ssize_t linuxread_live(linuxread_t *lr, u8 **buf, size_t buflen)
+ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
 {
-  struct sockaddr_in6 *dest6, source6;
-  struct sockaddr_in  *dest, source;
-  time_t run, current;
-  bool ip6_c, fuckyeah;
-  ip4h_t *ip4;
-  ip6h_t *ip6;
+  struct timespec start, current;
+  long long elapsed;
   ssize_t res;
-  int elapsed;
   u8 *tmpbuf;
-
+  
   tmpbuf = *buf;
-  if (lr->src->ss_family == AF_INET6)
-    ip6_c = true;
-  else
-    ip6_c = false;
-  if (ip6_c)
-    dest6 = (struct sockaddr_in6*)lr->src;
-  else
-    dest = (struct sockaddr_in*)lr->src;
-  
-  memset(&source6, 0, sizeof(source6));
-  memset(&source, 0, sizeof(source));
-  
-  run = time(NULL);
+  clock_gettime(CLOCK_MONOTONIC, &start);
   gettimeofday(&lr->tstamp_s, NULL);
+
+  if (!lr->callback)
+    return -1;
+  
   for (;;) {
     res = recv(lr->fd, tmpbuf, buflen, 0);
     gettimeofday(&lr->tstamp_e, NULL);
     if (res == -1)
       return -1;
-    if (!ip6_c) {
-      ip4 = (ip4h_t*)(tmpbuf + sizeof(ethh_t));
-      source.sin_addr.s_addr = ip4->src;
-      if (source.sin_addr.s_addr == dest->sin_addr.s_addr)
-        fuckyeah = true;
-      if (ip4->proto != lr->proto)
-	fuckyeah = false;
-    }
-    else {
-      ip6 = (ip6h_t*)(tmpbuf + sizeof(ethh_t));
-      memcpy(&source6.sin6_addr.s6_addr, ip6->ip6_src.octet, sizeof(ip6->ip6_src.octet));
-      if (memcmp(&source6.sin6_addr, &dest6->sin6_addr, sizeof(struct in6_addr)) == 0)
-        fuckyeah = true;
-      if (ip6->ip6_ctlun.ip6_un1.ip6_un1_nxt != lr->proto)
-	fuckyeah = false;
-    }
-    if (!fuckyeah) {
-      current = time(NULL);
-      elapsed = (int)(current - run) * 1000;
-      if (elapsed >= lr->ms)
+    if (!lr->callback(tmpbuf, res)) {
+      clock_gettime(CLOCK_MONOTONIC, &current);
+      elapsed=(current.tv_sec-start.tv_sec)*1000000000LL+(current.tv_nsec-start.tv_nsec);
+       if (elapsed>=lr->ns)
 	return -1;
       continue;
     }
     else {
       *buf = tmpbuf;
-      lr->rtt = (lr->tstamp_e.tv_sec-lr->tstamp_s.tv_sec)*1000.0+
-	(lr->tstamp_e.tv_usec-lr->tstamp_s.tv_usec)/1000.0;
       return res;
     }
   }
-  return -1; /* ??? */
+  /* NOTREACHED */
 }
 
-void linuxread_close(linuxread_t *lr)
+void lr_close(lr_t *lr)
 {
   close(lr->fd);
   free(lr);
 }
+
+bool lrcall_default(u8 *frame, size_t frmlen)
+{
+  char *src=NULL, *dst=NULL;
+  ethh_t *eth;
+
+  eth=(ethh_t*)frame;
+  mac_ntoa(&eth->dst, dst);
+  mac_ntoa(&eth->src, src);
+  
+  printf("FRAME ");
+  if (dst && src)
+    printf("%s > %s ", src, dst);
+  printf("ptype=%hu ", ntohs(eth->type));
+  printf("frmlen=%ld\n", frmlen);
+  
+  return true;
+}
+
 #else
-linuxread_t *linuxread_open(long long ns) { return NULL; }
-void linuxread_filter(linuxread_t *lr, int proto, struct sockaddr_storage *src) { return; }
-ssize_t linuxread_live(linuxread_t *lr, u8 **buf, size_t buflen) { return -1; }
-void linuxread_close(linuxread_t *lr) { return; }
+lr_t *lr_open(long long ns) { return NULL; }
+void lr_callback(lr_t *lr, lrcall_t callback) { return; }
+ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen) { return -1; }
+bool lrcall_default(u8 *frame, size_t frmlen) { return false; }
+void lr_close(lr_t *lr) { return; }
 #endif

@@ -38,22 +38,23 @@
 #include "sys/types.h"
 #include "../ncsnet-config.h"
 
+typedef bool (*lrcall_t)(u8 *, size_t);
 typedef struct linuxread_hdr
 {
-  int fd;
-  int proto;
-  struct sockaddr_storage *src;
-  int ms;
-  double rtt;
   struct timeval tstamp_s, tstamp_e;
-} linuxread_t;
+  lrcall_t callback;
+  long long ns;
+  int fd;
+} lr_t;
 
 __BEGIN_DECLS
 
-linuxread_t *linuxread_open(long long ns);
-void         linuxread_filter(linuxread_t *lr, int proto, struct sockaddr_storage *src);
-ssize_t      linuxread_live(linuxread_t *lr, u8 **buf, size_t buflen);
-void         linuxread_close(linuxread_t *lr);
+lr_t        *lr_open(long long ns);
+void         lr_callback(lr_t *lr, lrcall_t callback);
+ssize_t      lr_live(lr_t *lr, u8 **buf, size_t buflen);
+void         lr_close(lr_t *lr);
+
+bool lrcall_default(u8 *frame, size_t frmlen);
 
 __END_DECLS
 
