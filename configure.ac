@@ -101,5 +101,17 @@ else
     AC_MSG_NOTICE([linuxread support is enabled])
 fi
 
+UTILS_PATH="utils/Makefile"
+AC_CHECK_FILE([$UTILS_PATH], [UTILS_FOUND=yes], [UTILS_FOUND=no])
+if test "$UTILS_FOUND" = "no"; then
+    echo "utils (Makefile) not found, configuring utils"
+    echo ""
+    echo "RUNNING CONFIGURE UTILS/"
+    echo ""
+    (cd utils;./configure;cd ..)
+else
+    echo "utils (Makefile) found, no need to configure"
+fi
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

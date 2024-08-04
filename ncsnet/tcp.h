@@ -57,17 +57,6 @@
 #define TCP_FLAG_CWR        0x80
 #define TCP_FLAG_ECE        0x40
 
-enum TCP_FLAGS {
-  URG = TCP_FLAG_URG,
-  ACK = TCP_FLAG_ACK,
-  PSH = TCP_FLAG_PSH,
-  RST = TCP_FLAG_RST,
-  SYN = TCP_FLAG_SYN,
-  CWR = TCP_FLAG_CWR,
-  ECE = TCP_FLAG_ECE,        
-  FIN = TCP_FLAG_FIN
-};
-
 #define TCP_OPT_EOL         0   /* End of Option List (RFC793)                 */
 #define TCP_OPT_NOP         1   /* No-Operation (RFC793)                       */
 #define TCP_OPT_MSS         2   /* Maximum Segment Size (RFC793)               */
@@ -90,6 +79,9 @@ enum TCP_FLAGS {
 #define TCP_OPT_QSRES       27  /* Quick-Start Response (RFC4782)              */
 #define TCP_OPT_UTO         28  /* User Timeout Option (RFC5482)               */
 #define TCP_OPT_AO          29  /* TCP Authentication Option (RFC5925)         */
+
+enum TCP_FLAGS {URG = TCP_FLAG_URG, ACK = TCP_FLAG_ACK, PSH = TCP_FLAG_PSH, RST = TCP_FLAG_RST,
+		SYN = TCP_FLAG_SYN, CWR = TCP_FLAG_CWR, ECE = TCP_FLAG_ECE, FIN = TCP_FLAG_FIN};
 
 struct tcp_hdr
 {
@@ -123,41 +115,34 @@ struct tcp_flags {
   u8 ece; /* Explicit Congestion notification echo. */
 };
 
-typedef struct tcp_opt_hdr
-{
+typedef struct tcp_opt_hdr {
   u8 kind, len;
 } tcp_opt;
 
-typedef struct tcp_opt_hdr_mss
-{
+typedef struct tcp_opt_hdr_mss {
   tcp_opt opt;
   u16 mss;
 } tcp_opt_mss;
 
-typedef struct tcp_opt_hdr_nop
-{
+typedef struct tcp_opt_hdr_nop {
   u8 kind;
 } tcp_opt_nop;
 
-typedef struct tcp_opt_hdr_sackpr
-{
+typedef struct tcp_opt_hdr_sackpr {
   tcp_opt opt;
 } tcp_opt_sackpr;
 
-typedef struct tcp_opt_hdr_wscale
-{
+typedef struct tcp_opt_hdr_wscale {
   tcp_opt opt;
   u8 shift;
 } tcp_opt_wscale;
 
-typedef struct tcp_opt_hdr_tstamp
-{
+typedef struct tcp_opt_hdr_tstamp {
   tcp_opt opt;
   u32 val, erc;
 } tcp_opt_tstamp;
 
-typedef struct tcp_opt_hdr_altcheck_req
-{
+typedef struct tcp_opt_hdr_altcheck_req {
   tcp_opt opt;
   u8 check;
 } tcp_opt_altcheck_req;

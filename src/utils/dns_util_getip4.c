@@ -55,7 +55,6 @@ void dns_util_getip4(const char* dst, int srcport, long long timeoutns, char* dn
 
   return;
 fail:
-  strncpy(dnsbuf, "n/a", buflen);
   dnsbuf[buflen - 1] = '\0';
   return;
 }

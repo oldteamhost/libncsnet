@@ -4161,6 +4161,42 @@ else
 printf "%s\n" "$as_me: linuxread support is enabled" >&6;}
 fi
 
+UTILS_PATH="utils/Makefile"
+as_ac_File=`printf "%s\n" "ac_cv_file_$UTILS_PATH" | $as_tr_sh`
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $UTILS_PATH" >&5
+printf %s "checking for $UTILS_PATH... " >&6; }
+if eval test \${$as_ac_File+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "$UTILS_PATH"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"
+then :
+  UTILS_FOUND=yes
+else $as_nop
+  UTILS_FOUND=no
+fi
+
+if test "$UTILS_FOUND" = "no"; then
+    echo "utils (Makefile) not found, configuring utils"
+    echo ""
+    echo "RUNNING CONFIGURE UTILS/"
+    echo ""
+    (cd utils;./configure;cd ..)
+else
+    echo "utils (Makefile) found, no need to configure"
+fi
+
 ac_config_files="$ac_config_files Makefile"
 
 cat >confcache <<\_ACEOF

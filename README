@@ -1,5 +1,8 @@
+
+                                      LIBNCSNET
+				      
 libncsnet (nesca network library): a free set of [low-level and no] networking tools;
-works on linux and bsd systems. Library provides the most flexible, fastest, and
+works on linux and (unlikely, but) bsd systems. Library provides the most flexible, fastest, and
 largest set of tools for its tasks.
 
 protocols:  IP, IP6, TCP, UDP, ICMP4, ICMP6, IGMP, SCTP, ARP, ETH,
@@ -21,10 +24,21 @@ Documentation of some functions and clauses can be found in [docs/], to view
 it you need to call [man ./<file.3>] on the required documentation file, for
 example, [man ./url.h]; OR, see [https://oldteamhost.github.io/database/main.html]
 
-To compile, run the following commands in the library's source directory:
+To compile, run the following commands in the library's source directory,
 
   ./configure
   make (on bsd use "gmake")
 
 The first one is needed to customize the source code and Makefile. The
 second one is for source code compilation.
+
+
+                                        NCSUTILS
+				      
+ncsutils (nesca network utils): recently, along with the library comes a set of network utilities;
+check folder utils/.
+
+  uitls/ping.c         connection test tool.
+  utils/icmpflood.c    icmp ddos tool.
+
+last updated 2024-07-31 (lomaster)

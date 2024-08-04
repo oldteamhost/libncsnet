@@ -26,6 +26,7 @@
 
 #if defined(IS_LINUX) && (HAVE_LINUX_READ == 1)
 #include <linux/if_ether.h>
+#include <linux/filter.h>
 lr_t *lr_open(long long ns)
 {
   lr_t *lr;
@@ -42,6 +43,7 @@ lr_t *lr_open(long long ns)
   memset(&lr->tstamp_s, 0, sizeof(struct timeval));
   memset(&lr->tstamp_e, 0, sizeof(struct timeval));
   lr->callback=NULL;
+  lr->bpf=0;
   
   return lr;
  fail:
@@ -54,20 +56,41 @@ void lr_callback(lr_t *lr, lrcall_t callback)
   lr->callback=callback;
 }
 
+void lr_bpf(lr_t *lr, bpf_t *code, size_t codelen)
+{
+  struct sock_fprog bpf;
+  bpf.len=codelen/sizeof(struct sock_filter);
+  bpf.filter=code;
+  lr->bpf=1;
+  setsockopt(lr->fd, SOL_SOCKET, SO_ATTACH_FILTER, &bpf, sizeof(bpf));
+  perror("kek");
+}
+
 ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
 {
   struct timespec start, current;
   long long elapsed;
   ssize_t res;
   u8 *tmpbuf;
+
+  if (!lr->callback&&!lr->bpf)
+    return -1;
   
   tmpbuf = *buf;
   clock_gettime(CLOCK_MONOTONIC, &start);
   gettimeofday(&lr->tstamp_s, NULL);
-
-  if (!lr->callback)
-    return -1;
   
+  if (lr->bpf) {
+    res = recv(lr->fd, tmpbuf, buflen, 0);
+    gettimeofday(&lr->tstamp_e, NULL);
+    if (res == -1)
+      return -1;
+    else {
+      *buf = tmpbuf;
+      return res;
+    }
+  }
+
   for (;;) {
     res = recv(lr->fd, tmpbuf, buflen, 0);
     gettimeofday(&lr->tstamp_e, NULL);
@@ -111,10 +134,10 @@ bool lrcall_default(u8 *frame, size_t frmlen)
   
   return true;
 }
-
 #else
 lr_t *lr_open(long long ns) { return NULL; }
 void lr_callback(lr_t *lr, lrcall_t callback) { return; }
+void lr_bpf(lr_t *lr, bpf_t *code, size_t codelen){ return; }
 ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen) { return -1; }
 bool lrcall_default(u8 *frame, size_t frmlen) { return false; }
 void lr_close(lr_t *lr) { return; }

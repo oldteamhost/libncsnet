@@ -39,18 +39,21 @@
 #include "../ncsnet-config.h"
 
 typedef bool (*lrcall_t)(u8 *, size_t);
+typedef struct sock_filter bpf_t;
 typedef struct linuxread_hdr
 {
   struct timeval tstamp_s, tstamp_e;
   lrcall_t callback;
   long long ns;
   int fd;
+  bool bpf;
 } lr_t;
 
 __BEGIN_DECLS
 
 lr_t        *lr_open(long long ns);
 void         lr_callback(lr_t *lr, lrcall_t callback);
+void         lr_bpf(lr_t *lr, bpf_t *code, size_t codelen);
 ssize_t      lr_live(lr_t *lr, u8 **buf, size_t buflen);
 void         lr_close(lr_t *lr);
 
