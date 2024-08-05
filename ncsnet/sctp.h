@@ -150,6 +150,10 @@ u8 *sctp_build(u16 srcport, u16 dstport, u32 vtag, u8 *chunks,
 
 void sctp_check(u8 *frame, size_t frmlen, bool adler32sum, bool badsum);
 
+const char *sctp_chunktypestr(u8 type);
+const char *sctp_chunk_info(const u8 *chunk);
+const char *sctp_info(const u8 *frame, size_t frmlen, int detail);
+
 u8 *sctp_chunk_build(u8 type, u8 flags, u8 *value, size_t valuelen, size_t *chunklen);
 u8 *sctp_init_build(u8 type, u8 flags, u32 itag, u32 arwnd, u16 nos, u16 nis, u32 itsn, size_t *chunklen);
 u8 *sctp_data_build(u8 reserved, u32 tsn, u16 s, u16 n, u32 protoload, u8 *data, size_t datalen, size_t *chunklen);

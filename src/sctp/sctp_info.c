@@ -22,31 +22,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/udp.h>
+#include <ncsnet/sctp.h>
 
 /* in header error */
 #include <ncsnet/readpkt.h>
 
-const char* udp_info(const u8 *frame, size_t frmlen, int detail)
+const char* sctp_info(const u8 *frame, size_t frmlen, int detail)
 {
   static char protoinfo[1024] = "";
   struct abstract_iphdr hdr;
   int more_fragments = 0;
-  udph_t *udp = NULL;
+  const char *chunkinfo;
+  sctph_t *sctp = NULL;
   int frag_off = 0;
   const u8 *data;
   u32 datalen;
 
-  datalen=frmlen;
-  data=(u8*)read_util_ip4getdata_any(frame, &datalen, &hdr);
+  datalen = frmlen;
+  data = (u8*)read_util_ip4getdata_any(frame, &datalen, &hdr);
   if (!data) {
     data=frame;
-    goto udp;
+    goto sctp;
   }
   if (detail != LOW_DETAIL && detail != MEDIUM_DETAIL && detail != HIGH_DETAIL)
     detail = LOW_DETAIL;
-  if (hdr.proto != IPPROTO_UDP)
-    return "The IP packet does not contain the UDP protocol";
+  if (hdr.proto != IPPROTO_SCTP)
+    return "The IP packet does not contain the SCTP protocol";
   if (hdr.version == 4) {
     const ip4h_t *ip;
     ip=(ip4h_t*)frame;
@@ -54,23 +55,24 @@ const char* udp_info(const u8 *frame, size_t frmlen, int detail)
     more_fragments=ntohs(ip->off)&IP4_MF;
   }
   if (frag_off || more_fragments) {
-    snprintf(protoinfo, sizeof(protoinfo), "UDP: fragment offset=%d%s (incomplete)",
+    snprintf(protoinfo, sizeof(protoinfo), "SCTP: fragment offset=%d%s (incomplete)",
       frag_off, more_fragments ? "+" : "");
     return protoinfo;
   }
   
- udp:  
-  udp = (udph_t*)data;
+ sctp:  
+  sctp=(sctph_t*)data;
+  chunkinfo=sctp_chunk_info((data+sizeof(sctph_t)));
   if (detail == LOW_DETAIL)
-    snprintf(protoinfo, sizeof(protoinfo), "UDP: src=%hu dst=%hu",
-      (u16)ntohs(udp->srcport), (u16)ntohs(udp->dstport));
+    snprintf(protoinfo, sizeof(protoinfo), "SCTP: src=%hu dst=%hu (%s)",
+      (u16)ntohs(sctp->srcport), (u16)ntohs(sctp->dstport), chunkinfo);
   else if (detail == MEDIUM_DETAIL)
-    snprintf(protoinfo, sizeof(protoinfo), "UDP: src=%hu dst=%hu csum=0x%04X",
-      (u16)ntohs(udp->srcport), (u16)ntohs(udp->dstport), ntohs(udp->check));
+    snprintf(protoinfo, sizeof(protoinfo), "SCTP: src=%hu dst=%hu vtag=%u (%s)",
+      (u16)ntohs(sctp->srcport), (u16)ntohs(sctp->dstport), ntohs(sctp->vtag), chunkinfo);
   else if (detail == HIGH_DETAIL)
-    snprintf(protoinfo, sizeof(protoinfo), "UDP: src=%hu dst=%hu len=%hu csum=0x%04X",
-      (u16)ntohs(udp->srcport), (u16)ntohs(udp->dstport), (u16)ntohs(udp->len),
-      ntohs(udp->check));
+    snprintf(protoinfo, sizeof(protoinfo), "SCTP: src=%hu dst=%hu vtag=%lu csum=0x%08X (%s)",
+      (u16)ntohs(sctp->srcport), (u16)ntohs(sctp->dstport), (unsigned long)ntohl(sctp->vtag),
+      ntohl(sctp->check), chunkinfo);
   
   return protoinfo;
 }

@@ -32,7 +32,7 @@ u8 *sctp_shutdown_build(u8 flags, u32 tsnack, size_t *chunklen)
   value = frmbuild(&valuelen, NULL, "u32(%u)", htonl(tsnack));
   if (!value)
     return NULL;
-  chunk = sctp_chunk_build(SCTP_ABORT, flags, value, valuelen, chunklen);
+  chunk = sctp_chunk_build(SCTP_SHUTDOWN, flags, value, valuelen, chunklen);
 
   free(value);
   return chunk;
