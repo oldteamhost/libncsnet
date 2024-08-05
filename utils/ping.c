@@ -47,16 +47,26 @@
 #define MODE_SCTP IPPROTO_SCTP
 
 /*
- * Used for message composition/print and packet filtering
+ * This is where a message like:
+ *   <bytes_received> bytes from <protocol> <ip>[? :<port>] [? ([dns])]: <various_information> time=<rttms> ms
+ *
+ * <various_information> for,
+ *   icmp:     icmp_seq=<seq> ttl=<ttl>
+ *   tcp:      flags=<tcpflags> ttl<ttl>
+ *   udp:      ttl=<ttl>
+ *   sctp:     chunk=<chunk> vtag=<vtag> ttl=<ttl>
+ *   icmperr:  [? srcport=<srcport>] [? icmp_seq=<seq>] <(error)>
  */
-const char *v123msg;
-long long   maxwait=to_ns(10000);
+char        v0msg[4096];
+
 size_t      triptime=0;
 size_t      tmin=999999999;
 size_t      tmax=0;
 size_t      tsum=0;
-char        v0msg[4096];
 int         vvv=0;
+long long   maxwait=to_ns(10000); /* classic 10s timeout */
+size_t      npackets=10;          /* classic 10 requests per host */
+const char *v123msg;              /* trace pkt msg */
 bool        filter=0;
 size_t      nreceived=0;
 u8         *packet;
@@ -71,12 +81,8 @@ static void tvsub(struct timeval *out, struct timeval *in);
 static void pr_pack(u8 *buf, ssize_t cc);
 static void tvrtt(void);
 
-
-/*
- * Used for build and send ping probes
- */
-struct sockaddr_storage *src, *dst;
-size_t      npackets=10;
+struct sockaddr_storage
+           *src, *dst;
 int         fd;
 size_t      ntransmitted=0;
 bool        rxc=0, txc=0, origc=0;
@@ -91,7 +97,7 @@ bool        df=0;
 u32         mask;
 lr_t       *lr;
 int         tos=0;
-int         dstport=80, srcport;
+int         dstport=80 /* default dstport */ ,srcport;
 int         ident;
 int         ttl;
 size_t      seq=0;
@@ -100,7 +106,7 @@ size_t      urp;
 int         winlen=1024;
 bool        seqc=0, ttlc=0, identc=0, srcportc=0;
 u8          flags=TCP_FLAG_SYN;
-int         type=8,code=0,icmpid;
+int         type=8 /*default icmp type echo*/ ,code=0,icmpid;
 size_t      chunktype=SCTP_INIT_ACK,vtag=0;
 bool        adler32cksum=0;
 bool        icmpidc=0;
@@ -111,35 +117,31 @@ bool        badsum=0;
 size_t      itag=0,arwnd=0,itsn=0;
 int         nis=0,nos=0;
 bool        itagc=0,arwndc=0,itsnc=0,nisc=0,nosc=0;
-const char  *v123sendmgs;
-
-bool streamc=0, protoloadc=0, tsnc=0;
-int stream;
-size_t protoload, tsn;
+const char *v123sendmgs;
+bool        streamc=0, protoloadc=0, tsnc=0;
+int         stream;
+size_t      protoload, tsn;
 
 static u8 *icmpmsgbuild(size_t *msglen);
 static u8 *sctpchunkbuild(size_t *chunklen);
 static u8 *pingbuild(size_t *pinglen);
 static void pinger(void);
 
-
-/*
- * Used for main ping
- */
 const char *run;
 int         is=0;
-long long   delay=to_ns(1000);
+long long   delay=to_ns(1000); /* classic one second delay */
 const char *node=NULL;
 char        ip4buf[16];
 char      **targets;
 size_t      num=0;
 bool        tcp=0, icmp=0, udp=0, sctp=0;
-int         mode=MODE_ICMP;
+int         mode=MODE_ICMP; /* default mode icmp */
 bool        printstats=0;
 const char *lasttarget=NULL;
 char        currentdns[1024];
 const char *shortopts="h";
-const struct option longopts[]={
+const struct option
+            longopts[]={
   {"help", no_argument, 0, 'h'},
   {"badsum", no_argument, 0, 1},
   {"ipopt", required_argument, 0, 2},
@@ -310,15 +312,54 @@ static void tvrtt(void)
 static bool received_ping_sctp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
 {
   struct sockaddr_in dst_t, *src_t;
+  char chunktypestr[1024];
+  u8 *chunktype=NULL;
   sctph_t *sctp;
   
   sctp=(sctph_t*)(frame+(ETH_HDR_LEN+sizeof(ip4h_t)));
+  chunktype=(u8*)(sctp+sizeof(u8));
   
+  switch (*chunktype) {
+  case SCTP_ABORT:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=abort ");    
+    break;
+  case SCTP_INIT:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=initack ");    
+    break;
+  case SCTP_COOKIE_ECHO:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=cookie ");    
+    break;
+  case SCTP_COOKIE_ACK:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=cookieack ");    
+    break;
+  case SCTP_HEARTBEAT:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=heartbeat ");    
+    break;
+  case SCTP_SHUTDOWN:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdown ");    
+    break;
+  case SCTP_SHUTDOWN_ACK:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdownack ");    
+    break;
+  case SCTP_SHUTDOWN_COMPLETE:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdowncomplete ");    
+    break;    
+  case SCTP_SACK:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=sack ");    
+    break;
+  case SCTP_DATA:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=data ");    
+    break;            
+  default:
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=%hhu ", *chunktype);
+    break;
+  }
+
   /* Check if the packet is addressed to us. */
   dst_t.sin_addr.s_addr=ip->src;
   src_t=(struct sockaddr_in*)dst;
   if (dst_t.sin_addr.s_addr==src_t->sin_addr.s_addr) {
-    snprintf(v0msg, sizeof(v0msg), "%ld bytes from SCTP %s:%hu%s: vtag=%lu ttl=%hhu", frmlen, ip4buf, ntohs(sctp->srcport), currentdns, (unsigned long)ntohl(sctp->vtag), ip->ttl);
+    snprintf(v0msg, sizeof(v0msg), "%ld bytes from SCTP %s:%hu%s: %svtag=%lu ttl=%hhu", frmlen, ip4buf, ntohs(sctp->srcport), currentdns, chunktypestr, (unsigned long)ntohl(sctp->vtag), ip->ttl);
     return true;
   }
   return false;
