@@ -311,6 +311,8 @@ u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
               u32 flowlabel, u8 nexthdr, int hoplimit, u8 *frame, size_t frmlen,
 	      size_t *pktlen);
 
+const char *ip_info(const u8 *frame, size_t frmlen, int detail);
+
 int ip4_send_frag(int fd, const struct sockaddr_in *dst, const u8 *frame,
                   size_t frmlen, u32 mtu);
 

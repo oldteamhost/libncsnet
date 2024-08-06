@@ -54,7 +54,6 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
   
   if (detail != LOW_DETAIL && detail != MEDIUM_DETAIL && detail != HIGH_DETAIL)
     detail = LOW_DETAIL;
-
   
   if (hdr.version == 4) {
     const struct ip4_hdr *ip;

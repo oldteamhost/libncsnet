@@ -41,7 +41,7 @@ int main(void)
   d.sin_family = AF_INET;
   d.sin_addr.s_addr = ncs_inet_addr("173.194.222.138");
   ip4_send_raw(fd, &d, res, pktlen);
-  printf("%s\n", sctp_info(res, pktlen, 3));
+  printf("%s\n", ip_info(res, pktlen, 3));
 
   free(chunk);  
   free(res);
