@@ -37,9 +37,9 @@
 #include "../ncsnet/tcp.h"
 #include "../ncsnet/ip.h"
 #include "../ncsnet/icmp.h"
-#include "../ncsnet/readpkt.h"
 #include "../ncsnet/linuxread.h"
 #include "../ncsnet/dns.h"
+#include "../ncsnet/trace.h"
 
 #define MODE_ICMP IPPROTO_ICMP
 #define MODE_TCP  IPPROTO_TCP
@@ -675,8 +675,9 @@ static bool received_ping_callback(u8 *frame, size_t frmlen)
 {
   int fragoff=0;
   bool valid=0;
-  size_t hlen;
+  size_t hlen, tmplen=frmlen;
   ip4h_t *ip;
+  u8 *frmtmp=frame;
 
   /*
    * Get IP4 header, brings a pointer to the packet, skipping
@@ -714,11 +715,11 @@ static bool received_ping_callback(u8 *frame, size_t frmlen)
   
   /* v123 message build */
   if (vvv==1)
-    v123msg=read_ippktinfo(frame+ETH_HDR_LEN, frmlen, LOW_DETAIL);
+    v123msg=frminfo(frmtmp, tmplen, LOW_DETAIL, 0);
   else if (vvv==2)
-    v123msg=read_ippktinfo(frame+ETH_HDR_LEN, frmlen, MEDIUM_DETAIL);
+    v123msg=frminfo(frmtmp, tmplen, MEDIUM_DETAIL, 0);
   else if (vvv==3)
-    v123msg=read_ippktinfo(frame+ETH_HDR_LEN, frmlen, HIGH_DETAIL);
+    v123msg=frminfo(frmtmp, tmplen, HIGH_DETAIL, 0);
   
   return true;
 }
@@ -945,7 +946,6 @@ static u8 *pingbuild(size_t *pinglen)
 
 static void pinger(void)
 {
-  char *hex=NULL;
   size_t pinglen;
   u8 *ping;
 
@@ -956,20 +956,13 @@ static void pinger(void)
   ip_send(NULL, fd, dst, mtu, ping, pinglen);
   ntransmitted++;
   
-  v123sendmgs=read_ippktinfo(ping, pinglen, LOW_DETAIL);
+  v123sendmgs=frminfo(ping, pinglen, LOW_DETAIL, 0x01);
   if (vvv==2)
-    v123sendmgs=read_ippktinfo(ping, pinglen, MEDIUM_DETAIL);
+    v123sendmgs=frminfo(ping, pinglen, MEDIUM_DETAIL, 0x01);
   else if (vvv==3)
-    v123sendmgs=read_ippktinfo(ping, pinglen, HIGH_DETAIL);
+    v123sendmgs=frminfo(ping, pinglen, HIGH_DETAIL, 0x01);
   if (vvv>0)
-    printf("%s\n",v123sendmgs);
-  if (vvv>2) {
-    hex=read_hexdump(ping, pinglen);
-    if (hex) {
-      printf("%s", hex);
-      free(hex);
-    }
-  }  
+    printf("%s\n%s",v123sendmgs, (vvv>0&&vvv<3) ? "\n" : "");
   free(ping);
 }
 
@@ -981,8 +974,6 @@ static void pinger(void)
  */
 static void pr_pack(u8 *buf, ssize_t cc)
 {
-  char *hex=NULL;
-
   /*
    * If the packet did not arrive within the specified timeout
    * (the filter did not find anything), we output the last
@@ -990,7 +981,7 @@ static void pr_pack(u8 *buf, ssize_t cc)
    */
   if (filter==0) {
     puts("A reply packet was not received for the specified timeout.");
-    printf("No response transmission -> %s\n",v123sendmgs);
+    printf("No response transmission ->\n%s\n",v123sendmgs);
     return;
   }
   
@@ -1009,16 +1000,8 @@ static void pr_pack(u8 *buf, ssize_t cc)
    */
   if (vvv==0)
     printf("%s time=%ld ms\n", v0msg, triptime);
-  else {
-    printf("(%ld ms) %s\n", triptime, v123msg);
-    if (vvv==3) {
-      hex=read_hexdump(buf, cc);
-      if (hex) {
-	printf("%s", hex);
-	free(hex);
-      }
-    }
-  }
+  else
+    printf("%s\n%s", v123msg, (vvv>0&&vvv<3) ? "\n" : "");
 }
 
 

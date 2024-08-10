@@ -23,7 +23,8 @@
 */
 
 #include <ncsnet/ip.h>
-#include "ncsnet/readpkt.h"
+#include <ncsnet/trace.h>
+#include <ncsnet/igmp.h>
 
 void ip4_recheck(u8 *pkt, u32 pktlen)
 {

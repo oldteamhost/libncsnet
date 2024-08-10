@@ -201,9 +201,6 @@ void icmp4_check(u8 *frame, size_t frmlen, bool badsum);
 void icmp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
 		 const struct in6_addr *dst, bool badsum);
 
-//const char *icmp4_msg_info(const u8 *msg);
-const char *icmp4_info(const u8 *frame, size_t frmlen, int detail);
-
 u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, size_t *msglen);
 u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen);
 u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *frame, size_t frmlen, size_t *msglen);

@@ -58,8 +58,6 @@ void udp4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, bool bad
 void udp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
 		const struct in6_addr *dst, bool badsum);
 
-const char *udp_info(const u8 *frame, size_t frmlen, int detail);
-
 u8 *udp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
                    bool df, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
                    const char *data, size_t *pktlen, bool badsum);

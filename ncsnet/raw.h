@@ -75,6 +75,13 @@ u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ..
  */
 u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, char *errbuf);
 
+/*
+ * Takes a HEX sequence like this, 45002a00910b000079849bd6c0a801
+ * 26adc2de8a0050c52f29498d23fa327b230900000a0000000611bb, and puts
+ * it into a u8 pointer that returns.
+ */
+u8 *frmbuild_hex(size_t *frmlen, char *errbuf, const char *hex);
+
 typedef struct __fmtopt {
 # define TYPE_U8   0
 # define TYPE_U16  1

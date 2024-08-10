@@ -97,6 +97,43 @@ u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, c
   return res;
 }
 
+static u8 hexvalue(u8 c)
+{
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  else if (c >= 'A' && c <= 'F')
+    return c - 'A' + 10;
+  else if (c >= 'a' && c <= 'f')
+    return c - 'a' + 10;
+  return 0;
+}
+
+u8 *frmbuild_hex(size_t *frmlen, char *errbuf, const char *hex)
+{
+  size_t hexlen=0, i=0;
+  u8 *res;
+  
+  if (!hex) {
+    snprintf(errbuf, ERRBUF_MAXLEN, "Variable hex is (null)");
+    return NULL;
+  }
+  hexlen=strlen(hex);
+  if (hexlen%2!=0) {
+    snprintf(errbuf, ERRBUF_MAXLEN, "The length (%ld) of the hex must be even!", hexlen);
+    return NULL;
+  }
+  *frmlen=hexlen/2;
+  res=(u8*)malloc(*frmlen);
+  if (!res) {
+    snprintf(errbuf, ERRBUF_MAXLEN, "Allocation failed");
+    return NULL;
+  }
+  for (;i<*frmlen;++i)
+    res[i]=(hexvalue(hex[2*i])<<4) | hexvalue(hex[2*i+1]);
+  
+  return res;
+}
+
 u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap)
 {
   char buf[FMTBUF_MAXLEN];
