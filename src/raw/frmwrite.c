@@ -49,7 +49,7 @@ ssize_t frmwrite(int fd, char *errbuf, u8 *frame, size_t frmlen)
     return -1;
   }
   
-  ret = write(fd, frame, frmlen);
+  ret=write(fd, frame, frmlen);
   if (ret < 0) {
     snprintf(errbuf, ERRBUF_MAXLEN,
       "Write error, errno \"%s\" in \"write_frame\"",

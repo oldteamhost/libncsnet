@@ -79,8 +79,8 @@ const char *ip_info(const u8 *ip, size_t iplen, int detail, struct abstract_iphd
       iph->ihl==5?"":read_util_fmtipopt((u8*)iph+sizeof(ip4h_t), MIN((u32)(iph->ihl-5)*4, iplen-sizeof(ip4h_t))),
       iph->ihl==5?"":"}");
   else if (detail==HIGH_DETAIL)
-    snprintf(ipinfo, sizeof(ipinfo), "ip %s -> %s ver=%d ihl=%d tos=0x%02x iplen=%hu id=%hu%s%s%s%s foff=%d%s ttl=%d proto=%d csum=0x%04x%s%s%s",
-      srchost, dsthost, iph->version, iph->ihl,
+    snprintf(ipinfo, sizeof(ipinfo), "ip %s -> %s ver=%d ihl=%d(%d) tos=0x%02x iplen=%hu id=%hu%s%s%s%s foff=%d%s ttl=%d proto=%d csum=0x%04x%s%s%s",
+      srchost, dsthost, iph->version, iph->ihl, iph->ihl*4,
       iph->tos, (u16)ntohs(iph->totlen),
       (u16)ntohs(iph->id),
       (reserved_flag||dont_fragment||more_fragments) ? " flg=" : "",

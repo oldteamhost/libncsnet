@@ -97,7 +97,7 @@ const char *icmp4_message_info(const u8 *msg, size_t msglen, u8 type, u8 code)
     icmp4_msg_mask *mask=(icmp4_msg_mask*)msg;
     char auxbuf[128]="";
     ncs_inet_ntop(AF_INET, &mask->mask, auxbuf, 128);
-    snprintf(icmp4info, sizeof(icmp4info), "mask=%s", auxbuf);      
+    snprintf(icmp4info, sizeof(icmp4info), "id=%hu seq=%hu mask=%s", (u16)ntohs(mask->id), (u16)ntohs(mask->seq), auxbuf);      
     break;
   }
   case ICMP4_UNREACH: {

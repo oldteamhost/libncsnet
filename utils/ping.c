@@ -5,8 +5,7 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    list of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
@@ -121,11 +120,15 @@ const char *v123sendmgs;
 bool        streamc=0, protoloadc=0, tsnc=0;
 int         stream;
 size_t      protoload, tsn;
+mac_t       macsrc, macdst;
+int         mactype=0;
+bool        eth=0;
+eth_t      *fdeth;
 
-static u8 *icmpmsgbuild(size_t *msglen);
-static u8 *sctpchunkbuild(size_t *chunklen);
-static u8 *pingbuild(size_t *pinglen);
 static void pinger(void);
+static u8  *icmpmsgbuild(size_t *msglen);
+static u8  *sctpchunkbuild(size_t *chunklen);
+static u8  *pingbuild(size_t *pinglen);
 
 const char *run;
 int         is=0;
@@ -155,9 +158,9 @@ const struct option
   {"ttl", required_argument, 0, 10},
   {"mtu", required_argument, 0, 11},
   {"tcpopts", required_argument, 0, 12},
-  //  {"wscale", required_argument, 0, 13},
+  {"macsrc", required_argument, 0, 13},
   {"noreply", no_argument, 0, 14},
-  //  {"sackpr", no_argument, 0, 15},
+  {"macdst", required_argument, 0, 15},
   {"maxwait", required_argument, 0, 16},
   {"tcp", no_argument, 0, 17},
   {"dstport", required_argument, 0, 18},
@@ -186,16 +189,16 @@ const struct option
   {"vtag", required_argument, 0, 41},
   {"adler32", no_argument, 0, 42},
   {"data", required_argument, 0, 43},
-  //  {"cookie", required_argument, 0, 44},
+  {"mactype", required_argument, 0, 44},
   {"itag", required_argument, 0, 45},
   {"arwnd", required_argument, 0, 46},
   {"nos", required_argument, 0, 47},
   {"nis", required_argument, 0, 48},
   {"itsn", required_argument, 0, 49},
-
   {"tsn", required_argument, 0, 50},
   {"stream", required_argument, 0, 51},
   {"protoload", required_argument, 0, 52},
+  {"eth", no_argument, 0, 53},
 };
 
 static void parsearg(int argc, char **argv);
@@ -232,6 +235,10 @@ static noreturn void usage(void)
   puts("  -ttl <num>\t\tset your ttl");
   puts("  -mtu <num>\t\tfragment send packets");
   puts("  -ipopt <fmt>\t\tadding ip option in packets\n\t\t\t(fmt <R|S [route]|L [route]|T|U |[HEX]>)");
+  puts("  -eth");
+  puts("    -macsrc <macaddr>\tset source mac address");
+  puts("    -macdst <macaddr>\tset dest mac address");
+  puts("    -mactype <num>\tset payload type in mac header");
   puts("  -icmp");
   puts("    -type <8,13,15,17>\tset icmp message type");  
   puts("    -code <num>\t\tset your code");
@@ -770,9 +777,9 @@ static void parsearg(int argc, char **argv)
     case 10: ttl=atoi(optarg); ttlc=1; break;
     case 11: mtu=atoi(optarg); break;
     case 12: tcpopt=hexbin(optarg, &tcpoptlen); if (!tcpopt) errx(0,"err: invalid hex string specification"); break;
-      //    case 13: wscale=atoll(optarg); optsnum++; break;
+    case 13: mac_aton(&macsrc, optarg); break;
     case 14: noreply=1; if (vvv>=0) vvv=1; break;
-      //    case 15: sackpr=1; optsnum++; break;
+    case 15: mac_aton(&macdst, optarg); break;
     case 16: maxwait=delayconv(optarg); break;
     case 17: tcp=1; break;
     case 18: dstport=atoi(optarg); break;
@@ -807,7 +814,7 @@ static void parsearg(int argc, char **argv)
     case 41: vtag=atoll(optarg); break;
     case 42: adler32cksum=1; break;
     case 43: data=(char*)hexbin(optarg, &datalen); if (!data) errx(0,"err: invalid hex string specification"); break;
-      //    case 44: cookie=hexbin(optarg, &cookielen); if (!cookie) errx(0, "err: invalid hex string specification"); cookiec=1; break;
+    case 44: mactype=atoi(optarg); break;
     case 45: itag=atoll(optarg); itagc=1; break;
     case 46: arwnd=atoll(optarg); arwndc=1; break;
     case 47: nos=atoi(optarg); nosc=1; break;
@@ -816,6 +823,7 @@ static void parsearg(int argc, char **argv)
     case 50: tsn=atoll(optarg); tsnc=1; break;
     case 51: stream=atoi(optarg); streamc=1; break;
     case 52: protoload=atoll(optarg); protoloadc=1; break;
+    case 53: eth=1; break;
     }
   }
 }
@@ -896,15 +904,15 @@ static u8 *sctpchunkbuild(size_t *chunklen)
 
 static u8 *pingbuild(size_t *pinglen)
 {
-  struct sockaddr_in *dst4=NULL, *src4=NULL;
   u8 *ping=NULL, *preping=NULL, *msg=NULL;
+  struct sockaddr_in *dst4=NULL, *src4=NULL;
 
   dst4=(struct sockaddr_in*)dst;
   src4=(struct sockaddr_in*)src;
 
   if (!srcportc)
     srcport=random_srcport();
-  
+
   switch (mode) {
   case MODE_UDP:
     preping=udp_build(srcport, dstport, data, pinglen);
@@ -930,7 +938,7 @@ static u8 *pingbuild(size_t *pinglen)
     sctp_check(preping, *pinglen, adler32cksum, badsum);
     break;
   }
-  
+
   if (!identc)
     ident=random_u16();
   if (!ttlc)
@@ -939,28 +947,43 @@ static u8 *pingbuild(size_t *pinglen)
   ping=ip4_build(src4->sin_addr.s_addr, dst4->sin_addr.s_addr, mode, ttl,
     ident, tos, df, ipopt, ipoptslen, preping, *pinglen,
     pinglen);
-
   free(preping);
+
+  if (eth)
+    return (eth_build(macsrc, macdst, mactype, ping, *pinglen, pinglen));
+
   return ping;
 }
 
+/*
+ * Send ping probe, and generate v123sendmsg
+ */
 static void pinger(void)
 {
   size_t pinglen;
+  u32 flags;
   u8 *ping;
+
+  if (eth)
+    flags=0;
+  else
+    flags=0x01; /* skip mac header*/
 
   ping=pingbuild(&pinglen);
   if (!ping)
     return;
-  
-  ip_send(NULL, fd, dst, mtu, ping, pinglen);
+
+  if (eth)
+    eth_send(fdeth, ping, pinglen);
+  else
+    ip_send(NULL, fd, dst, mtu, ping, pinglen);
   ntransmitted++;
-  
-  v123sendmgs=frminfo(ping, pinglen, LOW_DETAIL, 0x01);
+
+  v123sendmgs=frminfo(ping, pinglen, LOW_DETAIL, flags);
   if (vvv==2)
-    v123sendmgs=frminfo(ping, pinglen, MEDIUM_DETAIL, 0x01);
+    v123sendmgs=frminfo(ping, pinglen, MEDIUM_DETAIL, flags);
   else if (vvv==3)
-    v123sendmgs=frminfo(ping, pinglen, HIGH_DETAIL, 0x01);
+    v123sendmgs=frminfo(ping, pinglen, HIGH_DETAIL, flags);
   if (vvv>0)
     printf("%s\n%s",v123sendmgs, (vvv>0&&vvv<3) ? "\n" : "");
   free(ping);
@@ -1054,23 +1077,25 @@ static noreturn void finish(int sig)
   struct tm *t;
   time_t now;
   size_t i=0;
-  
+
   now=time(NULL);
   t=localtime(&now);
   if (printstats==0)
     prefinish(lasttarget);
-  
   strftime(date, sizeof(date), "%H:%M:%S", t);
   printf("Ending %s at %s and clearing the memory\n", __FILE_NAME__, date);
-  for (; i<num; i++)
+  for (;i<num;i++)
     free(targets[i]);
   free(targets);
   if (src)
     free(src);
   if (dst)
-    free(dst);  
-  if (fd>0)
-    close(fd);
+    free(dst);
+  if (eth)
+    eth_close(fdeth);
+  else
+    if (fd>0)
+      close(fd);
   if (lr)
     lr_close(lr);
   if (nreceived)
@@ -1203,9 +1228,10 @@ static void targetsproc(void)
 int main(int argc, char **argv)
 {
   struct sockaddr_in *src4=NULL;
+  const char *dev=NULL;
   char *strsrc=NULL;
   size_t index=0;
-  
+
   signal(SIGINT, finish);
   run=argv[0];
   if (argc<=1)
@@ -1230,17 +1256,21 @@ int main(int argc, char **argv)
   src4->sin_family=AF_INET;
   src4->sin_port=0;
 
+  dev=getinterface();
   lr=lr_open(maxwait);
   lr_callback(lr, received_ping_callback);
-  fd=socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+  if (eth)
+    fdeth=eth_open(dev);
+  else
+    fd=socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
   targetsproc();
-  
+
   for (;index<num;index++) {
     printstats=0;
     ping(targets[index]);
   }
-  
+
   finish(0);
-  
+
   /* NOTREACHED */
 }

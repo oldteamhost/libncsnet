@@ -28,7 +28,7 @@
 const char *tcp_info(const u8 *tcp, size_t tcplen, int detail)
 {
   static char tcpinfo[TRACE_PROTO_MAX_LEN]="";
-  char tcpoptinfo[256] = "";
+  char tcpoptinfo[256]="";
   tcph_t *tcph=NULL;
   char tflags[10];
   char *p=NULL;
@@ -64,21 +64,21 @@ const char *tcp_info(const u8 *tcp, size_t tcplen, int detail)
         tcpoptinfo, sizeof(tcpoptinfo));
   }
 
-  if (detail == LOW_DETAIL)
+  if (detail==LOW_DETAIL)
     snprintf(tcpinfo, sizeof(tcpinfo), "tcp src=%hu dst=%hu flags=%s seq=%lu win=%hu %s",
       (u16)ntohs(tcph->th_sport), (u16)ntohs(tcph->th_dport), tflags,
       (unsigned long)ntohl(tcph->th_seq), (u16)ntohs(tcph->th_win),
       tcpoptinfo);
-  else if (detail == MEDIUM_DETAIL)
+  else if (detail==MEDIUM_DETAIL)
     snprintf(tcpinfo, sizeof(tcpinfo), "tcp src=%hu dst=%hu flags=%s seq=%lu win=%hu csum=0x%04X%s%s",
       (u16)ntohs(tcph->th_sport), (u16)ntohs(tcph->th_dport), tflags,
       (unsigned long)ntohl(tcph->th_seq), (u16)ntohs(tcph->th_win),
       (u16)ntohs(tcph->th_sum), (tcpoptinfo[0]!='\0')?" ":"", tcpoptinfo);
-  else if (detail == HIGH_DETAIL)
-    snprintf(tcpinfo, sizeof(tcpinfo), "tcp src=%hu dst=%hu flags=%s seq=%lu ack=%lu off=%d res=%d win=%hu csum=0x%04X urp=%hu%s%s",
+  else if (detail==HIGH_DETAIL)
+    snprintf(tcpinfo, sizeof(tcpinfo), "tcp src=%hu dst=%hu flags=%s seq=%lu ack=%lu off=%d(%u) res=%d win=%hu csum=0x%04X urp=%hu%s%s",
       (u16)ntohs(tcph->th_sport), (u16)ntohs(tcph->th_dport), tflags,
       (unsigned long)ntohl(tcph->th_seq), (unsigned long)ntohl(tcph->th_ack),
-      (u8)tcph->th_off, (u8)tcph->th_x2, (u16)ntohs(tcph->th_win),
+      (u8)tcph->th_off, (u32)tcph->th_off*4, (u8)tcph->th_x2, (u16)ntohs(tcph->th_win),
       ntohs(tcph->th_sum), (u16)ntohs(tcph->th_urp), (tcpoptinfo[0]!='\0')?" ":"", tcpoptinfo);
   
   return tcpinfo;

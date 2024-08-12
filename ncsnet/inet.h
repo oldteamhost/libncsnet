@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
 #include "ip.h"
 
 #include "sys/types.h"
@@ -38,10 +39,9 @@
 
 __BEGIN_DECLS
 
-int         ncs_inet_pton(int af, const char * __restrict src,
-			   void * __restrict dst);
-const char *ncs_inet_ntop(int af, const void * __restrict src,
-			   char * __restrict dst, u32 len);
+const char *
+      ncs_inet_ntop(int af, const void * __restrict src, char * __restrict dst, u32 len);
+int   ncs_inet_pton(int af, const char * __restrict src, void * __restrict dst);
 u32   ncs_inet_addr(const char *cp);
 char *ncs_inet_ntoa(struct in_addr in);
 int   ncs_inet_aton(const char *cp, struct in_addr *addr);

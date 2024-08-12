@@ -13,6 +13,7 @@ int main(void)
 
   //chunk = sctp_heartbeat_build(SCTP_HEARTBEAT_ACK, 0, cookie, 2, &chunklen);
   chunk = sctp_error_build(0, 0, cookie, 2, &chunklen);  
+
   /*
   chunk = sctp_init_build(SCTP_INIT, 0, random_u32(), 32768, 10, 2048, random_u32(), &chunklen);  
   chunk = sctp_shutdown_build(0, 343, &chunklen);  

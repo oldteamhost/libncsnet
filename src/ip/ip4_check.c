@@ -28,9 +28,9 @@ void ip4_check(u8 *frame, size_t frmlen, bool badsum)
 {
   ip4h_t *ip;
 
-  ip = (ip4h_t*)frame;
-  ip->check = 0;
-  ip->check = ip_check_add((u16*)frame, frmlen, 0);
+  ip=(ip4h_t*)frame;
+  ip->check=0;
+  ip->check=in_check((void*)frame, frmlen);
 
   if (badsum)
     --ip->check;

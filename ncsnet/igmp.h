@@ -31,15 +31,36 @@
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
 
-#define IGMP_HOST_MEMBERSHIP_QUERY      0x11 /* membership query         */
-#define IGMP_v1_HOST_MEMBERSHIP_REPORT  0x12 /* Ver. 1 membership report */
-#define IGMP_DVMRP                      0x13 /* DVMRP routing message    */
-#define IGMP_PIM                        0x14 /* PIMv1 message (historic) */
-#define IGMP_v2_HOST_MEMBERSHIP_REPORT  0x16 /* Ver. 2 membership report */
-#define IGMP_HOST_LEAVE_MESSAGE         0x17 /* Leave-group message     */
-#define IGMP_MTRACE_REPLY               0x1e /* mtrace(8) reply */
-#define IGMP_MTRACE_QUERY               0x1f /* mtrace(8) probe */
-#define IGMP_v3_HOST_MEMBERSHIP_REPORT  0x22 /* Ver. 3 membership report */
+#define IGMP_V0_CREATE_GROUP_REQUEST	0x01
+#define IGMP_V0_CREATE_GROUP_REPLY	0x02
+#define IGMP_V0_JOIN_GROUP_REQUEST	0x03
+#define IGMP_V0_JOIN_GROUP_REPLY	0x04
+#define IGMP_V0_LEAVE_GROUP_REQUEST	0x05
+#define IGMP_V0_LEAVE_GROUP_REPLY	0x06
+#define IGMP_V0_CONFIRM_GROUP_REQUEST	0x07
+#define IGMP_V0_CONFIRM_GROUP_REPLY	0x08
+#define IGMP_V1_HOST_MEMBERSHIP_QUERY	0x11
+#define IGMP_V1_HOST_MEMBERSHIP_REPORT	0x12
+#define IGMP_DVMRP			0x13
+#define IGMP_V1_PIM_ROUTING_MESSAGE	0x14
+#define IGMP_V2_MEMBERSHIP_REPORT	0x16
+#define IGMP_V2_LEAVE_GROUP		0x17
+#define IGMP_TRACEROUTE_RESPONSE	0x1e
+#define IGMP_TRACEROUTE_QUERY_REQ       0x1f
+#define IGMP_V3_MEMBERSHIP_REPORT	0x22
+
+#define IGMP_TYPE_0x23			0x23
+#define IGMP_TYPE_0x24			0x24
+#define IGMP_TYPE_0x25			0x25
+#define IGMP_TYPE_0x26			0x26
+
+#define IGMP_IGAP_JOIN                  0x40
+#define IGMP_IGAP_QUERY                 0x41
+#define IGMP_IGAP_LEAVE                 0x42
+#define IGMP_RGMP_LEAVE                 0xFC
+#define IGMP_RGMP_JOIN                  0xFD
+#define IGMP_RGMP_BYE                   0xFE
+#define IGMP_RGMP_HELLO                 0xFF
 
 #define IGMP_DO_NOTHING                 0 /* don't send a record */
 #define IGMP_MODE_IS_INCLUDE            1 /* MODE_IN */
@@ -50,15 +71,15 @@
 #define IGMP_BLOCK_OLD_SOURCES          6 /* BLOCK_OLD */
 #define IGMP_V3_QUERY_MINLEN            12
 
-#define IGMP_V3_GENERAL_QUERY       1
-#define IGMP_V3_GROUP_QUERY         2
-#define IGMP_V3_GROUP_SOURCE_QUERY  3
+#define IGMP_V3_GENERAL_QUERY           1
+#define IGMP_V3_GROUP_QUERY             2
+#define IGMP_V3_GROUP_SOURCE_QUERY      3
 
-#define	IGMP_DELAYING_MEMBER    1
-#define	IGMP_IDLE_MEMBER        2
-#define	IGMP_LAZY_MEMBER        3
-#define	IGMP_SLEEPING_MEMBER    4
-#define	IGMP_AWAKENING_MEMBER   5
+#define	IGMP_DELAYING_MEMBER            1
+#define	IGMP_IDLE_MEMBER                2
+#define	IGMP_LAZY_MEMBER                3
+#define	IGMP_SLEEPING_MEMBER            4
+#define	IGMP_AWAKENING_MEMBER           5
 
 #define IGMP_EXP(x)             (((x) >> 4) & 0x07)
 #define IGMP_MANT(x)            ((x) & 0x0f)
@@ -88,5 +109,16 @@ int igmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                    u8 type, u8 code, const char *data, size_t datalen, int mtu,
                    bool badsum);
 __END_DECLS
+
+/* Old */
+#define IGMP_HOST_MEMBERSHIP_QUERY      0x11 /* membership query         */
+#define IGMP_v1_HOST_MEMBERSHIP_REPORT  0x12 /* Ver. 1 membership report */
+#define IGMP_DVMRP                      0x13 /* DVMRP routing message    */
+#define IGMP_PIM                        0x14 /* PIMv1 message (historic) */
+#define IGMP_v2_HOST_MEMBERSHIP_REPORT  0x16 /* Ver. 2 membership report */
+#define IGMP_HOST_LEAVE_MESSAGE         0x17 /* Leave-group message     */
+#define IGMP_MTRACE_REPLY               0x1e /* mtrace(8) reply */
+#define IGMP_MTRACE_QUERY               0x1f /* mtrace(8) probe */
+#define IGMP_v3_HOST_MEMBERSHIP_REPORT  0x22 /* Ver. 3 membership report */
 
 #endif

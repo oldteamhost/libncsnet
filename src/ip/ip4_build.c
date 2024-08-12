@@ -37,7 +37,7 @@ u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
   if (!pkt)
     return NULL;
 
-  ip = (ip4h_t*)pkt;
+  ip=(ip4h_t*)pkt;
   ip->version = 4;
   ip->ihl     = 5+(optslen/4);
   ip->tos     = tos;
@@ -50,11 +50,11 @@ u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
   ip->dst     = dst;
   if (opts && optslen)
     memcpy((u8*)ip+sizeof(ip4h_t), opts, optslen);
-  ip4_check((u8*)ip, sizeof(ip4h_t)+optslen, false);
-  
+  ip4_check((u8*)ip, 20+optslen, false);
+
   if (frame && frmlen)
     memcpy((u8*)ip+sizeof(ip4h_t)+optslen,
-	   frame, frmlen);
+     frame, frmlen);
 
   return pkt;
 }

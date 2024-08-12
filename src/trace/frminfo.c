@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -35,7 +35,7 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
    */
   static char  info[TRACE_MAX_TOTAL_LEN]="";
 
-  
+
   /*
    * Flags proccessing
    */
@@ -58,8 +58,8 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
     return tcp_info(frame, frmlen, detail);
   if (flags&FLAG_ARP)
     return arp_info(frame, frmlen, detail);
-  
-  
+
+
   /*
    * ETHERNET FRAME
    * Gets the HEX and ASCII internet of the frame if high detail is
@@ -71,7 +71,7 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
   char         asciinew[TRACE_MAX_DATA_LEN];
   char        *ascii=NULL;
   bool         valideth=0;
-  
+
   if (detail==HIGH_DETAIL) {
     ascii=read_hexdump(frame, frmlen);
     if (ascii) {
@@ -82,12 +82,12 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
   }
   frminfo=frm_info(frame, frmlen, &valideth);
   if (!valideth) {
-  onlyfrminfo:    
+  onlyfrminfo:
     snprintf(info, sizeof(info), "%s\n%s", frminfo, asciinew);
     return info;
   }
 
-  
+
   /*
    * HEADER MAC
    * Gathers information about MAC header, if skipeth is skip this stage,
@@ -100,7 +100,7 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
   u16         *ethtypeptr=NULL, ethtype=0;
   char         traceinfo[TRACE_PROTO_MAX_LEN]="";
   size_t       skip=0;
-  
+
   ethinfo[0]='\0';
   if (frmlen==ETH_HDR_LEN) {
     if (skipeth)
@@ -119,20 +119,20 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
   }
   else goto ipinfo; /* skip eth and goto at ipinfo*/
 
-  
+
   /*
    * PAYLOAD TYPE IP4 and IP6
    */
   const char  *ipinfo=NULL;
   const char  *protoinfo=NULL;
   struct abstract_iphdr ipa;
-  
+
   if (ethtype==ETH_TYPE_IPV4||ethtype==ETH_TYPE_IPV6) {
   ipinfo:
      writebuf("ip;");
      ipinfo=ip_info(frame+skip, frmlen-skip, detail, &ipa);
      if (((ethtype==ETH_TYPE_IPV4||ipa.version==4)&&frmlen<=skip+sizeof(ip4h_t))
-	||((ethtype==ETH_TYPE_IPV6||ipa.version==6)&&frmlen<=skip+sizeof(ip6h_t))) {
+       ||((ethtype==ETH_TYPE_IPV6||ipa.version==6)&&frmlen<=skip+sizeof(ip6h_t))) {
       snprintf(info, sizeof(info), "%s %s%s\n%s%s", traceinfo, frminfo, ethinfo, ipinfo, asciinew);
       return info;
     }
@@ -162,7 +162,7 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
     return info;
   }
 
-  
+
   /*
    * PAYLOAD TYPE ARP
    */

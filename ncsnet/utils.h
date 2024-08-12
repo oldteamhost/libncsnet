@@ -93,7 +93,7 @@ void  get_current_date(char* formatted_date, size_t max_length);
 int   calculate_timeout(double rtt, int speed);
 int   calculate_threads(int speed, int len);
 int   calculate_ping_timeout(int speed);
-char *get_active_interface_name(char* buffer, size_t len);
+const char *getinterface(void);
 int   get_gateway_ip(char* buf, size_t len);
 int   get_local_mac(const char *dev, char *mac_address);
 int   parse_ipopts(const char *txt, u8 *data, int datalen,

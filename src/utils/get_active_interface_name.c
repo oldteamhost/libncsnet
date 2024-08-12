@@ -24,28 +24,33 @@
 
 #include <ncsnet/utils.h>
 
-char* get_active_interface_name(char* buffer, size_t len)
+const char *getinterface(void)
 {
-  /*
-  char errbuf[PCAP_ERRBUF_SIZE];
-  pcap_if_t *alldevs, *d;
-  
-  if (pcap_findalldevs(&alldevs, errbuf) == -1)
+  struct if_nameindex *if_nidxs, *intf;
+  static char dev[1024];
+  struct ifreq ifr;
+  int fd;
+
+  fd=socket(AF_INET, SOCK_DGRAM, 0);
+  if (fd<0)
     return NULL;
-  
-  for (d = alldevs; d != NULL; d = d->next) {
-    if (d->flags & PCAP_IF_UP && !(d->flags & PCAP_IF_LOOPBACK)) {
-      if (strlen(d->name) < len) {
-	strcpy(buffer, d->name);
-	pcap_freealldevs(alldevs);
-	return buffer;
-      }
-      else
-	goto fail;
-    }
+
+  if_nidxs=if_nameindex();
+  for (intf=if_nidxs;intf->if_name;intf++) {
+     strncpy(ifr.ifr_name, intf->if_name, IFNAMSIZ-1);
+     ifr.ifr_name[IFNAMSIZ-1]='\0';
+     if (ioctl(fd, SIOCGIFFLAGS, &ifr)==0) {
+       if ((ifr.ifr_flags&IFF_UP)&&!(ifr.ifr_flags&IFF_LOOPBACK)) {
+         strncpy(dev, intf->if_name, sizeof(dev)-1);
+         dev[sizeof(dev)-1]='\0';
+         if_freenameindex(if_nidxs);
+         close(fd);
+         return dev;
+       }
+     }
   }
- fail:  
-  pcap_freealldevs(alldevs);
-  */
+
+  if_freenameindex(if_nidxs);
+  close(fd);
   return NULL;
 }

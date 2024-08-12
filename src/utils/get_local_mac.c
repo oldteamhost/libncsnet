@@ -30,8 +30,6 @@
 
 int get_local_mac(const char *dev, char *mac_address)
 {
-  return -1;
-  /*
   struct ifaddrs *ifap, *ifa;
   struct sockaddr_ll *sll;
 
@@ -53,5 +51,4 @@ int get_local_mac(const char *dev, char *mac_address)
 
   freeifaddrs(ifap);
   return -1;
-  */
 }

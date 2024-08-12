@@ -58,6 +58,13 @@ __BEGIN_DECLS
 u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...);
 
 /*
+ * Takes a HEX sequence like this, 45002a00910b000079849bd6c0a801
+ * 26adc2de8a0050c52f29498d23fa327b230900000a0000000611bb, and puts
+ * it into a u8 pointer that returns.
+ */
+u8 *frmbuild_hex(size_t *frmlen, char *errbuf, const char *hex);
+
+/*
  * Adds the specified data to an existing internet frame and
  * returns a new one. The "fmtlen" is the current length of
  * the internet frame, which will then be replaced by a new one,
@@ -74,13 +81,6 @@ u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ..
  * If frame = NULL, it returns oldframe.
  */
 u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, char *errbuf);
-
-/*
- * Takes a HEX sequence like this, 45002a00910b000079849bd6c0a801
- * 26adc2de8a0050c52f29498d23fa327b230900000a0000000611bb, and puts
- * it into a u8 pointer that returns.
- */
-u8 *frmbuild_hex(size_t *frmlen, char *errbuf, const char *hex);
 
 typedef struct __fmtopt {
 # define TYPE_U8   0

@@ -35,17 +35,34 @@ static void tvsub(struct timeval *out, struct timeval *in)
 
 int main(void)
 {
-  size_t frmlen=0;
-  u8 *frame=NULL;
-  
-  frame=frmbuild_hex(&frmlen, NULL, "000108000604000104bf6d0d3a50c0a80101000000000000c0a80121");
-  printf("%s\n", frminfo(frame, frmlen, 3, FLAG_ARP));
-  
+  size_t frmlen=0, msglen=0, ethfrmlen=0;
+  u8 *frame=NULL, *msg=NULL, *ethfrm=NULL;
+
+  eth_t *eth;
+  eth=eth_open("enp7s0");
+
+  msg = icmp4_msg_echo_build(7, 1, NULL, &msglen);
+  frame=icmp4_build_pkt(ncs_inet_addr("192.168.1.33"),ncs_inet_addr("108.177.14.102"), 64,
+      33375, 0, 1, NULL, 0, 8, 0, msg, msglen, &frmlen, 0);
+
+  mac_t src_, dst_;
+  mac_aton(&src_, "40:B0:76:47:8F:9A");
+  mac_aton(&dst_, "04:BF:6D:0D:3A:50");
+  ethfrm=eth_build(src_, dst_, 0x800, frame, frmlen, &ethfrmlen);
+
+  printf("%s\n", frminfo(ethfrm, ethfrmlen, 3, 0x00));
+  eth_send(eth, ethfrm, ethfrmlen);
+
+  free(msg);
+  free(frame);
+  free(ethfrm);
+  eth_close(eth);
+
   return 0;
-  
-  size_t msglen = 0,reslen=0;
-  u8 *msg,*pkt=NULL;
-  int fd;
+
+  int fd; 
+  size_t reslen=0;
+  u8 *pkt=NULL;
   lr_t *lr;
 
   fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
@@ -57,7 +74,6 @@ int main(void)
   src.sin_family = AF_INET;
   src.sin_addr.s_addr = ncs_inet_addr("173.194.222.138");
 
-  msg = icmp4_msg_echo_build(random_u16(), 10, "kek", &msglen);
   //  msg=icmp4_msg_info_build(random_u16(), 100, &msglen);
   // msg=icmp4_msg_tstamp_build(random_u16(), 1, 100, 30, 344, &msglen);
   pkt=icmp4_build_pkt(ncs_inet_addr("192.168.1.33"), src.sin_addr.s_addr, 121,
