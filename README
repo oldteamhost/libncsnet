@@ -40,5 +40,6 @@ check folder utils/.
 
   uitls/ping.c         connection test tool.
   utils/icmpflood.c    icmp ddos tool.
+  utils/hexflood.c     very fast ddos with any specified packages.
 
 last updated 2024-07-31 (lomaster)
