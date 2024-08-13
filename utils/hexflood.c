@@ -49,7 +49,6 @@
 #define __DEFAULT_PPS         10000
 #define __DEFAULT_SEE         0
 
-
 const struct option longopts[]={
   {"help", no_argument, 0, 'h'},
   {"fdnum", required_argument, 0, 1},
