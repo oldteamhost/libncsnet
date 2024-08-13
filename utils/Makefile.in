@@ -1,3 +1,4 @@
+
 V =
 ifeq ($(strip $(V)),)
 	E = @echo
@@ -12,15 +13,19 @@ CFLAGS = @CFLAGS@ @OCFLAGS@ -g
 BUILDDIR = @BUILDDIR@
 LIBNCSNETDIR = ../
 LIB=$(LIBNCSNETDIR)/libncsnet.a
-PROGS=icmpflood ping
-SRCS=icmpflood.c ping.c
-OBJS=icmpflood.o ping.o
+PROGS=icmpflood ping hexflood
+SRCS=icmpflood.c ping.c hexflood.c
+OBJS=icmpflood.o ping.o hexflood.o
 
 all: $(LIBNCSNETDIR)/libncsnet.a $(BUILDDIR) $(OBJS) $(PROGS)
 
 $(BUILDDIR):
 	$(E) "  MKDIR   " $(BUILDDIR)
 	@mkdir -p $(BUILDDIR)
+
+hexflood.o: hexflood.c
+	$(E) "  CC      " $<
+	$(Q) $(CC) $(CFLAGS) -c -o $@ $<
 
 icmpflood.o: icmpflood.c
 	$(E) "  CC      " $<
@@ -29,6 +34,11 @@ icmpflood.o: icmpflood.c
 ping.o: ping.c
 	$(E) "  CC      " $<
 	$(Q) $(CC) $(CFLAGS) -c -o $@ $<
+
+hexflood: hexflood.o $(LIB)
+	$(E) "  LINK    " $(BUILDDIR)/$@
+	$(Q) $(CC) $(CFLAGS) -o $(BUILDDIR)/$@ $< $(LIB)
+
 
 icmpflood: icmpflood.o $(LIB)
 	$(E) "  LINK    " $(BUILDDIR)/$@

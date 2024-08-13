@@ -81,7 +81,7 @@
 #define TCP_OPT_AO          29  /* TCP Authentication Option (RFC5925)         */
 
 enum TCP_FLAGS {URG = TCP_FLAG_URG, ACK = TCP_FLAG_ACK, PSH = TCP_FLAG_PSH, RST = TCP_FLAG_RST,
-		SYN = TCP_FLAG_SYN, CWR = TCP_FLAG_CWR, ECE = TCP_FLAG_ECE, FIN = TCP_FLAG_FIN};
+  SYN = TCP_FLAG_SYN, CWR = TCP_FLAG_CWR, ECE = TCP_FLAG_ECE, FIN = TCP_FLAG_FIN};
 
 struct tcp_hdr
 {
@@ -151,11 +151,11 @@ __BEGIN_DECLS
 
 u8 *tcp_build(u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
               u16 win, u16 urp, const u8 *opt, size_t optlen, const char *data,
-	      size_t *pktlen);
+              size_t *pktlen);
 
 void tcp4_check(u8 *frame, size_t frmlen, u32 src, u32 dst, bool badsum);
 void tcp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
-		const struct in6_addr *dst, bool badsum);
+    const struct in6_addr *dst, bool badsum);
 
 #define tcp_opt_mss_build(mss, optlen)					\
   frmbuild(optlen, NULL, "u8(2), u8(4), u16(%hu)", htons((mss)))
@@ -174,19 +174,19 @@ u8 *tcp4_build_pkt(u32 src, u32 dst, u8 ttl, u16 id, u8 tos, bool df,
                    const u8 *ipopt, size_t ipoptlen, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
                    const u8 *opt, size_t optlen, const char *data, size_t *pktlen,
-		   bool badsum);
+                   bool badsum);
 
 u8 *tcp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
                    const u8 *opt, size_t optlen, const char *data, size_t *pktlen,
-		   bool badsum);
+                   bool badsum);
 
 int tcp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                   int ttl, bool df, u8 *ipops, size_t ipoptlen, u16 srcport,
                   u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags, u16 win,
                   u16 urp, u8 *opt, size_t optlen, const char *data, int mtu,
-		  bool badsum);
+                  bool badsum);
 
 int tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
                    u16 dstport, u8 flags, const char *data);

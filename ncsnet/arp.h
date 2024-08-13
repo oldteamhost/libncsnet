@@ -119,7 +119,7 @@ struct arp_hdr
   u16 pro;
   u8  hln;
   u8  pln;
-  u16 op; 
+  u16 op;
 };
 
 typedef struct arp_hdr arph_t;

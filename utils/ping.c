@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
@@ -169,19 +169,19 @@ const struct option
   {"vv", no_argument, 0, 21},
   {"vvv", no_argument, 0, 22},
   {"delay", required_argument, 0, 23},
-  {"seq", required_argument, 0, 24},     
-  {"ack", required_argument, 0, 25},     
-  {"urp", required_argument, 0, 26},     
-  {"win", required_argument, 0, 27},     
-  {"tos", required_argument, 0, 28},     
+  {"seq", required_argument, 0, 24},
+  {"ack", required_argument, 0, 25},
+  {"urp", required_argument, 0, 26},
+  {"win", required_argument, 0, 27},
+  {"tos", required_argument, 0, 28},
   {"flags", required_argument, 0, 29},
   {"type", required_argument, 0, 30},
-  {"code", required_argument, 0, 31},         
-  {"id", required_argument, 0, 32},         
+  {"code", required_argument, 0, 31},
+  {"id", required_argument, 0, 32},
   {"icmp", no_argument, 0, 33},
-  {"udp", no_argument, 0, 34},         
-  {"rx", required_argument, 0, 35},         
-  {"orig", required_argument, 0, 36},         
+  {"udp", no_argument, 0, 34},
+  {"rx", required_argument, 0, 35},
+  {"orig", required_argument, 0, 36},
   {"tx", required_argument, 0, 37},
   {"mask", required_argument, 0, 38},
   {"sctp", no_argument, 0, 39},
@@ -240,10 +240,10 @@ static noreturn void usage(void)
   puts("    -macdst <macaddr>\tset dest mac address");
   puts("    -mactype <num>\tset payload type in mac header");
   puts("  -icmp");
-  puts("    -type <8,13,15,17>\tset icmp message type");  
+  puts("    -type <8,13,15,17>\tset icmp message type");
   puts("    -code <num>\t\tset your code");
   puts("    -id <num>\t\tset your ident");
-  puts("    -seq <num>\t\tset your sequence");  
+  puts("    -seq <num>\t\tset your sequence");
   puts("    -type 13");
   puts("      -orig <num>\tset originate timestamp");
   puts("      -rx <num>\t\tset receive timestamp");
@@ -251,12 +251,12 @@ static noreturn void usage(void)
   puts("    -type 17");
   puts("      -mask <ip4addr>\tset addr for mask");
   puts("  -tcp");
-  puts("    -flags <fmt>\tcustomize TCP flags (S,A,P,F,R,C,P,U,E)");  
+  puts("    -flags <fmt>\tcustomize TCP flags (S,A,P,F,R,C,P,U,E)");
   puts("    -dstport <num>\tset destination port");
   puts("    -srcport <num>\tset custom source port");
   puts("    -seq <num>\t\tset custom sequence number");
-  puts("    -ack <num>\t\tset custom ack number");    
-  puts("    -urp <num>\t\tset custom urp number");    
+  puts("    -ack <num>\t\tset custom ack number");
+  puts("    -urp <num>\t\tset custom urp number");
   puts("    -win <num>\t\tset custom window size");
   puts("    -tcpopts <hex> \tset your tcp options");
   puts("  -udp");
@@ -269,10 +269,10 @@ static noreturn void usage(void)
   puts("    -vtag <type>\tset your vtag");
   puts("    -chunk 1|2");
   puts("      -itag <num>\tset your itag");
-  puts("      -arwnd <num>\tset your arwnd");  
-  puts("      -nos <num>\tset your nos");  
-  puts("      -nis <num>\tset your nis");  
-  puts("      -itsn <num>\tset your itsn");  
+  puts("      -arwnd <num>\tset your arwnd");
+  puts("      -nos <num>\tset your nos");
+  puts("      -nis <num>\tset your nis");
+  puts("      -itsn <num>\tset your itsn");
   puts("    -chunk 0");
   puts("      -tsn <num>\tset your tsn");
   puts("      -stream <num>\tset your stream id");
@@ -322,41 +322,41 @@ static bool received_ping_sctp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   char chunktypestr[1024];
   u8 *chunktype=NULL;
   sctph_t *sctp;
-  
+
   sctp=(sctph_t*)(frame+(ETH_HDR_LEN+sizeof(ip4h_t)));
   chunktype=(u8*)(sctp+sizeof(u8));
-  
+
   switch (*chunktype) {
   case SCTP_ABORT:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=abort ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=abort ");
     break;
   case SCTP_INIT:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=initack ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=initack ");
     break;
   case SCTP_COOKIE_ECHO:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=cookie ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=cookie ");
     break;
   case SCTP_COOKIE_ACK:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=cookieack ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=cookieack ");
     break;
   case SCTP_HEARTBEAT:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=heartbeat ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=heartbeat ");
     break;
   case SCTP_SHUTDOWN:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdown ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdown ");
     break;
   case SCTP_SHUTDOWN_ACK:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdownack ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdownack ");
     break;
   case SCTP_SHUTDOWN_COMPLETE:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdowncomplete ");    
-    break;    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=shutdowncomplete ");
+    break;
   case SCTP_SACK:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=sack ");    
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=sack ");
     break;
   case SCTP_DATA:
-    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=data ");    
-    break;            
+    snprintf(chunktypestr, sizeof(chunktypestr), "chunk=data ");
+    break;
   default:
     snprintf(chunktypestr, sizeof(chunktypestr), "chunk=%hhu ", *chunktype);
     break;
@@ -380,9 +380,9 @@ static bool received_ping_udp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
 {
   struct sockaddr_in dst_t, *src_t;
   udph_t *udp;
-  
+
   udp=(udph_t*)(frame+(ETH_HDR_LEN+sizeof(ip4h_t)));
-  
+
   /* Check if the packet is addressed to us. */
   dst_t.sin_addr.s_addr=ip->src;
   src_t=(struct sockaddr_in*)dst;
@@ -403,7 +403,7 @@ static bool received_ping_tcp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   char tflags[10];
   char *p=NULL;
   tcph_t *tcp;
-  
+
   tcp=(tcph_t*)(frame+(ETH_HDR_LEN+sizeof(ip4h_t)));
 
   /*
@@ -429,7 +429,7 @@ static bool received_ping_tcp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   if (tcp->th_flags & TCP_FLAG_CWR)
     *p++ = 'C';
   *p++ = '\0';
-  
+
   /* Check if the packet is addressed to us. */
   dst_t.sin_addr.s_addr=ip->src;
   src_t=(struct sockaddr_in*)dst;
@@ -455,23 +455,23 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   struct in_addr iptmp;
   struct sockaddr_in dst_t, *src_t;
   u16 *icmp_seq=NULL;
-  
+
   /*
    * We get the ICMP header, which is known to come after
    * the MAC header and the IP4 header.
      */
   icmp=(icmph_t*)(frame+(ETH_HDR_LEN+sizeof(ip4h_t)));
-  
+
   /*
    * ICMP echo/info/tstamp/mask reply aee
    */
   if (icmp->type==ICMP4_ECHOREPLY||icmp->type==ICMP4_INFOREPLY||icmp->type==ICMP4_TSTAMPREPLY||icmp->type==ICMP4_MASKREPLY) {
-    
+
     /* Check if the packet is addressed to us. */
     dst_t.sin_addr.s_addr=ip->src;
     src_t=(struct sockaddr_in*)dst;
     if (dst_t.sin_addr.s_addr==src_t->sin_addr.s_addr) {
-      
+
       /*
        * Get seq from ICMP message, as we know it is after mac
        * header, ip header, icmp header, and id field which size
@@ -487,17 +487,17 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
        *
        */
       icmp_seq=(u16*)(frame+(ETH_HDR_LEN+sizeof(ip4h_t))+(sizeof(icmph_t)+sizeof(u16)));
-      
+
       snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s%s: icmp_seq=%hu ttl=%hhu", frmlen, ip4buf, currentdns, ntohs(*icmp_seq), ip->ttl);
       return true;
     }
   }
-  
+
   /*
    * ICMP unreach/tstamp/srcquench/redirect/timexceed/paramprob
    */
   if (icmp->type==ICMP4_UNREACH||icmp->type==ICMP4_SRCQUENCH||icmp->type==ICMP4_REDIRECT||icmp->type==ICMP4_TIMEXCEED||icmp->type==ICMP4_PARAMPROB) {
-    
+
     /*
      * Get the IP4 header from the received packet, but only the
      * one that lies in the ICMP message, here: [mac_hdr + ip4_hdr +
@@ -513,7 +513,7 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
      *
      */
     ip2=(ip4h_t*)(frame+((ETH_HDR_LEN+sizeof(ip4h_t)))+sizeof(icmp4h_t)+sizeof(u32));
-    
+
     /*
      * Does our IP4 address match the IP4 address of the sender inside the
      * IP4 header that is in the UNREACH message.
@@ -523,7 +523,7 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
     iptmp.s_addr=ip->src;
     if (dst_t.sin_addr.s_addr!=src_t->sin_addr.s_addr)
       return false;
-    
+
     /* Get the unsed/gateway field from the ICMP message from the error.
      * That is:  [mac_hdr + ip4_hdr + icmp_hdr]
      *
@@ -536,9 +536,9 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
      * 0040   58 eb 9f 12 00 02
      */
     unsed=(u32*)(frame+((ETH_HDR_LEN+sizeof(ip4h_t)))+(sizeof(icmp4h_t)));
-    
+
     if (ip2->proto==IPPROTO_ICMP) {
-      
+
       /*
        * We get the ICMP header, but, the one that lies in the ICMP message.
        * Right there: [mac_hdr + ip4_hdr + icmp_hdr + icmp4_msg_unreach
@@ -555,10 +555,10 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
        *
        */
       icmp2=(icmph_t*)(frame+((ETH_HDR_LEN+sizeof(ip4h_t)))+(sizeof(icmp4h_t)+sizeof(u32))+(sizeof(ip4h_t)));
-      
+
       if (ip2->proto==IPPROTO_ICMP&&(icmp2->type==ICMP4_ECHO||icmp2->type==ICMP4_INFO||icmp2->type==ICMP4_TSTAMP)) {
 	u16 *icmp_seq=NULL;
-	
+
 	/*
 	 * If the type of ICMP message inside the ICMP message UNREACH
 	 * (after the ip4 header), matches one of these, then we get the
@@ -579,7 +579,7 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
 	 *
 	 */
 	icmp_seq=(u16*)(frame+((ETH_HDR_LEN+sizeof(ip4h_t)))+(sizeof(icmp4h_t)+sizeof(u32))+(sizeof(ip4h_t)+sizeof(icmph_t)+sizeof(u16)));
-	
+
 	sprintf(protoinfo, "icmp_seq=%hu", ntohs(*icmp_seq));
       }
     }
@@ -595,7 +595,7 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
     }
     else
       protoinfo[0]='\0';
-    
+
     /* Build v0 message */
     if (icmp->type==ICMP4_UNREACH) {
       switch (icmp->code) {
@@ -627,13 +627,13 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
     else if (icmp->type==ICMP4_TIMEXCEED) {
       switch (icmp->code) {
       case ICMP4_TIMEXCEED_INTRANS:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time to live exceeded in transit)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);	      
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time to live exceeded in transit)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
 	break;
       case ICMP4_TIMEXCEED_REASS:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragment reassembly time exceeded)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);	      	    
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragment reassembly time exceeded)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
 	break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time exceeded, Bad Code: 0x%x)", frmlen, ncs_inet_ntoa(iptmp), protoinfo, icmp->code);	      	    
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time exceeded, Bad Code: 0x%x)", frmlen, ncs_inet_ntoa(iptmp), protoinfo, icmp->code);
 	break;
       }
     }
@@ -668,7 +668,7 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
     }
     return true;
   }
-  
+
   return false;
 }
 
@@ -719,7 +719,7 @@ static bool received_ping_callback(u8 *frame, size_t frmlen)
     filter=false;
   if (filter==0)
     return false;
-  
+
   /* v123 message build */
   if (vvv==1)
     v123msg=frminfo(frmtmp, tmplen, LOW_DETAIL, 0);
@@ -727,7 +727,7 @@ static bool received_ping_callback(u8 *frame, size_t frmlen)
     v123msg=frminfo(frmtmp, tmplen, MEDIUM_DETAIL, 0);
   else if (vvv==3)
     v123msg=frminfo(frmtmp, tmplen, HIGH_DETAIL, 0);
-  
+
   return true;
 }
 
@@ -753,7 +753,7 @@ static void parsearg(int argc, char **argv)
         addr4=(struct sockaddr_in*)src;
         addr4->sin_family=AF_INET;
         addr4->sin_port=0;
-      } 
+      }
       else
 	errx(1, "err: invalid convert ipaddr \"%s\"", optarg);
       break;
@@ -761,7 +761,7 @@ static void parsearg(int argc, char **argv)
     case 4:
       datalen=atoll(optarg);
       if (datalen>1400)
-	errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);      
+	errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
       data=random_str(datalen, DEFAULT_DICTIONARY);
      break;
     case 5:
@@ -860,7 +860,7 @@ static u8 *icmpmsgbuild(size_t *msglen)
     msg=icmp4_msg_mask_build(icmpid, seq, mask, msglen);
     break;
   }
-  
+
   return msg;
 }
 
@@ -1007,10 +1007,10 @@ static void pr_pack(u8 *buf, ssize_t cc)
     printf("No response transmission ->\n%s\n",v123sendmgs);
     return;
   }
-  
+
   nreceived++;
   tvrtt();
-  
+
   if (noreply)
     return;
 
@@ -1049,7 +1049,7 @@ static void prefinish(const char *target)
 {
   printf("\n----%s PING Statistics----\n", target);
   printf("%ld packets transmitted, %ld packets received",
-	 ntransmitted, nreceived);
+    ntransmitted, nreceived);
   if (ntransmitted) {
     if (nreceived>ntransmitted)
       printf(" -- somebody's printing up packets!\n");
@@ -1059,7 +1059,7 @@ static void prefinish(const char *target)
   }
   if (nreceived)
     printf("round-trip (ms)  min/avg/max = %ld/%ld/%ld\n",
-	   tmin, tsum / nreceived, tmax);
+      tmin, tsum / nreceived, tmax);
   putchar('\n');
   printstats=1;
 }
@@ -1135,7 +1135,7 @@ static void ping(const char *target)
 {
   struct sockaddr_in *dst4;
   size_t cc=0;
-  
+
   /* Update variables */
   memset(dst, 0, sizeof(struct sockaddr_storage));
   memset(ip4buf, 0, 16);
@@ -1144,7 +1144,7 @@ static void ping(const char *target)
   nreceived=ntransmitted=0;
   tmin=999999999;
   tmax=tsum=0;
-  
+
   /* Convert target */
   if ((is=this_is(target))!=IPv6) {
     dst4 = (struct sockaddr_in*)dst;
@@ -1163,7 +1163,7 @@ static void ping(const char *target)
   dns_util_getip4(ip4buf, random_srcport(), to_ns(1500), currentdns,
     sizeof(currentdns));
   dnsproc();
-  
+
   if (icmp)
     mode=MODE_ICMP;
   else if (tcp)
@@ -1172,7 +1172,7 @@ static void ping(const char *target)
     mode=MODE_SCTP;
   else if (udp)
     mode=MODE_UDP;
-  
+
   for (;;) {
     lasttarget=target;
     packet=(u8*)calloc(65535, sizeof(u8));
@@ -1189,8 +1189,8 @@ static void ping(const char *target)
       prefinish(target);
       return;
     }
-    nsdelay(delay);    
-  }  
+    nsdelay(delay);
+  }
 }
 
 
@@ -1202,10 +1202,10 @@ static void targetsproc(void)
 {
   char *cp=NULL, *tmp=NULL, *token=NULL;
   size_t index=0;
-  
+
   cp=strdup(node);
   tmp=cp;
-  
+
   while (*++tmp)
     if (*tmp == ',')
       num++;
@@ -1217,7 +1217,7 @@ static void targetsproc(void)
     index++;
     token=strtok(NULL, ",");
   }
-  
+
   free(cp);
 }
 

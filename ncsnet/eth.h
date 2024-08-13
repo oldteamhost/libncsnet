@@ -98,7 +98,7 @@ ssize_t  eth_read(eth_t *e, u8 *buf, ssize_t len);
 ssize_t  eth_send(eth_t *e, const void *buf, size_t len);
 eth_t   *eth_close(eth_t *e);
 u8      *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
-		   size_t frmlen, size_t *pktlen);
+  size_t frmlen, size_t *pktlen);
 eth_t   *eth_open_cached(const char *device);
 void     eth_close_cached(void);
 

