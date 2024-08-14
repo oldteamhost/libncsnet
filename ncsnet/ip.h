@@ -303,7 +303,7 @@ typedef struct ip6_hdr ip6h_t;
 
 __BEGIN_DECLS
 
-u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
+u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, u16 off,
               const u8 *opts, int optslen, u8 *frame, size_t frmlen,
               size_t *pktlen);
 

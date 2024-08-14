@@ -92,7 +92,7 @@ int         optsnum=0;
 u8         *tcpopt=NULL;
 size_t      tcpoptlen=0;
 int         mtu=0;
-bool        df=0;
+bool        df=0,mf=0,evil=0;
 u32         mask;
 lr_t       *lr;
 int         tos=0;
@@ -199,6 +199,8 @@ const struct option
   {"stream", required_argument, 0, 51},
   {"protoload", required_argument, 0, 52},
   {"eth", no_argument, 0, 53},
+  {"mf", no_argument, 0, 54},
+  {"rf", no_argument, 0, 55},
 };
 
 static void parsearg(int argc, char **argv);
@@ -232,6 +234,8 @@ static noreturn void usage(void)
   puts("  -tos <num>\t\tset your type of service field");
   puts("  -ident <num>\t\tset your identification field");
   puts("  -df\t\t\tset Don't Fragment flag");
+  puts("  -mf\t\t\tset More fragments flag");
+  puts("  -rf\t\t\tset Reserved flag");
   puts("  -ttl <num>\t\tset your ttl");
   puts("  -mtu <num>\t\tfragment send packets");
   puts("  -ipopt <fmt>\t\tadding ip option in packets\n\t\t\t(fmt <R|S [route]|L [route]|T|U |[HEX]>)");
@@ -824,6 +828,8 @@ static void parsearg(int argc, char **argv)
     case 51: stream=atoi(optarg); streamc=1; break;
     case 52: protoload=atoll(optarg); protoloadc=1; break;
     case 53: eth=1; break;
+    case 54: mf=1; break;
+    case 55: evil=1; break;
     }
   }
 }
@@ -906,6 +912,7 @@ static u8 *pingbuild(size_t *pinglen)
 {
   u8 *ping=NULL, *preping=NULL, *msg=NULL;
   struct sockaddr_in *dst4=NULL, *src4=NULL;
+  u16 off=0;
 
   dst4=(struct sockaddr_in*)dst;
   src4=(struct sockaddr_in*)src;
@@ -943,9 +950,15 @@ static u8 *pingbuild(size_t *pinglen)
     ident=random_u16();
   if (!ttlc)
     ttl=random_num_u32(64, 255);
+  if (df)
+    off|=IP4_DF;
+  if (mf)
+    off|=IP4_MF;
+  if (evil)
+    off|=IP4_RF;
 
   ping=ip4_build(src4->sin_addr.s_addr, dst4->sin_addr.s_addr, mode, ttl,
-    ident, tos, df, ipopt, ipoptslen, preping, *pinglen,
+    ident, tos, off, ipopt, ipoptslen, preping, *pinglen,
     pinglen);
   free(preping);
 

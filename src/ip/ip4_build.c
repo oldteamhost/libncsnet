@@ -24,7 +24,7 @@
 
 #include <ncsnet/ip.h>
 
-u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
+u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, u16 off,
               const u8 *opts, int optslen, u8 *frame, size_t frmlen,
               size_t *pktlen)
 {
@@ -43,7 +43,7 @@ u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, bool df,
   ip->tos     = tos;
   ip->totlen  = htons(*pktlen);
   ip->id      = htons(id);
-  ip->off     = htons((df?IP4_DF:0));
+  ip->off     = off;
   ip->ttl     = ttl;
   ip->proto   = proto;
   ip->src     = src;
