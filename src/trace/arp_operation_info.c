@@ -34,9 +34,9 @@ const char *arp_operation_info(const u8 *op, size_t oplen, u16 optype, u16 ptype
     char dst[TRACE_MAX_DATA_LEN];
     char src[TRACE_MAX_DATA_LEN];
     char dstp[TRACE_MAX_DATA_LEN];
-    char srcp[TRACE_MAX_DATA_LEN];    
+    char srcp[TRACE_MAX_DATA_LEN];
     size_t skip=0;
-    
+
     skip=plen+hlen;
     if (hlen==6) {
       mac_t sha, tha;
@@ -68,6 +68,6 @@ const char *arp_operation_info(const u8 *op, size_t oplen, u16 optype, u16 ptype
     break;
   }
   }
-  
+
   return arpopinfo;
 }

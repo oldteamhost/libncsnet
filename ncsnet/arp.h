@@ -124,7 +124,13 @@ struct arp_hdr
 
 typedef struct arp_hdr arph_t;
 
-/* not use, use arp_ethip4_build */
+typedef struct arp_op_hdr_request {
+  u8 sha[sizeof(u8)];
+  u8 spa[sizeof(u8)];
+  u8 tha[sizeof(u8)];
+  u8 tpa[sizeof(u8)];
+} arp_op_request;
+
 struct arp_ethip4 {
   u8 data[ARP_ETHIP_LEN];
 };
@@ -132,14 +138,13 @@ struct arp_ethip4 {
 __BEGIN_DECLS
 
 u8 *arp_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op,
-	      u8 *frame, size_t frmlen, size_t *pktlen);
+    u8 *frame, size_t frmlen, size_t *pktlen);
 
-u8 *arp_ethip4_build(mac_t sha, ip4_t spa, mac_t tha,
-		     ip4_t tpa, size_t *pktlen);
+u8 *arp_op_request_build(u8 hln, u8 pln, u8 *sha, u8 *spa,
+    u8 *tha, u8 *tpa, size_t *oplen);
 
 u8 *arp_ethip4_build_pkt(mac_t src, mac_t dst, u16 op,
-			 mac_t sha, ip4_t spa, mac_t tha,
-			 ip4_t tpa, size_t *pktlen);
+     mac_t sha, ip4_t spa, mac_t tha, ip4_t tpa, size_t *pktlen);
 
 __END_DECLS
 

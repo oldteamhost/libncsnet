@@ -24,23 +24,21 @@
 
 #include <ncsnet/arp.h>
 
-u8 *arp_ethip4_build_pkt(mac_t src, mac_t dst, u16 op,
-			mac_t sha, ip4_t spa, mac_t tha,
-			ip4_t tpa, size_t *pktlen)
+u8 *arp_ethip4_build_pkt(mac_t src, mac_t dst, u16 op, mac_t sha, ip4_t spa, mac_t tha,
+  ip4_t tpa, size_t *pktlen)
 {
-  u8 *arp, *ethip, *pkt;
   size_t ethiplen, arplen;
+  u8 *arp, *ethip, *pkt;
 
-  ethip = arp_ethip4_build(sha, spa, tha, tpa, &ethiplen);
+  ethip=arp_op_request_build(6, 4, sha.octet, spa.octet, tha.octet,
+    tpa.octet, &ethiplen);
   if (!ethip)
     return NULL;
-  
   arp = arp_build(ARP_HDR_ETH, ARP_PRO_IP, MAC_ADDR_LEN,
-      IP4_ADDR_LEN, op, (u8*)ethip, ethiplen, &arplen);
+    IP4_ADDR_LEN, op, (u8*)ethip, ethiplen, &arplen);
   free(ethip);
   if (!arp)
     return NULL;
-  
   pkt = eth_build(src, dst, ETH_TYPE_ARP, (u8*)arp,
       arplen, pktlen);
   free(arp);

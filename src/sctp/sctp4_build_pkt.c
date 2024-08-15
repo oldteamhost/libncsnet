@@ -24,21 +24,21 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, bool df,
+u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, u16 off,
                     u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
                     u8 *chunks, size_t chunkslen, size_t *pktlen, bool adler32sum,
-		    bool badsum)
+                    bool badsum)
 {
   size_t sctplen;
   sctph_t *sctp;
   u8 *pkt;
 
-  sctp = (sctph_t*)sctp_build(srcport, dstport, vtag, chunks, chunkslen, &sctplen);
+  sctp=(sctph_t*)sctp_build(srcport, dstport, vtag, chunks, chunkslen, &sctplen);
   if (!sctp)
     return NULL;
   sctp_check((u8*)sctp, sctplen, adler32sum, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
-      tos, df, ipopt, ipoptlen, (u8*)sctp, sctplen, pktlen);
+  pkt=ip4_build(src, dst, IPPROTO_SCTP, ttl, ipid,
+      tos, off, ipopt, ipoptlen, (u8*)sctp, sctplen, pktlen);
 
   free(sctp);
   return pkt;

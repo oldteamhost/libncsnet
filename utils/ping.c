@@ -922,15 +922,15 @@ static u8 *pingbuild(size_t *pinglen)
 
   switch (mode) {
   case MODE_UDP:
-    preping=udp_build(srcport, dstport, data, pinglen);
+    preping=udp_build(srcport, dstport, (u8*)data, datalen, pinglen);
     udp4_check(preping, *pinglen, src4->sin_addr.s_addr, dst4->sin_addr.s_addr, badsum);
     break;
   case MODE_TCP:
     if (!seqc)
       seq=random_u32();
     preping=tcp_build(srcport, dstport, seq, ack, 0,
-      flags, winlen, urp, tcpopt, tcpoptlen, data,
-      pinglen);
+      flags, winlen, urp, tcpopt, tcpoptlen, (u8*)data,
+      datalen, pinglen);
     tcp4_check(preping, *pinglen, src4->sin_addr.s_addr, dst4->sin_addr.s_addr, badsum);
     break;
   case MODE_ICMP:

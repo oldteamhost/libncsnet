@@ -25,8 +25,8 @@
 #include <ncsnet/icmp.h>
 
 u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
-                    bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
-		    size_t msglen, size_t *pktlen, bool badsum)
+                    u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
+                    size_t msglen, size_t *pktlen, bool badsum)
 {
   size_t icmplen;
   icmp4h_t *icmp;
@@ -36,9 +36,9 @@ u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
   if (!icmp)
     return NULL;
   icmp4_check((u8*)icmp, icmplen, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_ICMP, ttl, ipid, tos, df, ipopt,
+  pkt = ip4_build(src, dst, IPPROTO_ICMP, ttl, ipid, tos, off, ipopt,
     ipoptlen, (u8*)icmp, icmplen, pktlen);
-  
+
   free(icmp);
   return pkt;
 }

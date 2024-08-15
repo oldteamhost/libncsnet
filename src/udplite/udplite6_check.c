@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -22,52 +22,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/igmp.h>
+#include <ncsnet/udplite.h>
 
-#ifndef MIN
-  #define MIN(a,b) ((a) <= (b) ? (a) : (b))
-#endif
-
-u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
-                   u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code,
-                   const char *data, size_t datalen, size_t *pktlen, bool badsum)
+void udplite6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
+  const struct in6_addr *dst, u16 checkcrg, bool badsum)
 {
-  int dlen = 0, igmplen = 0;
-  struct igmp_hdr igmp;
-  u32 *datastart;
-  char *pkt;
+  udpliteh_t *udplite;
 
-  datastart = (u32*)igmp.data;
-  dlen = sizeof(igmp.data);
-  pkt = (char*)&igmp;
+  udplite=(udpliteh_t*)frame;
+  udplite->checkcrg=htons(checkcrg);
+  udplite->check=0;
 
-  igmp.type = type;
-  igmp.code = code;
+  if (!checkcrg)
+    udplite->check=ip6_pseudocheck(src, dst, IPPROTO_UDPLITE, frmlen, udplite);
+  else if (checkcrg>=8&&checkcrg<=frmlen)
+    udplite->check=ip6_pseudocheck(src, dst, IPPROTO_UDPLITE, sizeof(udpliteh_t)+checkcrg, udplite);
+  else
+    udplite->check=0xffff;
 
-  switch (type) {
-    case IGMP_HOST_MEMBERSHIP_QUERY:
-    case IGMP_v1_HOST_MEMBERSHIP_REPORT:
-    case IGMP_v2_HOST_MEMBERSHIP_REPORT:
-    case IGMP_HOST_LEAVE_MESSAGE:
-    case IGMP_v3_HOST_MEMBERSHIP_REPORT:
-      igmplen = 8;
-      break;
+  if (badsum) {
+    udplite->check--;
+    udplite->checkcrg--;
   }
-
-  if (datalen > 0) {
-    igmplen += MIN(dlen, datalen);
-    if (!data)
-      memset(datastart, 0, MIN(dlen, datalen));
-    else
-      memcpy(datastart, data, MIN(dlen, datalen));
-  }
-
-  igmp.check = 0;
-  igmp.check = in_check((u16*)pkt, igmplen);
-
-  if (badsum)
-    --igmp.check;
-
-  return ip4_build(src, dst, IPPROTO_IGMP, ttl,
-    ipid, tos, off, ipopt, ipoptlen, (u8*)pkt, igmplen, pktlen);
 }

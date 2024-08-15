@@ -1,16 +1,16 @@
 
                                                LIBNCSNET
-				      
+
 libncsnet (nesca network library): a free set of [low-level and no] networking tools;
 works on linux and (unlikely, but) bsd systems. Library provides the most flexible, fastest, and
 largest set of tools for its tasks.
 
-protocols:  IP, IP6, TCP, UDP, ICMP4, ICMP6, IGMP, SCTP, ARP, ETH,
-	    HTTP, FTP, SMTP, SOCKS5;
+protocols:  IP, IP6, TCP, UDP, ICMP4, ICMP6, IGMP, SCTP, ARP, ETHERNET2,
+            HTTP, FTP, SMTP, SOCKS5(not), UDP-LITE;
 
 crypt:      MD5, SHA-512, SHA-256, ADLER32, BASE64, CRC-8,
             CRC-16, CRC-32, CRC-64, SHA-1, MD4;
-	       
+
 addr:       IP4, IP6, MAC, CIDR, RANGE, URL;
 
 random:     CMWC, MT19937, MSM;
@@ -34,7 +34,7 @@ second one is for source code compilation.
 
 
                                             NCSUTILS
-				      
+
 ncsutils (nesca network utils): recently, along with the library comes a set of network utilities;
 check folder utils/.
 

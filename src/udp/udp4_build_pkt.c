@@ -25,19 +25,19 @@
 #include <ncsnet/udp.h>
 
 u8 *udp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
-                   bool df, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
-                   const char *data, size_t *pktlen, bool badsum)
+                   u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
+                   u8 *frame, size_t frmlen, size_t *pktlen, bool badsum)
 {
   size_t udplen;
   udph_t *udp;
   u8 *pkt;
 
-  udp = (udph_t*)udp_build(srcport, dstport, data, &udplen);
+  udp=(udph_t*)udp_build(srcport, dstport, frame, frmlen, &udplen);
   if (!udp)
     return NULL;
   udp4_check((u8*)udp, udplen, src, dst, badsum);
-  pkt = ip4_build(src, dst, IPPROTO_UDP, ttl, ipid, tos, df, ipopt,
-      ipoptlen, (u8*)udp, udplen, pktlen);
+  pkt=ip4_build(src, dst, IPPROTO_UDP, ttl, ipid, tos, off, ipopt,
+    ipoptlen, (u8*)udp, udplen, pktlen);
 
   free(udp);
   return pkt;

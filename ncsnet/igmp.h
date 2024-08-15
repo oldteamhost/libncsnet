@@ -31,28 +31,28 @@
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
 
-#define IGMP_V0_CREATE_GROUP_REQUEST	0x01
-#define IGMP_V0_CREATE_GROUP_REPLY	0x02
-#define IGMP_V0_JOIN_GROUP_REQUEST	0x03
-#define IGMP_V0_JOIN_GROUP_REPLY	0x04
-#define IGMP_V0_LEAVE_GROUP_REQUEST	0x05
-#define IGMP_V0_LEAVE_GROUP_REPLY	0x06
-#define IGMP_V0_CONFIRM_GROUP_REQUEST	0x07
-#define IGMP_V0_CONFIRM_GROUP_REPLY	0x08
-#define IGMP_V1_HOST_MEMBERSHIP_QUERY	0x11
-#define IGMP_V1_HOST_MEMBERSHIP_REPORT	0x12
-#define IGMP_DVMRP			0x13
-#define IGMP_V1_PIM_ROUTING_MESSAGE	0x14
-#define IGMP_V2_MEMBERSHIP_REPORT	0x16
-#define IGMP_V2_LEAVE_GROUP		0x17
-#define IGMP_TRACEROUTE_RESPONSE	0x1e
-#define IGMP_TRACEROUTE_QUERY_REQ       0x1f
-#define IGMP_V3_MEMBERSHIP_REPORT	0x22
+#define IGMP_V0_CREATE_GROUP_REQUEST 0x01
+#define IGMP_V0_CREATE_GROUP_REPLY 0x02
+#define IGMP_V0_JOIN_GROUP_REQUEST 0x03
+#define IGMP_V0_JOIN_GROUP_REPLY 0x04
+#define IGMP_V0_LEAVE_GROUP_REQUEST 0x05
+#define IGMP_V0_LEAVE_GROUP_REPLY 0x06
+#define IGMP_V0_CONFIRM_GROUP_REQUEST 0x07
+#define IGMP_V0_CONFIRM_GROUP_REPLY 0x08
+#define IGMP_V1_HOST_MEMBERSHIP_QUERY 0x11
+#define IGMP_V1_HOST_MEMBERSHIP_REPORT 0x12
+#define IGMP_DVMRP 0x13
+#define IGMP_V1_PIM_ROUTING_MESSAGE 0x14
+#define IGMP_V2_MEMBERSHIP_REPORT 0x16
+#define IGMP_V2_LEAVE_GROUP 0x17
+#define IGMP_TRACEROUTE_RESPONSE 0x1e
+#define IGMP_TRACEROUTE_QUERY_REQ 0x1f
+#define IGMP_V3_MEMBERSHIP_REPORT 0x22
 
-#define IGMP_TYPE_0x23			0x23
-#define IGMP_TYPE_0x24			0x24
-#define IGMP_TYPE_0x25			0x25
-#define IGMP_TYPE_0x26			0x26
+#define IGMP_TYPE_0x23 0x23
+#define IGMP_TYPE_0x24 0x24
+#define IGMP_TYPE_0x25 0x25
+#define IGMP_TYPE_0x26 0x26
 
 #define IGMP_IGAP_JOIN                  0x40
 #define IGMP_IGAP_QUERY                 0x41
@@ -101,11 +101,11 @@ typedef struct igmp_hdr igmph_t;
 __BEGIN_DECLS
 
 u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
-                   bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code,
+                   u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code,
                    const char *data, size_t datalen, size_t *pktlen, bool badsum);
 
 int igmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, bool df, u8 *ipops, int ipoptlen, u16 ipid, u8 tos,
+                   int ttl, u16 off, u8 *ipops, int ipoptlen, u16 ipid, u8 tos,
                    u8 type, u8 code, const char *data, size_t datalen, int mtu,
                    bool badsum);
 __END_DECLS

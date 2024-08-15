@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -22,52 +22,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/igmp.h>
+//#include <ncsnet/udplite.h>
+#include "../../ncsnet/udplite.h"
 
-#ifndef MIN
-  #define MIN(a,b) ((a) <= (b) ? (a) : (b))
-#endif
-
-u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
-                   u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code,
-                   const char *data, size_t datalen, size_t *pktlen, bool badsum)
+u8 *udplite4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
+                   u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
+                   u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen,
+                   bool badsum)
 {
-  int dlen = 0, igmplen = 0;
-  struct igmp_hdr igmp;
-  u32 *datastart;
-  char *pkt;
+  udpliteh_t *udplite;
+  size_t udplitelen;
+  u8 *pkt;
 
-  datastart = (u32*)igmp.data;
-  dlen = sizeof(igmp.data);
-  pkt = (char*)&igmp;
+  udplite=(udpliteh_t*)udplite_build(srcport, dstport, frame, frmlen, &udplitelen);
+  if (!udplite)
+    return NULL;
+  udplite4_check((u8*)udplite, udplitelen, src, dst, checkcrg, badsum);
+  pkt=ip4_build(src, dst, IPPROTO_UDPLITE, ttl, ipid, tos, off, ipopt, ipoptlen,
+    (u8*)udplite, udplitelen, pktlen);
 
-  igmp.type = type;
-  igmp.code = code;
-
-  switch (type) {
-    case IGMP_HOST_MEMBERSHIP_QUERY:
-    case IGMP_v1_HOST_MEMBERSHIP_REPORT:
-    case IGMP_v2_HOST_MEMBERSHIP_REPORT:
-    case IGMP_HOST_LEAVE_MESSAGE:
-    case IGMP_v3_HOST_MEMBERSHIP_REPORT:
-      igmplen = 8;
-      break;
-  }
-
-  if (datalen > 0) {
-    igmplen += MIN(dlen, datalen);
-    if (!data)
-      memset(datastart, 0, MIN(dlen, datalen));
-    else
-      memcpy(datastart, data, MIN(dlen, datalen));
-  }
-
-  igmp.check = 0;
-  igmp.check = in_check((u16*)pkt, igmplen);
-
-  if (badsum)
-    --igmp.check;
-
-  return ip4_build(src, dst, IPPROTO_IGMP, ttl,
-    ipid, tos, off, ipopt, ipoptlen, (u8*)pkt, igmplen, pktlen);
+  free(udplite);
+  return pkt;
 }
+

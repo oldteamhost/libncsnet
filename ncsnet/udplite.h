@@ -22,52 +22,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/igmp.h>
+#ifndef NCSUDPLITE
+#define NCSUDPLITE
 
-#ifndef MIN
-  #define MIN(a,b) ((a) <= (b) ? (a) : (b))
-#endif
+#include <stdbool.h>
 
-u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
-                   u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code,
-                   const char *data, size_t datalen, size_t *pktlen, bool badsum)
+#include "raw.h"
+
+#include "../ncsnet-config.h"
+#include "sys/types.h"
+#include "sys/nethdrs.h"
+
+struct udplite_hdr
 {
-  int dlen = 0, igmplen = 0;
-  struct igmp_hdr igmp;
-  u32 *datastart;
-  char *pkt;
+  u16 srcport;  /* source port */
+  u16 dstport;  /* destination port */
+  u16 checkcrg; /* checksum coverage */
+  u16 check;    /* checksum */
+};
 
-  datastart = (u32*)igmp.data;
-  dlen = sizeof(igmp.data);
-  pkt = (char*)&igmp;
+typedef struct udplite_hdr udpliteh_t;
 
-  igmp.type = type;
-  igmp.code = code;
+__BEGIN_DECLS
 
-  switch (type) {
-    case IGMP_HOST_MEMBERSHIP_QUERY:
-    case IGMP_v1_HOST_MEMBERSHIP_REPORT:
-    case IGMP_v2_HOST_MEMBERSHIP_REPORT:
-    case IGMP_HOST_LEAVE_MESSAGE:
-    case IGMP_v3_HOST_MEMBERSHIP_REPORT:
-      igmplen = 8;
-      break;
-  }
+u8 *udplite_build(u16 srcport, u16 dstport, u8 *frame, size_t frmlen, size_t *pktlen);
 
-  if (datalen > 0) {
-    igmplen += MIN(dlen, datalen);
-    if (!data)
-      memset(datastart, 0, MIN(dlen, datalen));
-    else
-      memcpy(datastart, data, MIN(dlen, datalen));
-  }
+/* i'm not sure about the checksum calculation with coverage ??? */
+void udplite4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, u16 checkcrg, bool badsum);
+void udplite6_check(u8 *frame, size_t frmlen, const struct in6_addr *src, const struct in6_addr *dst,
+    u16 checkcrg, bool badsum);
 
-  igmp.check = 0;
-  igmp.check = in_check((u16*)pkt, igmplen);
+u8 *udplite4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
+                   u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
+                   u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen, bool badsum);
 
-  if (badsum)
-    --igmp.check;
+u8 *udplite6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
+                   u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
+                   u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen, bool badsum);
 
-  return ip4_build(src, dst, IPPROTO_IGMP, ttl,
-    ipid, tos, off, ipopt, ipoptlen, (u8*)pkt, igmplen, pktlen);
-}
+__END_DECLS
+
+#endif

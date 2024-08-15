@@ -26,7 +26,7 @@
 
 int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
                   int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
-                  u16 dstport, bool df, const char *data, int mtu, bool badsum)
+                  u16 dstport, u16 off, u8 *frame, size_t frmlen, int mtu, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
@@ -34,8 +34,8 @@ int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
   int res;
   u8 *pkt;
 
-  pkt = udp4_build_pkt(src, dst, ttl, ipid, IP_TOS_DEFAULT, df, ipopt,
-    ipoptlen, srcport, dstport, data, &pktlen, badsum);
+  pkt=udp4_build_pkt(src, dst, ttl, ipid, IP_TOS_DEFAULT, off, ipopt,
+    ipoptlen, srcport, dstport, frame, frmlen, &pktlen, badsum);
   if (!pkt)
     return -1;
 
@@ -43,8 +43,8 @@ int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
   dst_in = (struct sockaddr_in*)&_dst;
   dst_in->sin_family = AF_INET;
   dst_in->sin_addr.s_addr = dst;
-  
-  res = ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
+
+  res=ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
 
   free(pkt);
   return res;

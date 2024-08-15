@@ -25,7 +25,7 @@
 #include <ncsnet/ip.h>
 #include <ncsnet/utils.h>
 
-int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, bool df,
+int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, u16 off,
                  const u8 *opt, int optlen, const char *data, size_t datalen,
                  int mtu)
 {
@@ -34,8 +34,8 @@ int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, bool df,
   int res = -1;
   u8 *pkt;
 
-  pkt = ip4_build(src, dst, proto, ttl, random_u16(), 5, df,
-		  opt, optlen, (u8*)data, datalen, &pktlen);
+  pkt=ip4_build(src, dst, proto, ttl, random_u16(), 5, off,
+    opt, optlen, (u8*)data, datalen, &pktlen);
   if (!pkt)
     return -1;
 
@@ -44,7 +44,7 @@ int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, bool df,
   dst_in.sin_port = 0;
   dst_in.sin_family = AF_INET;
 
-  res = ip4_send(NULL, fd, &dst_in, mtu, pkt, pktlen);
+  res=ip4_send(NULL, fd, &dst_in, mtu, pkt, pktlen);
 
   free(pkt);
   return res;

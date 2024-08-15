@@ -199,7 +199,7 @@ u8 *icmp_build(u8 type, u8 code, u8 *msg, size_t msglen, size_t *pktlen);
 
 void icmp4_check(u8 *frame, size_t frmlen, bool badsum);
 void icmp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
-		 const struct in6_addr *dst, bool badsum);
+    const struct in6_addr *dst, bool badsum);
 
 u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, size_t *msglen);
 u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen);
@@ -221,21 +221,21 @@ u8 *icmp4_msg_redir_build(u32 gateway, u8 *frame, size_t frmlen, size_t *msglen)
   icmp4_msg_echo_build((id), (seq), (data), (msglen))
 
 u8 *icmp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
-                    bool df, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
-		    size_t msglen, size_t *pktlen, bool badsum);
+                    u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code, u8 *msg,
+                    size_t msglen, size_t *pktlen, bool badsum);
 
 u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                     u8 tc, u32 flowlabel, u8 hoplimit, u8 type, u8 code,
-		    u8 *msg, size_t msglen, size_t *pktlen, bool badsum);
+                    u8 *msg, size_t msglen, size_t *pktlen, bool badsum);
 
 int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, u16 ipid, u8 tos, bool df, u8 *ipopt, int ipoptlen,
-		   u8 type, u8 code, u8 *msg, u16 msglen, int mtu, bool badsum);
+                   int ttl, u16 ipid, u8 tos, u16 off, u8 *ipopt, int ipoptlen,
+                   u8 type, u8 code, u8 *msg, u16 msglen, int mtu, bool badsum);
 
 int icmp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
-		   const struct in6_addr *dst, u8 tc, u32 flowlabel,
-		   u8 hoplimit, u8 type, u8 code, u8 *msg, u16 msglen,
-		   bool badsum);
+                   const struct in6_addr *dst, u8 tc, u32 flowlabel,
+                   u8 hoplimit, u8 type, u8 code, u8 *msg, u16 msglen,
+                   bool badsum);
 
 __END_DECLS
 

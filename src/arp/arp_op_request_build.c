@@ -22,52 +22,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/igmp.h>
+#include <ncsnet/arp.h>
 
-#ifndef MIN
-  #define MIN(a,b) ((a) <= (b) ? (a) : (b))
-#endif
-
-u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
-                   u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code,
-                   const char *data, size_t datalen, size_t *pktlen, bool badsum)
+u8 *arp_op_request_build(u8 hln, u8 pln, u8 *sha, u8 *spa,
+    u8 *tha, u8 *tpa, size_t *oplen)
 {
-  int dlen = 0, igmplen = 0;
-  struct igmp_hdr igmp;
-  u32 *datastart;
-  char *pkt;
+  u8 *op;
 
-  datastart = (u32*)igmp.data;
-  dlen = sizeof(igmp.data);
-  pkt = (char*)&igmp;
+  *oplen=((hln*2)+(pln*2));
+  op=calloc(0, *oplen);
+  if (!op)
+    return NULL;
 
-  igmp.type = type;
-  igmp.code = code;
+  memcpy(op,             sha, hln);
+  memcpy(op+hln,         spa, pln);
+  memcpy(op+hln+pln,     tha, hln);
+  memcpy(op+hln+pln+hln, tpa, pln);
 
-  switch (type) {
-    case IGMP_HOST_MEMBERSHIP_QUERY:
-    case IGMP_v1_HOST_MEMBERSHIP_REPORT:
-    case IGMP_v2_HOST_MEMBERSHIP_REPORT:
-    case IGMP_HOST_LEAVE_MESSAGE:
-    case IGMP_v3_HOST_MEMBERSHIP_REPORT:
-      igmplen = 8;
-      break;
-  }
-
-  if (datalen > 0) {
-    igmplen += MIN(dlen, datalen);
-    if (!data)
-      memset(datastart, 0, MIN(dlen, datalen));
-    else
-      memcpy(datastart, data, MIN(dlen, datalen));
-  }
-
-  igmp.check = 0;
-  igmp.check = in_check((u16*)pkt, igmplen);
-
-  if (badsum)
-    --igmp.check;
-
-  return ip4_build(src, dst, IPPROTO_IGMP, ttl,
-    ipid, tos, off, ipopt, ipoptlen, (u8*)pkt, igmplen, pktlen);
+  return op;
 }
+
+

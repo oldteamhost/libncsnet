@@ -25,16 +25,12 @@
 #include <ncsnet/arp.h>
 
 u8 *arp_build(u16 hdr, u16 pro, u8 hln, u8 pln, u16 op,
-	      u8 *frame, size_t frmlen, size_t *pktlen)
+      u8 *frame, size_t frmlen, size_t *pktlen)
 {
   u8* pkt;
-  
-  pkt = frmbuild(pktlen, NULL, "u16(%hu), u16(%hu), u8(%hhu), u8(%hhu), u16(%hu)",
+  pkt=frmbuild(pktlen, NULL, "u16(%hu), u16(%hu), u8(%hhu), u8(%hhu), u16(%hu)",
     htons(hdr), htons(pro), hln, pln, htons(op));
-  if (frame && frmlen && pkt)
-    pkt = frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
-  if (!pkt)
-    return NULL;
-  
+  if (frame&&frmlen&&pkt)
+    pkt=frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
   return pkt;
 }

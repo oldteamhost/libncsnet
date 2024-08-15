@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -22,22 +22,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/arp.h>
+#include <ncsnet/udplite.h>
 
-u8 *arp_ethip4_build(mac_t sha, ip4_t spa, mac_t tha,
-		    ip4_t tpa, size_t *pktlen)
+void udplite4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, u16 checkcrg, bool badsum)
 {
-  u8 *pkt;
-  
-  *pktlen = ARP_ETHIP_LEN;
-  pkt = (u8*)malloc(*pktlen);
-  if (!pkt)
-    return NULL;
+  udpliteh_t *udplite;
 
-  memcpy(pkt,         sha.octet, MAC_ADDR_LEN);
-  memcpy(pkt+6,       spa.octet, IP4_ADDR_LEN);
-  memcpy(pkt+(4+6),   tha.octet, MAC_ADDR_LEN);
-  memcpy(pkt+(4+6+6), tpa.octet, IP4_ADDR_LEN);
+  udplite=(udpliteh_t*)frame;
+  udplite->checkcrg=htons(checkcrg);
+  udplite->check=0;
 
-  return pkt;
+  if (!checkcrg)
+    udplite->check=ip4_pseudocheck(src, dst, IPPROTO_UDPLITE, frmlen, udplite);
+  else if (checkcrg>=8&&checkcrg<=frmlen)
+    udplite->check=ip4_pseudocheck(src, dst, IPPROTO_UDPLITE, sizeof(udpliteh_t)+checkcrg, udplite);
+  else
+    udplite->check=0xffff;
+
+  if (badsum) {
+    udplite->check--;
+    udplite->checkcrg--;
+  }
 }

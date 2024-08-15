@@ -25,8 +25,8 @@
 #include <ncsnet/udp.h>
 
 int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
-		  const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
-		  u16 srcport, u16 dstport, const char *data, bool badsum)
+      const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
+      u16 srcport, u16 dstport, u8 *frame, size_t frmlen, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in6 *dst_in;
@@ -34,8 +34,8 @@ int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
   int res;
   u8 *pkt;
 
-  pkt = udp6_build_pkt(src, dst, tc, flowlabel, hoplimit, srcport, dstport, data,
-    &pktlen, badsum);
+  pkt=udp6_build_pkt(src, dst, tc, flowlabel, hoplimit, srcport, dstport, frame,
+    frmlen, &pktlen, badsum);
   if (!pkt)
     return -1;
 
@@ -43,7 +43,7 @@ int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
   dst_in = (struct sockaddr_in6*)&_dst;
   dst_in->sin6_family = AF_INET6;
   dst_in->sin6_addr = *dst;
-  
+
   res = ip_send(eth, fd, &_dst, 0, pkt, pktlen);
 
   free(pkt);

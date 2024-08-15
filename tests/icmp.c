@@ -1,7 +1,11 @@
 #include <stdio.h>
+#include <sys/socket.h>
 #include "../ncsnet/icmp.h"
 #include "../ncsnet/eth.h"
 #include "../ncsnet/mac.h"
+#include "../ncsnet/udplite.h"
+#include "../ncsnet/utils.h"
+#include "../ncsnet/eth.h"
 #include "../ncsnet/linuxread.h"
 #include "../ncsnet/trace.h"
 struct sockaddr_in src;
@@ -35,6 +39,110 @@ static void tvsub(struct timeval *out, struct timeval *in)
 
 int main(void)
 {
+  /*
+  int status, valread, client_fd;
+    struct sockaddr_in serv_addr;
+    char* hello = "Hello from client";
+    char buffer[1024] = { 0 };
+    if ((client_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf("\n Socket creation error \n");
+        return -1;
+    }
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(80);
+
+    // Convert IPv4 and IPv6 addresses from text to binary
+    // form
+    if (inet_pton(AF_INET, "142.250.74.110", &serv_addr.sin_addr)
+        <= 0) {
+        printf(
+            "\nInvalid address/ Address not supported \n");
+        return -1;
+    }
+
+    if ((status
+         = connect(client_fd, (struct sockaddr*)&serv_addr,
+                   sizeof(serv_addr)))
+        < 0) {
+        printf("\nConnection Failed \n");
+        return -1;
+    }
+    send(client_fd, hello, strlen(hello), 0);
+    printf("Hello message sent\n");
+    valread = read(client_fd, buffer,
+                   1024 - 1); // subtract 1 for the null
+                              // terminator at the end
+    printf("%s\n", buffer);
+
+    // closing the connected socket
+    close(client_fd);
+    return 0;
+*/
+
+
+    u8 *opts, *sack, *tstamp, *nop, *wscale;
+    size_t sacklen, tstamplen, noplen, wscalelen, optslen=0;
+
+    opts=tcp_opt_mss_build(1460, &optslen);
+    sack=tcp_opt_sackpr_build(&sacklen);
+    tstamp=tcp_opt_tstamp_build(random_u32(), 0, &tstamplen);
+    nop=tcp_opt_nop_build(&noplen);
+    wscale=tcp_opt_wscale_build(7, &wscalelen);
+
+    frmbuild_addfrm(sack, sacklen, opts, &optslen, NULL);
+    frmbuild_addfrm(tstamp, tstamplen, opts, &optslen, NULL);
+    frmbuild_addfrm(nop, noplen, opts, &optslen, NULL);
+    frmbuild_addfrm(wscale, wscalelen, opts, &optslen, NULL);
+
+    opts=frmbuild_hex(&optslen, NULL, "020405b40402080a04e1700d0000000001030307");
+    struct ethtmp t;
+    const char *tmpdev=getinterface();
+    sprintf(t.devname, "%s",tmpdev);
+    mac_aton(&t.dst, "04:bf:6d:0d:3a:50");
+    mac_aton(&t.src, "40:b0:76:47:8f:9a");
+    t.ethsd=eth_open(t.devname);
+
+    tcp4_send_pkt(&t, 0, ncs_inet_addr("192.168.1.33"), ncs_inet_addr("142.250.74.110"), 121, 0, NULL, 0, random_srcport(), 80, random_u32(), 0, 0, TCP_FLAG_SYN,
+      64240, 0, opts, optslen, NULL, 0, 0, 0);
+
+    delayy(30);
+    opts=frmbuild_hex(&optslen, NULL, "0101080a04e17024de31b6d2");
+    tcp4_send_pkt(&t, 0, ncs_inet_addr("192.168.1.33"), ncs_inet_addr("142.250.74.110"), 121, 0, NULL, 0, random_srcport(), 80, random_u32(), 0, 0, TCP_FLAG_ACK,
+      64240, 0, opts, optslen, NULL, 0, 0, 0);
+
+    delayy(30);
+    opts=frmbuild_hex(&optslen, NULL, "0101080a04e17024de31b6d2");
+    tcp4_send_pkt(&t, 0, ncs_inet_addr("192.168.1.33"), ncs_inet_addr("142.250.74.110"), 121, 0, NULL, 0, random_srcport(), 80, random_u32(), 0, 0, TCP_FLAG_ACK|TCP_FLAG_PSH,
+      64240, 0, opts, optslen, NULL, 0, 0, 0);
+
+
+
+  return 0;
+
+  u8 *op, *arp;
+  ip4_t spa, tpa;
+  mac_t sha, tha;
+  size_t oplen, arplen;
+
+  spa.octet[0] = 192;
+  spa.octet[1] = 168;
+  spa.octet[2] = 1;
+  spa.octet[3] = 255;
+
+  tpa.octet[0] = 192;
+  tpa.octet[1] = 168;
+  tpa.octet[2] = 1;
+  tpa.octet[3] = 3;
+
+  mac_aton(&sha, "40:b0:76:47:8f:9a");
+  mac_aton(&tha, "40:b0:76:47:8f:9a");
+  op=arp_op_request_build(6, 4, sha.octet, spa.octet, tha.octet, tpa.octet, &oplen);
+  arp=arp_build(ARP_HDR_ETH, ARP_PRO_IP, 6, 4, ARP_OP_REQUEST, op, oplen, &arplen);
+
+  printf("%s\n", frminfo(arp, arplen, 3, FLAG_ARP));
+
+  return 4;
   size_t frmlen=0, msglen=0, ethfrmlen=0;
   u8 *frame=NULL, *msg=NULL, *ethfrm=NULL;
 

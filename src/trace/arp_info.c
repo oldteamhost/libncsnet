@@ -33,7 +33,7 @@ const char *arp_info(const u8 *arp, size_t arplen, int detail)
   if (arplen<sizeof(arph_t)||!arp)
     return "arp (incorrect)";
   arph=(arph_t*)arp;
-  
+
   if (arplen>sizeof(arph_t))
     arpopinfo=arp_operation_info(arp+sizeof(arph_t), arplen-sizeof(arph_t), ntohs(arph->op),
       ntohs(arph->pro), arph->pln, arph->hln);
@@ -44,6 +44,6 @@ const char *arp_info(const u8 *arp, size_t arplen, int detail)
     snprintf(arpinfo, sizeof(arpinfo), "arp hdr=%hu pro=%hu hln=%hhu pln=%hhu op=%hu (%s)",
       (u16)ntohs(arph->hdr), (u16)ntohs(arph->pro), arph->hln, arph->pln,
       (u16)ntohs(arph->op), arpopinfo);
-  
+
   return arpinfo;
 }

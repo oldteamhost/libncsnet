@@ -25,8 +25,8 @@
 #include <ncsnet/icmp.h>
 
 int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, u16 ipid, u8 tos, bool df, u8 *ipopt, int ipoptlen,
-		   u8 type, u8 code, u8 *msg, u16 msglen, int mtu, bool badsum)
+                   int ttl, u16 ipid, u8 tos, u16 off, u8 *ipopt, int ipoptlen,
+                   u8 type, u8 code, u8 *msg, u16 msglen, int mtu, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
@@ -34,8 +34,8 @@ int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
   int res;
   u8 *pkt;
 
-  pkt = icmp4_build_pkt(src, dst, ttl, ipid, tos, df, ipopt, ipoptlen, type,
-      code, msg, msglen, &pktlen, badsum);
+  pkt=icmp4_build_pkt(src, dst, ttl, ipid, tos, off, ipopt, ipoptlen, type,
+    code, msg, msglen, &pktlen, badsum);
   if (!pkt)
     return -1;
 
@@ -43,8 +43,8 @@ int icmp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
   dst_in = (struct sockaddr_in*)&_dst;
   dst_in->sin_family = AF_INET;
   dst_in->sin_addr.s_addr = dst;
-  
-  res = ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
+
+  res=ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
 
   free(pkt);
   return res;

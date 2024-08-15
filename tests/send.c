@@ -8,7 +8,7 @@ int main(void)
 
 
   fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-  udp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.34"), ncs_inet_addr("173.194.222.138"), 121, random_u16(), NULL, 0, random_srcport(), 80, false, "ksjdf", 0, false);
+  udp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.34"), ncs_inet_addr("173.194.222.138"), 121, random_u16(), NULL, 0, random_srcport(), 80, false, (u8*)"ka", 2, 0, false);
 
 
   res = tcp_opt_mss_build(16, &optlen);
@@ -20,8 +20,6 @@ int main(void)
   res = frmbuild_add(&optlen, res, NULL, "u8(1)");
   res = frmbuild_add(&optlen, res, NULL, "u8(2), u8(4), u16(%hu)", htons(230));
   
-  tcp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.34"), ncs_inet_addr("173.194.222.138"), 121, false, NULL, 0, random_srcport(), 80, random_u32(), 0, 0, TCP_FLAG_SYN,
-		1024, 0, res, optlen, "kek", 0, false);
 
   close(fd);
   return 0;

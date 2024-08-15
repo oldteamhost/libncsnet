@@ -28,11 +28,9 @@ u8 *sctp_build(u16 srcport, u16 dstport, u32 vtag, u8 *chunks,
                size_t chunkslen, size_t *pktlen)
 {
   u8 *pkt;
-
-  pkt = frmbuild(pktlen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(0)",
+  pkt=frmbuild(pktlen, NULL, "u16(%hu), u16(%hu), u32(%u), u32(0)",
     htons(srcport), htons(dstport), htonl(vtag));
-  if (chunks && chunkslen)
-    pkt = frmbuild_addfrm(chunks, chunkslen, pkt, pktlen, NULL);
-  
+  if (chunks&&chunkslen)
+    pkt=frmbuild_addfrm(chunks, chunkslen, pkt, pktlen, NULL);
   return pkt;
 }

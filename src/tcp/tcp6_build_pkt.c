@@ -24,18 +24,19 @@
 
 #include <ncsnet/tcp.h>
 
+
 u8 *tcp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
-                   const u8 *opt, size_t optlen, const char *data, size_t *pktlen,
-		   bool badsum)
+                   const u8 *opt, size_t optlen, u8 *frame, size_t frmlen, size_t *pktlen,
+                   bool badsum)
 {
   size_t tcplen;
   tcph_t *tcp;
   u8 *pkt;
 
   tcp = (tcph_t*)tcp_build(srcport, dstport, seq, ack, reserved, flags, win, urp,
-    opt, optlen, data, &tcplen);
+    opt, optlen, frame, frmlen, &tcplen);
   if (!tcp)
     return NULL;
   tcp6_check((u8*)tcp, tcplen, src, dst, badsum);
