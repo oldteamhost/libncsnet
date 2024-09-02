@@ -24,9 +24,9 @@
 
 #include <ncsnet/udp.h>
 
-u8 *udp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                   u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                   u8 *frame, size_t frmlen, size_t *pktlen, bool badsum)
+u8 *udp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
+                   u8 hoplimit, u16 srcport, u16 dstport, u8 *frame,
+                   size_t frmlen, size_t *pktlen, bool badsum)
 {
   size_t udplen;
   udph_t *udp;

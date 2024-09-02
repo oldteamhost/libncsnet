@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -20,40 +20,33 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
-#include <ncsnet/mac.h>
+#include <ncsnet/addr.h>
 
-void hexascii(u8 byte, char *str)
+int addr_stob(const sockaddr_t *sa, u16 *bits)
 {
-  u8 i = 0;
-  str[0] = (byte >> 4) & 0x0f;
-  str[1] = byte & 0x0f;
-  for (; i < 2; i++) {
-    if (str[i] > 9)
-      str[i] += 'a' - 10;
-    else
-      str[i] += '0';
-  }
-}
+  union sockunion *so=(union sockunion*)sa;
+  int i, j, len;
+  u16 n;
+  u8 *p;
 
-int mac_ntoa(mac_t *addr, char *str)
-{
-  char tmp[3];
-  u8 i;
-  
-  str[0] = '\0';
-  for (i = 0; i < MAC_ADDR_LEN; ++i) {
-    hexascii(addr->octet[i], tmp);
-    if (tmp[0] == '\0') {
-      tmp[0] = '0';
-      tmp[1] = tmp[2];
-    }
-    tmp[2] = '\0';
-    strcat(str, tmp);
-    if (i < MAC_ADDR_LEN - 1) {
-      strcat(str, ":");
-    }
+  if (sa->sa_family==AF_INET6) {
+    len=IP6_ADDR_LEN;
+    p=(u8*)&so->sin6.sin6_addr;
   }
+  else {
+    p=(u8*)&so->sin.sin_addr.s_addr;
+    len=IP4_ADDR_LEN;
+  }
+  for (n=i=0;i<len;i++,n+=8)
+    if (p[i]!=0xff)
+      break;
+  if (i!=len&&p[i])
+    for (j=7;j>0;j--,n++)
+      if ((p[i]&(1<j))==0)
+        break;
+
+  *bits=n;
   return 0;
 }

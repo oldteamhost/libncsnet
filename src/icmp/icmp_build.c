@@ -27,8 +27,8 @@
 u8 *icmp_build(u8 type, u8 code, u8 *msg, size_t msglen, size_t *pktlen)
 {
   u8 *res;
-  res = frmbuild(pktlen, NULL, "u8(%hhu), u8(%hhu), u16(0)", type, code);
-  if (msg && msglen && res)
-    res = frmbuild_addfrm(msg, msglen, res, pktlen, NULL);
+  res=frmbuild(pktlen, NULL, "u8(%hhu), u8(%hhu), u16(0)", type, code);
+  if (msg&&msglen&&res)
+    res=frmbuild_addfrm(msg, msglen, res, pktlen, NULL);
   return res;
 }

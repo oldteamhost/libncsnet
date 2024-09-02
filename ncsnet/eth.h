@@ -71,6 +71,10 @@
 #define ETH_TYPE_MMRP       0x88F6 /* Multiple Multicast Registration Protocol */
 #define ETH_TYPE_FRRR       0x890D /* Fast Roaming Remote Request              */
 
+/*
+ * IEEE 802.3
+ * Ethernet/Ethernet II
+ */
 struct eth_hdr
 {
   mac_t dst;
@@ -79,6 +83,7 @@ struct eth_hdr
 };
 
 typedef struct eth_hdr ethh_t;
+typedef struct eth_hdr eth2h_t;
 typedef struct eth_hdr mach_t;
 typedef struct eth_handle eth_t;
 
@@ -96,11 +101,13 @@ eth_t   *eth_open(const char *device);
 int      eth_fd(eth_t *e);
 ssize_t  eth_read(eth_t *e, u8 *buf, ssize_t len);
 ssize_t  eth_send(eth_t *e, const void *buf, size_t len);
-eth_t   *eth_close(eth_t *e);
+int      eth_get(eth_t *e, mac_t *ea);
+int      eth_set(eth_t *e, const mac_t *ea);
 u8      *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
   size_t frmlen, size_t *pktlen);
 eth_t   *eth_open_cached(const char *device);
 void     eth_close_cached(void);
+eth_t   *eth_close(eth_t *e);
 
 __END_DECLS
 

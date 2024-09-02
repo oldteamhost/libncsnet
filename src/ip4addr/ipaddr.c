@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -22,35 +22,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/utils.h>
+#include <ncsnet/ip.h>
+#include <ncsnet/addr.h>
 
-const char *getinterface(void)
+char *ip_ntoa(const ip4_t *ip4)
 {
-  struct if_nameindex *if_nidxs, *intf;
-  static char dev[1024];
-  struct ifreq ifr;
-  int fd;
+  addr_t a;
+  addr_pack(&a, ADDR_TYPE_IP, IP4_ADDR_BITS, ip4->octet, IP4_ADDR_LEN);
+  return (addr_ntoa(&a));
+}
 
-  fd=socket(AF_INET, SOCK_DGRAM, 0);
-  if (fd<0)
-    return NULL;
-
-  if_nidxs=if_nameindex();
-  for (intf=if_nidxs;intf->if_name;intf++) {
-     strncpy(ifr.ifr_name, intf->if_name, IFNAMSIZ-1);
-     ifr.ifr_name[IFNAMSIZ-1]='\0';
-     if (ioctl(fd, SIOCGIFFLAGS, &ifr)==0) {
-       if ((ifr.ifr_flags&IFF_UP)&&!(ifr.ifr_flags&IFF_LOOPBACK)) {
-         strncpy(dev, intf->if_name, sizeof(dev)-1);
-         dev[sizeof(dev)-1]='\0';
-         if_freenameindex(if_nidxs);
-         close(fd);
-         return dev;
-       }
-     }
-  }
-
-  if_freenameindex(if_nidxs);
-  close(fd);
-  return NULL;
+char *ip6_ntoa(const ip6_t *ip6)
+{
+  addr_t a;
+  addr_pack(&a, ADDR_TYPE_IP6, IP6_ADDR_BITS, ip6->octet, IP6_ADDR_LEN);
+  return (addr_ntoa(&a));
 }

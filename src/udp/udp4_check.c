@@ -24,13 +24,14 @@
 
 #include <ncsnet/udp.h>
 
-void udp4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, bool badsum)
+void udp4_check(u8 *frame, size_t frmlen, const ip4_t src,
+    const ip4_t dst, bool badsum)
 {
   udph_t *udp;
-  
-  udp = (udph_t*)frame;
-  udp->check = 0;
-  udp->check = ip4_pseudocheck(src, dst, IPPROTO_UDP, frmlen, udp);
+
+  udp=(udph_t*)frame;
+  udp->check=0;
+  udp->check=ip4_pseudocheck(src, dst, IPPROTO_UDP, frmlen, udp);
 
   if (badsum)
     udp->check = 0xffff;

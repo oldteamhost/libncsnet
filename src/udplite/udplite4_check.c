@@ -24,7 +24,8 @@
 
 #include <ncsnet/udplite.h>
 
-void udplite4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, u16 checkcrg, bool badsum)
+void udplite4_check(u8 *frame, size_t frmlen, const ip4_t src, const ip4_t dst,
+    u16 checkcrg, bool badsum)
 {
   udpliteh_t *udplite;
 

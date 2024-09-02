@@ -37,7 +37,7 @@
 #include "utils.h"
 #include "raw.h"
 #include "mt19937.h"
-
+#include "random.h"
 #include "sys/types.h"
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
@@ -153,9 +153,10 @@ u8 *tcp_build(u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
               u16 win, u16 urp, const u8 *opt, size_t optlen, u8 *frame, size_t frmlen,
               size_t *pktlen);
 
-void tcp4_check(u8 *frame, size_t frmlen, u32 src, u32 dst, bool badsum);
-void tcp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
-    const struct in6_addr *dst, bool badsum);
+void tcp4_check(u8 *frame, size_t frmlen, const ip4_t src,
+    const ip4_t dst, bool badsum);
+void tcp6_check(u8 *frame, size_t frmlen, const ip6_t src,
+    const ip6_t dst, bool badsum);
 
 #define tcp_opt_mss_build(mss, optlen) \
   frmbuild(optlen, NULL, "u8(2), u8(4), u16(%hu)", htons((mss)))
@@ -170,26 +171,25 @@ void tcp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
 #define tcp_opt_altcheck_req_build(check, optlen) \
   frmbuild(optlen, NULL, "u8(14), u8(3), u8(%hhu)", check)
 
-u8 *tcp4_build_pkt(u32 src, u32 dst, u8 ttl, u16 id, u8 tos, u16 off,
+u8 *tcp4_build_pkt(const ip4_t src, const ip4_t dst, u8 ttl, u16 id, u8 tos, u16 off,
                    const u8 *ipopt, size_t ipoptlen, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
                    const u8 *opt, size_t optlen, u8 *frame, size_t frmlen,
                    size_t *pktlen, bool badsum);
 
-u8 *tcp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                   u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                   u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
-                   const u8 *opt, size_t optlen, u8 *frame, size_t frmlen,
+u8 *tcp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 hoplimit,
+                   u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
+                   u16 win, u16 urp, const u8 *opt, size_t optlen, u8 *frame, size_t frmlen,
                    size_t *pktlen, bool badsum);
 
-int tcp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                  int ttl, u16 off, u8 *ipops, size_t ipoptlen, u16 srcport,
-                  u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags, u16 win,
-                  u16 urp, u8 *opt, size_t optlen, u8 *frame, size_t frmlen, int mtu,
-                  bool badsum);
+ssize_t tcp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
+                      int ttl, u16 off, u8 *ipops, size_t ipoptlen, u16 srcport,
+                      u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags, u16 win,
+                      u16 urp, u8 *opt, size_t optlen, u8 *frame, size_t frmlen, int mtu,
+                      bool badsum);
 
-int tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
-                   u16 dstport, u8 flags, u8 *frame, size_t frmlen);
+ssize_t tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
+                       u16 dstport, u8 flags, u8 *frame, size_t frmlen);
 
 #define TCP_SYN_PACKET            6
 #define TCP_XMAS_PACKET           7

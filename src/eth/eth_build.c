@@ -26,11 +26,12 @@
 
 /* in header error */
 #include <ncsnet/raw.h>
+#include <ncsnet/trace.h>
 
 u8 *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
-	      size_t frmlen, size_t *pktlen)
+              size_t frmlen, size_t *pktlen)
 {
-  u8 *pkt;
+  u8 *pkt=NULL;
 
   pkt=frmbuild(pktlen, NULL,
     "u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu)",
@@ -43,8 +44,8 @@ u8 *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
        src.octet[4], src.octet[5]);
   if (pkt)
     pkt=frmbuild_add(pktlen, pkt, NULL, "u16(%hu)", htons(type));
-  if (frame&&frmlen&& pkt)
-    pkt = frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
+  if (frame&&frmlen&&pkt)
+    pkt=frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
 
   return pkt;
 }

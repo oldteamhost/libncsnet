@@ -24,32 +24,32 @@
 
 #include <ncsnet/ip.h>
 
-u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
-              u32 flowlabel, u8 nexthdr, int hoplimit, u8 *frame, size_t frmlen,
-	      size_t *pktlen)
+u8 *ip6_build(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 nexthdr, int hoplimit,
+              u8 *frame, size_t frmlen, size_t *pktlen)
 {
-  ip6h_t *ip6;
   u8 *pkt;
-  
-  *pktlen= sizeof(ip6h_t) + frmlen;
-  pkt = (u8*)malloc(*pktlen);
-  if (!pkt)
-    return NULL;
 
-  ip6 = (ip6h_t*)pkt;
-  ip6->IP6_FLOW   = htonl(((u32)(tc) << 20)
-	  | (0x000fffff & (flowlabel)));
-  ip6->IP6_VFC    = (IP6_VERSION | ((flowlabel) >> 4));
-  ip6->IP6_PKTLEN = htons((frmlen)); /* ??? */
-  ip6->IP6_NXT    = nexthdr;
-  ip6->IP6_HLIM   = hoplimit;
+  pkt=frmbuild(pktlen, NULL, "u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u16(%hu),u8(%hhu),u8(%hhu)",
+    ((0x06<<4)|((tc&0xF0)>>4)),(((tc&0x0F)<<4)|((flowlabel&0xF0000)>>16)),
+    ((flowlabel&0x0FF00)>>8),(flowlabel&0x000FF),htons(frmlen),nexthdr,hoplimit);
 
-  memcpy(&ip6->ip6_src, src->s6_addr, 16);
-  memcpy(&ip6->ip6_dst, dst->s6_addr, 16);
-  
-  if (frame && frmlen)
-    memcpy(pkt + sizeof(struct ip6_hdr),
-	   frame, frmlen);
+  if (pkt)
+    pkt=frmbuild_add(pktlen, pkt, NULL, "u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu), \
+      u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu)",
+      ip6t_getid(&src, 0),  ip6t_getid(&src, 1),  ip6t_getid(&src, 2),  ip6t_getid(&src, 3),
+      ip6t_getid(&src, 4),  ip6t_getid(&src, 5),  ip6t_getid(&src, 6),  ip6t_getid(&src, 7),
+      ip6t_getid(&src, 8),  ip6t_getid(&src, 9),  ip6t_getid(&src, 10), ip6t_getid(&src, 11),
+      ip6t_getid(&src, 12), ip6t_getid(&src, 13), ip6t_getid(&src, 14), ip6t_getid(&src, 15));
+  if (pkt)
+    pkt=frmbuild_add(pktlen, pkt, NULL, "u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu), \
+      u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu),u8(%hhu)",
+      ip6t_getid(&dst, 0),  ip6t_getid(&dst, 1),  ip6t_getid(&dst, 2),  ip6t_getid(&dst, 3),
+      ip6t_getid(&dst, 4),  ip6t_getid(&dst, 5),  ip6t_getid(&dst, 6),  ip6t_getid(&dst, 7),
+      ip6t_getid(&dst, 8),  ip6t_getid(&dst, 9),  ip6t_getid(&dst, 10), ip6t_getid(&dst, 11),
+      ip6t_getid(&dst, 12), ip6t_getid(&dst, 13), ip6t_getid(&dst, 14), ip6t_getid(&dst, 15));
+
+  if (pkt&&frame&&frmlen)
+    pkt=frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
 
   return pkt;
 }

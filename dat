@@ -1,0 +1,52 @@
+         [TRACE]
+            ^
+       [APPLICATION]
+            ^
+        [TRANSPORT]
+            ^
+        [ADDRESS]
+            ^
+        [DATALINK]
+            ^
+            |
+
+#include <ncsnet/ncsutils.h>
+#include <ncsnet/ncsraw.h>
+#include <ncsnet/ncsaddrs.h>
+#include <ncsnet/ncssock.h>
+
+           foundation
+--------------------------------------------
+[UTILS] <-> [RAW]  <---> [ADDRS] -> [SOCKET]
+log         random       mac        send
+string      crypt        ip4        read
+            hex          ip6
+
+
+[UTILS]
+средства для,
+  логирования,
+  работы со строками,
+  работы с битами,
+  различные типы данных
+
+[ADDRS]
+средства для работы с адресами,
+  обязаны иметь,
+    структура или тип данных для хранения,
+    функции для преобразования в него,
+    адресные функции.
+
+  ncstrace  
+----------------------------------------------
+               ncsapp
+                 ^
+             ncstransp
+                 ^
+             ncsaddress
+                 ^
+              ncsraw.h                (first network part)
+      [ncspreraw ncssock ncsutils] [ETH, datalinks etc.]
+
+              ncsbase.h
+    [ncsaddr ncscrypt ncsrand ncshex]

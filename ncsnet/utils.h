@@ -76,14 +76,16 @@
 #define TIMEVAL_SUBTRACT(a, b)						\
   (((a).tv_sec - (b).tv_sec) * 1000000 + (a).tv_usec - (b).tv_usec)
 
-#define DEFAULT_DICTIONARY						\
-  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
 #define to_ms(nanos)  ((nanos) / 1000000)
 #define to_ns(millis) ((millis) * 1000000LL)
 
 __BEGIN_DECLS
 
+char *mkstr(const char *start, const char *end);
+void  remove_specials(char *buffer);
+int   find_word(const char *buffer, const char *word);
+void  to_lower(char *str);
+void  to_lower_const(const char *input, char *output);
 int this_is(const char *node);
 int getipv4(const char *node, char *res, u8 reslen);
 struct timeval timevalns(long long ns);
@@ -93,31 +95,14 @@ void  get_current_date(char* formatted_date, size_t max_length);
 int   calculate_timeout(double rtt, int speed);
 int   calculate_threads(int speed, int len);
 int   calculate_ping_timeout(int speed);
-const char *getinterface(void);
 int   get_gateway_ip(char* buf, size_t len);
 int   get_local_mac(const char *dev, char *mac_address);
-int   parse_ipopts(const char *txt, u8 *data, int datalen,
-		   int* firsthopoff, int* lasthopoff, char *errstr,
-		   size_t errstrlen);
-char *mkstr(const char *start, const char *end);
+int   parse_ipopts(const char *txt, u8 *data, int datalen, int* firsthopoff,
+    int* lasthopoff, char *errstr, size_t errstrlen);
 size_t del_spaces(char *str);
 void  parse_tcpopts(u8 *optp, int len, char *result, int bufsize);
-u8   *hexbin(char *str, size_t *outlen);
-int   find_word(const char* buffer, const char* word);
 char *clean_url(const char* url);
-void  remove_specials(char* buffer);
-void  to_lower(char* str);
-void to_lower_const(const char *input, char *output);
-u32   random_num_u32(u32 min, u32 max);
-u32   random_seed_u32(void);
-char *random_str(int len, const char *dictionary);
-u16   random_check(void);
 long long delayconv(const char *txt);
-u16   random_srcport(void);
-u32   random_u32(void);
-u16   random_u16(void);
-u8    random_u8(void);
-const char *random_ip4(void);
 const char *get_time(void);
 const char *get_this_is(int type);
 

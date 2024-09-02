@@ -1,22 +1,27 @@
-#include "../ncsnet/eth.h"
-#include "../ncsnet/ip.h"
 #include "../ncsnet/utils.h"
 #include "../ncsnet/log.h"
 #include "../ncsnet/mac.h"
+#include "../ncsnet/ip4addr.h"
+#include "../ncsnet/ip6addr.h"
 
-int main(void)
-{
-  char buf[MAC_ADDR_STRING_LEN + 1];
-  struct ethtmp et;
-  memset(&et, 0, sizeof(struct ethtmp));
-  mac_aton(&et.src, "40:b0:76:47:8f:9a");
-  mac_aton(&et.dst, "50:b0:76:47:8f:9a");
-  
-  mac_copy(&et.src, &et.dst);
-  mac_copy(&et.dst, &et.src);
-  
-  mac_ntoa(&et.src, buf);
-  printf("%s\n", buf);
-  
+void print_mac(u8 *mac) {
+  for (int i = 0; i < 6; i++) {
+    printf("%02x", mac[i]);
+    if (i < 5) printf(":");
+  }
+  printf("\n");
+}
+
+int main() {
+  ip4_t ip4addr = { .octet = { 224, 0, 0, 1 } };
+  mac_t mac4, mac6;
+  mact_ip4multicast(&mac4, &ip4addr);
+  printf("IPv4 Multicast MAC: ");
+  print_mac(mac4.octet);
+  ip6_t ip6addr = { .octet = { 0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 } };
+  mact_ip6multicast(&mac6, &ip6addr);
+  printf("IPv6 Multicast MAC: ");
+  print_mac(mac6.octet);
+
   return 0;
 }

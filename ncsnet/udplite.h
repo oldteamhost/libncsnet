@@ -48,17 +48,19 @@ __BEGIN_DECLS
 u8 *udplite_build(u16 srcport, u16 dstport, u8 *frame, size_t frmlen, size_t *pktlen);
 
 /* i'm not sure about the checksum calculation with coverage ??? */
-void udplite4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, u16 checkcrg, bool badsum);
-void udplite6_check(u8 *frame, size_t frmlen, const struct in6_addr *src, const struct in6_addr *dst,
+void udplite4_check(u8 *frame, size_t frmlen, const ip4_t src, const ip4_t dst,
+    u16 checkcrg, bool badsum);
+void udplite6_check(u8 *frame, size_t frmlen, const ip6_t src, const ip6_t dst,
     u16 checkcrg, bool badsum);
 
-u8 *udplite4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
-                   u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
-                   u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen, bool badsum);
+u8 *udplite4_build_pkt(const ip4_t src, const ip4_t dst, int ttl, u16 ipid, u8 tos,
+                       u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
+                       u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen,
+                       bool badsum);
 
-u8 *udplite6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                   u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                   u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen, bool badsum);
+u8 *udplite6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
+                       u8 hoplimit, u16 srcport, u16 dstport, u16 checkcrg,
+                       u8 *frame, size_t frmlen, size_t *pktlen, bool badsum);
 
 __END_DECLS
 

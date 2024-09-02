@@ -30,7 +30,7 @@
 lr_t *lr_open(long long ns)
 {
   lr_t *lr;
-  
+
   lr=calloc(1, sizeof(lr_t));
   if (!lr)
     return NULL;
@@ -44,7 +44,7 @@ lr_t *lr_open(long long ns)
   memset(&lr->tstamp_e, 0, sizeof(struct timeval));
   lr->callback=NULL;
   lr->bpf=0;
-  
+
   return lr;
  fail:
   free(lr);
@@ -54,6 +54,11 @@ lr_t *lr_open(long long ns)
 void lr_callback(lr_t *lr, lrcall_t callback)
 {
   lr->callback=callback;
+}
+
+lrcall_t lr_getcallback(lr_t *lr)
+{
+  return lr->callback;
 }
 
 void lr_bpf(lr_t *lr, bpf_t *code, size_t codelen)
@@ -75,15 +80,15 @@ ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
 
   if (!lr->callback&&!lr->bpf)
     return -1;
-  
-  tmpbuf = *buf;
+
+  tmpbuf=*buf;
   clock_gettime(CLOCK_MONOTONIC, &start);
   gettimeofday(&lr->tstamp_s, NULL);
-  
+
   if (lr->bpf) {
-    res = recv(lr->fd, tmpbuf, buflen, 0);
+    res=recv(lr->fd, tmpbuf, buflen, 0);
     gettimeofday(&lr->tstamp_e, NULL);
-    if (res == -1)
+    if (res==-1)
       return -1;
     else {
       *buf = tmpbuf;
@@ -100,7 +105,7 @@ ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
       clock_gettime(CLOCK_MONOTONIC, &current);
       elapsed=(current.tv_sec-start.tv_sec)*1000000000LL+(current.tv_nsec-start.tv_nsec);
        if (elapsed>=lr->ns)
-	return -1;
+         return -1;
       continue;
     }
     else {
@@ -119,18 +124,17 @@ void lr_close(lr_t *lr)
 
 bool lrcall_default(u8 *frame, size_t frmlen)
 {
+  /*
   char *src=NULL, *dst=NULL;
   ethh_t *eth;
 
   eth=(ethh_t*)frame;
-  mac_ntoa(&eth->dst, dst);
-  mac_ntoa(&eth->src, src);
-  
   printf("FRAME ");
   if (dst && src)
     printf("%s > %s ", src, dst);
   printf("ptype=%hu ", ntohs(eth->type));
   printf("frmlen=%ld\n", frmlen);
+  */
   
   return true;
 }

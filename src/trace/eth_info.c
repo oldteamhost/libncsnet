@@ -27,22 +27,22 @@
 const char *eth_info(const u8 *eth, size_t ethlen, int detail)
 {
   static char  ethinfo[TRACE_PROTO_MAX_LEN]="";
-  char         dst[MAC_ADDR_STRING_LEN+1];
-  char         src[MAC_ADDR_STRING_LEN+1];  
+  char         dst[MAC_ADDR_STRING_LEN];
+  char         src[MAC_ADDR_STRING_LEN];
   mach_t      *ethh=NULL;
 
   if (ethlen<ETH_HDR_LEN||!eth)
     return "eth (incorrect)";
   ethh=(mach_t*)eth;
-  
-  mac_ntoa(&ethh->dst, dst);
-  mac_ntoa(&ethh->src, src);
-  
+
+  mact_ntop(&ethh->dst, dst, MAC_ADDR_STRING_LEN);
+  mact_ntop(&ethh->src, src, MAC_ADDR_STRING_LEN);
+
   if (detail==LOW_DETAIL)
     snprintf(ethinfo, sizeof(ethinfo), "eth %s -> %s", src, dst);
   else
     snprintf(ethinfo, sizeof(ethinfo), "eth %s -> %s (%#hx)",
       src, dst, (u16)ntohs(ethh->type));
-  
+
   return ethinfo;
 }

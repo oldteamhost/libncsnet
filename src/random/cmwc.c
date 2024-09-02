@@ -24,6 +24,15 @@
 
 #include <ncsnet/cmwc.h>
 
+#include <time.h>
+u64 random_seed_u64(void)
+{
+  struct timespec ts;
+  if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+    return -1;
+  return ((u64)(ts.tv_sec * 1000000000ULL + ts.tv_nsec));
+}
+
 static u64 Q[4096], c = 362436;
 void cmwc_seed(u64 seed)
 {
@@ -54,4 +63,19 @@ u64 cmwc_random(void)
   }
   
   return (Q[i] = r - x);
+}
+
+u64 cmwc_random_num(u64 min, u64 max)
+{
+  u64 range=0;
+  if (min>max)
+    return 1;
+  range=(max>=min)?(max-min):(sizeof(u64)-min);
+  return (min+(cmwc_random()%range+1));
+}
+
+size_t __cmwc_random_num_call(size_t min, size_t max)
+{
+  cmwc_seed(random_seed_u64());
+  return cmwc_random_num((u64)min, (u64)max);
 }

@@ -54,25 +54,26 @@ __BEGIN_DECLS
 
 u8 *udp_build(u16 srcport, u16 dstport, u8 *frame, size_t frmlen, size_t *pktlen);
 
-void udp4_check(u8 *frame, size_t frmlen, const u32 src, const u32 dst, bool badsum);
-void udp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
-  const struct in6_addr *dst, bool badsum);
+void udp4_check(u8 *frame, size_t frmlen, const ip4_t src,
+    const ip4_t dst, bool badsum);
+void udp6_check(u8 *frame, size_t frmlen, const ip6_t src,
+  const ip6_t dst, bool badsum);
 
-u8 *udp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
+u8 *udp4_build_pkt(const ip4_t src, const ip4_t dst, int ttl, u16 ipid, u8 tos,
                    u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
                    u8 *frame, size_t frmlen, size_t *pktlen, bool badsum);
 
-u8 *udp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                   u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                   u8 *frame, size_t frmlen, size_t *pktlen, bool badsum);
+u8 *udp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
+                   u8 hoplimit, u16 srcport, u16 dstport, u8 *frame,
+                   size_t frmlen, size_t *pktlen, bool badsum);
 
-int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                  int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
-                  u16 dstport, u16 off, u8 *frame, size_t frmlen, int mtu, bool badsum);
+ssize_t udp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
+                      int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
+                      u16 dstport, u16 off, u8 *frame, size_t frmlen, int mtu, bool badsum);
 
-int udp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
-                  const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
-                  u16 srcport, u16 dstport, u8 *frame, size_t frmlen, bool badsum);
+ssize_t udp6_send_pkt(struct ethtmp *eth, int fd, const ip6_t src, const ip6_t dst,
+                      u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
+                      u8 *frame, size_t frmlen, bool badsum);
 
 __END_DECLS
 

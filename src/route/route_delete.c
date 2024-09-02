@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -22,36 +22,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/mac.h>
+#include <ncsnet/route.h>
 
-static i8 asciihex(u8 c)
+int route_delete(route_t *r, const route_entry *entry)
 {
-  if (c >= '0' && c <= '9')
-    return c - '0';
-  if (c >= 'a' && c <= 'f')
-    return c - 'a' + 10;
-  if (c >= 'A' && c <= 'F')
-    return c - 'A' + 10;
-  return -1;
-}
+  struct rtentry rt;
+  struct addr dst;
 
-int mac_aton(mac_t *addr, const char *txt)
-{
-  int i = 0, a = 0, b = 0;
-  for (; i < MAC_ADDR_LEN; i++) {
-    a = asciihex(*txt++);
-    if (a < 0)
-      return -1;
-    b = asciihex(*txt++);
-    if (b < 0)
-      return -1;
-    addr->octet[i] = (a << 4) | b;
-    if (i < 5) {
-      if (*txt != ':')
-	return -1;
-      else
-	txt++;
-    }
+  memset(&rt, 0, sizeof(rt));
+  rt.rt_flags=RTF_UP;
+
+  if (ADDR_ISHOST(&entry->route_dst)) {
+    rt.rt_flags|=RTF_HOST;
+    memcpy(&dst, &entry->route_dst, sizeof(dst));
   }
-  return 0;
+  else
+    addr_net(&entry->route_dst, &dst);
+
+  if (addr_ntos(&dst, &rt.rt_dst)<0||addr_btos(entry->route_dst.bits, &rt.rt_genmask)<0)
+    return -1;
+
+  return (ioctl(r->fd, SIOCDELRT, &rt));
 }

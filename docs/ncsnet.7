@@ -1,0 +1,86 @@
+.\" Copyright (c) 2024, oldteam. All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright notice, this
+.\"    list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright notice,
+.\"    this list of conditions and the following disclaimer in the documentation
+.\"    and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+.\" DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+.\" ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+.\" ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+.\" SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH BUILD 7 "21 Aug 2024"
+.SH NAME
+ncsnet - высокоуровневый интерфейс и набор средств для работы с сетью.
+.SH SYNOPSIS
+.nf
+.B #include <ncsnet/ncsnet.h>
+\fBncsnet_t   *ncsopen(void);\fP
+\fBbool        ncsopts(ncsnet_t *\fIn\fB, int \fIopts\fB, \fI...\fB);\fR
+\fB#define     ncsbind(\fIn\fB, \fIaddr\fB)\fR
+\fBssize_t     ncssend(ncsnet_t *\fIn\fB, void *\fIframe\fB, size_t \fIfrmlen\fB, void *\fIarg\fB);\fR
+\fBssize_t     ncsrecv(ncsnet_t *\fIn\fB, lrcall_t \fIcallback\fB, int \fIid_rb\fB);\fR
+\fBu8         *ncsrbuf(ncsnet_t *\fIn\fB, int \fIid_rb\fB, size_t \fIgetlen\fB);\fR
+\fBvoid        ncsclose(ncsnet_t *\fIn\fB);\fR
+
+\fBncstime_t   ncsrbuf_rtt(ncsnet_t *\fIn\fB, int \fIid_rb\fB);\fR
+\fBsize_t      ncsrbuf_len(ncsnet_t *\fIn\fB, int \fIid_rb\fB);\fR
+\fBbool        ncsrbuf_write(ncsnet_t *\fIn\fB, int \fIid_rb\fB, void *\fIdst\fB, size_t \fIdstlen\fB, size_t \fIgetlen\fB);\fR
+\fBvoid        ncsrbuf_free(ncsnet_t *\fIn\fB, int \fIid_rb\fB);\fR
+\fBconst char *ncserror(void);\fR
+\fBvoid        ncsperror(void);\fR
+.fi
+.SH DESCRIPTION
+Для начала коротко пройдемся по основным функциям, затем разберем их работу подробнее.
+.TP
+\fBncsopen\fR()
+создает и возвращает объект типа \fBncsnet_t *\fR. Начало работы с
+интерфейсом должно начинаться с этой функции.
+.TP
+\fBncsopts(ncsnet_t *\fIn\fB, int \fIopts\fB, \fI...\fB);\fR
+устанавливает одну или более нужную опцию на сокет.
+.TP
+\fBncsbind\fR(\fIn\fB, \fIaddr\fB)\fP
+связывает сокет с указанным адресом (\fBaddr\fR), в качестве адреса
+можно указать объект типа \fBip4_t\fR или \fBip6_t\fR или \fBmac_t\fR.
+.TP
+\fBncssend(ncsnet_t *\fIn\fB, void *\fIframe\fB, size_t \fIfrmlen\fB, void *\fIarg\fB);\fR
+отправляет указанный интернет кадр указанной длинны; взависимости от настройки опции \fINCSOPT_PROTO\fR и \fIarg\fR может генерировать заголовки
+некоторых протоколов за вызывателя.
+.TP
+\fBncsrecv(ncsnet_t *\fIn\fB, lrcall_t \fIcallback\fB, int \fIid_rb\fB);\fR
+принимает интернет кадр в буфер согласуясь с фильтром пользователя, или с настройкой \fBncsbind\fR; идентификатор буфера задает \fIid_rb\fR.
+.TP
+\fBncsrbuf(ncsnet_t *\fIn\fB, int \fIid_rb\fB, size_t \fIgetlen\fB);\fR
+возвращает буфер с указанным идентификатором \fIid_rb\fR и указанной длинны, выделяет под него память, которая должна быть очищена \fBfree\fR().
+.TP
+\fBncsclose(ncsnet_t *\fIn\fB);\fR
+закрывает и очищает объект \fBncsnet *\fR, конец работы с интерфейсом должен быть предварительно завершен этой функцией.
+.SH IDENTIFIER
+Для названия функций используется следующий шаблон:
+.IP
+(ncs)<action v object>(_)<note>
+.PP
+Для названия опций следующий:
+.IP
+(NCSOPT_)<option>
+.PP
+Для названия протоколов следующий:
+.IP
+(PR_)<protocol>
+.
+
+.\" ncsget_mac()
+.\" ncssend_eth()
+.\" ncsopen()

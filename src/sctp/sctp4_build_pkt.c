@@ -24,7 +24,7 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, u16 off,
+u8 *sctp4_build_pkt(const ip4_t src, const ip4_t dst, int ttl, u16 ipid, u8 tos, u16 off,
                     u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
                     u8 *chunks, size_t chunkslen, size_t *pktlen, bool adler32sum,
                     bool badsum)

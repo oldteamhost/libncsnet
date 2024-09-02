@@ -59,7 +59,7 @@ size_t                  msglen;
 const char             *run, *node, *shortopts="h";
 char                    ip4[16];
 char                   *strsrc;
-u32                     src, dst;
+ip4_t                   src, dst;
 u8                     *pkt;
 size_t                  total=0;
 size_t                  pktlen;
@@ -431,8 +431,8 @@ int main(int argc, char **argv)
    */
   if (getipv4(node, ip4, 16)==-1)
     errx(1, "err: failed resolv for target \"%s\"", node);
-  dst=ncs_inet_addr(ip4);
-  dstin.sin_addr.s_addr=dst;
+  ip4t_pton(ip4, &dst);
+  dstin.sin_addr.s_addr=ip4t_u32(&dst);
   dstin.sin_port=0;
   dstin.sin_family=AF_INET;
 
@@ -441,13 +441,13 @@ int main(int argc, char **argv)
    * IP address.
    */
   if (randomsrc)
-    src=ncs_inet_addr(random_ip4());
+    ip4t_pton(random_ip4(), &src);
   else if (customsrc)
-    src=ncs_inet_addr(tmpsrc);
+    ip4t_pton(tmpsrc, &src);
   else {
     if (!(strsrc=ip4_util_strsrc()))
       errx(1, "err: failed getting source ipaddr");
-    src=ncs_inet_addr(strsrc);
+    ip4t_pton(strsrc, &src);
     free(strsrc);
   }
 

@@ -40,10 +40,10 @@ const char *arp_operation_info(const u8 *op, size_t oplen, u16 optype, u16 ptype
     skip=plen+hlen;
     if (hlen==6) {
       mac_t sha, tha;
-      mac_fill(&sha, op[0], op[1], op[2], op[3], op[4], op[5]);
-      mac_fill(&tha, op[0+skip], op[1+skip], op[2+skip], op[3+skip], op[4+skip], op[5+skip]);
-      mac_ntoa(&tha, dst);
-      mac_ntoa(&sha, src);
+      mact_fill(&sha, op[0], op[1], op[2], op[3], op[4], op[5]);
+      mact_fill(&tha, op[0+skip], op[1+skip], op[2+skip], op[3+skip], op[4+skip], op[5+skip]);
+      mact_ntop(&tha, dst, TRACE_MAX_DATA_LEN);
+      mact_ntop(&sha, src, TRACE_MAX_DATA_LEN);
     }
     /* it's real ??? */
     else {

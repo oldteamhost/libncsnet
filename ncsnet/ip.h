@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -31,10 +31,10 @@
 #include <stdlib.h>
 
 #include "mt19937.h"
-#include "tcp.h"
-#include "udp.h"
+#include "ip4addr.h"
+#include "ip6addr.h"
 #include "eth.h"
-#include "inet.h"
+#include "random.h"
 #include "raw.h"
 
 #include "sys/types.h"
@@ -51,8 +51,6 @@
 #define IP_TOS_ECT            0x02    /* ECN-capable transport */
 #define IP_TOS_CE             0x01    /* congestion experienced */
 
-#define IP4_ADDR_LEN          4       /* IP address length */
-#define IP4_ADDR_BITS         32
 #define IP4_LEN_MAX           65535
 #define IP4_IHL_MAX           60
 #define IP4_VERSION           4
@@ -116,51 +114,11 @@
 #define IP4_OPT_TS_TSADDR     1 /* IP address / timestamp pairs */
 #define IP4_OPT_TS_PRESPEC    3 /* IP address / zero timestamp pairs */
 
-#define IP4_CLASSA(i)         (((u32)(i) & htonl(0x80000000)) == htonl(0x00000000))
-#define IP4_CLASSA_NET        (htonl(0xff000000))
-#define IP4_CLASSA_NSHIFT     24
-#define IP4_CLASSA_HOST       (htonl(0x00ffffff))
-#define IP4_CLASSA_MAX        128
-
-#define IP4_CLASSB(i)         (((u32)(i) & htonl(0xc0000000)) == htonl(0x80000000))
-#define IP4_CLASSB_NET        (htonl(0xffff0000))
-#define IP4_CLASSB_NSHIFT     16
-#define IP4_CLASSB_HOST       (htonl(0x0000ffff))
-#define IP4_CLASSB_MAX        65536
-
-#define IP4_CLASSC(i)         (((u32)(i) & htonl(0xe0000000)) == htonl(0xc0000000))
-#define IP4_CLASSC_NET        (htonl(0xffffff00))
-#define IP4_CLASSC_NSHIFT     8
-#define IP4_CLASSC_HOST       (htonl(0x000000ff))
-
-#define IP4_CLASSD(i)         (((u32)(i) & htonl(0xf0000000)) == htonl(0xe0000000))
-#define IP4_CLASSD_NET        (htonl(0xf0000000))
-#define IP4_CLASSD_NSHIFT     28
-#define IP4_CLASSD_HOST       (htonl(0x0fffffff))
-
-#define IP4_MULTICAST(i)      IP4_CLASSD(i)
-#define IP4_EXPERIMENTAL(i)   (((u32)(i) & htonl(0xf0000000)) == htonl(0xf0000000))
-#define IP4_BADCLASS(i)       (((u32)(i) & htonl(0xf0000000)) == htonl(0xf0000000))
-#define IP4_LOCAL_GROUP(i)    (((u32)(i) & htonl(0xffffff00)) == htonl(0xe0000000))
-
-#define IP4_ADDR_ANY          (htonl(0x00000000)) /* 0.0.0.0 */
-#define IP4_ADDR_BROADCAST    (htonl(0xffffffff)) /* 255.255.255.255 */
-#define IP4_ADDR_LOOPBACK     (htonl(0x7f000001)) /* 127.0.0.1 */
-#define IP4_ADDR_MCAST_ALL    (htonl(0xe0000001)) /* 224.0.0.1 */
-#define IP4_ADDR_MCAST_LOCAL  (htonl(0xe00000ff)) /* 224.0.0.255 */
-
 #define IP6_HDR_LEN           40      /* ip6 header length */
 #define IP6_LEN_MAX           65535   /* non-jumbo payload */
 #define IP6_MTU_MIN           1280    /* minimum MTU (1024 + 256) */
 #define IP6_VERSION_MASK      0xf0    /* ip6_vfc version */
-#define IP6_NXT               ip6_ctlun.ip6_un1.ip6_un1_nxt
-#define IP6_ADDR_LEN          16
-#define IP6_ADDR_BITS         128
 #define IP6_LEN_MIN           IP6_HDR_LEN
-#define IP6_VFC               ip6_ctlun.ip6_un2_vfc
-#define IP6_FLOW              ip6_ctlun.ip6_un1.ip6_un1_flow
-#define IP6_PKTLEN            ip6_ctlun.ip6_un1.ip6_un1_plen
-#define IP6_HLIM              ip6_ctlun.ip6_un1.ip6_un1_hlim
 #define IP6_VERSION           0x60
 #define IP6_VERSION_MASK      0xf0 /* ip6_vfc version */
 #define IP6_HLIM_DEFAULT      64
@@ -197,19 +155,6 @@
 #define IP6_OPT_TYPE_ICMP     0xC0 /* ...only if non-multicast dst */
 #define IP6_OPT_MUTABLE       0x20 /* option data may change en route */
 #define IP6_OPT_TYPE(o)       ((o) & 0xC0) /* high 2 bits of opt_type */
-
-#define IP6_ADDR_UNSPEC \
-  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-#define IP6_ADDR_LOOPBACK \
-  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
-
-typedef struct ip6_addr {
-  u8 octet[IP6_ADDR_LEN];
-} ip6_t;
-
-typedef struct ip4_addr {
-  u8 octet[IP4_ADDR_LEN];
-} ip4_t;
 
 struct ip6_ext_data_routing { u8 type, segleft; };
 struct ip6_ext_data_fragment { u16 offlg; u32 ident; };
@@ -259,39 +204,40 @@ struct ip6_ext_hdr {
 struct ip4_hdr
 {
 #if (defined(LITTLE_ENDIAN_SYSTEM))
-  u8  ihl:4;     /* header length */
-  u8  version:4; /* ip proto version */
+  u8    ihl:4;     /* header length */
+  u8    version:4; /* ip proto version */
 #else
-  u8  version:4; /* ip proto version */
-  u8  ihl:4;     /* header length */
+  u8    version:4; /* ip proto version */
+  u8    ihl:4;     /* header length */
 #endif
-  u8  tos;       /* type of service */
-  u16 totlen;    /* total length */
-  u16 id;        /* identificator */
-  u16 off;       /* fragment offset */
-  u8  ttl;       /* time to live */
-  u8  proto;
-  u16 check;     /* 16 bit checksum */
-  u32 src;       /* source ip address */
-  u32 dst;       /* dest ip address */
-};
-
-struct ip6_hdr
-{
-  union {
-    struct ip6_hdr_ctl {
-      u32 ip6_un1_flow; /* 20 bits of flow ID */
-      u16 ip6_un1_plen; /* payload length */
-      u8 ip6_un1_nxt;   /* next header */
-      u8 ip6_un1_hlim;  /* hop limit */
-    } ip6_un1;
-    u8 ip6_un2_vfc; /* 4 bits version, top 4 bits class */
-  } ip6_ctlun;
-  ip6_t ip6_src;
-  ip6_t ip6_dst;
+  u8    tos;       /* type of service */
+  u16   totlen;    /* total length */
+  u16   id;        /* identificator */
+  u16   off;       /* fragment offset */
+  u8    ttl;       /* time to live */
+  u8    proto;
+  u16   check;     /* 16 bit checksum */
+  ip4_t src, dst;  /* src and dst ip address */
 };
 
 typedef struct ip4_hdr ip4h_t;
+
+struct ip6_hdr
+{
+  /*
+   * total                       (32)
+   * version        4 bits       (28)
+   * traffic class  8 bits       (20)
+   * flow label     20 bits      (0)
+   */
+  u8    flags[4];
+
+  u16   totlen;   /* payload len*/
+  u8    nxt;      /* next header (proto) */
+  u8    hoplimit; /* hop limit (ttl) */
+  ip6_t src, dst; /* src and dst ip6 address */
+};
+
 typedef struct ip6_hdr ip6h_t;
 
 #define ip_check_carry(x) \
@@ -305,35 +251,35 @@ typedef struct ip6_hdr ip6h_t;
 
 __BEGIN_DECLS
 
-u8 *ip4_build(u32 src, u32 dst, u8 proto, int ttl, u16 id, u8 tos, u16 off,
+u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id, u8 tos, u16 off,
               const u8 *opts, int optslen, u8 *frame, size_t frmlen,
               size_t *pktlen);
 
-u8 *ip6_build(const struct in6_addr *src, const struct in6_addr *dst, u8 tc,
-              u32 flowlabel, u8 nexthdr, int hoplimit, u8 *frame, size_t frmlen,
-              size_t *pktlen);
-
-int ip4_send_frag(int fd, const struct sockaddr_in *dst, const u8 *frame,
-              size_t frmlen, u32 mtu);
-
-int ip4_send(struct ethtmp *eth, int fd, const struct sockaddr_in *dst,
-              int mtu, const u8 *frame, size_t frmlen);
-
-int ip6_send(struct ethtmp *eth, int fd, const struct sockaddr_in6 *dst,
-              const u8 *frame, size_t frmlen);
-
-int ip_send(struct ethtmp *eth, int fd, const struct sockaddr_storage *dst,
-              int mtu, const u8 *frame, size_t frmlen);
-
-int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, u16 off, const u8 *opt,
-              int optlen, const char *data, size_t datalen, int mtu);
+u8 *ip6_build(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 nexthdr, int hoplimit,
+              u8 *frame, size_t frmlen, size_t *pktlen);
 
 void  ip4_check(u8 *frame, size_t frmlen, bool badsum);
 int   ip_check_add(const void *buf, size_t len, int check);
 u16   in_check(u16 *ptr, int nbytes);
 void  ip4_recheck(u8 *pkt, u32 pktlen);
-u16   ip4_pseudocheck(u32 src, u32 dst, u8 proto, u16 len, const void *hstart);
-u16   ip6_pseudocheck(const struct in6_addr *src, const struct in6_addr *dst, u8 nxt, u32 len, const void *hstart);
+
+u16 ip4_pseudocheck(const ip4_t src, const ip4_t dst, u8 proto, u16 len, const void *hstart);
+u16 ip6_pseudocheck(const ip6_t src, const ip6_t dst, u8 nxt, u32 len, const void *hstart);
+
+int ip4_send_frag(int fd, const struct sockaddr_in *dst, const u8 *frame,
+                  size_t frmlen, u32 mtu);
+
+int ip4_send(struct ethtmp *eth, int fd, const struct sockaddr_in *dst,
+             int mtu, const u8 *frame, size_t frmlen);
+
+int ip6_send(struct ethtmp *eth, int fd, const struct sockaddr_in6 *dst,
+             const u8 *frame, size_t frmlen);
+
+int ip_send(struct ethtmp *eth, int fd, const struct sockaddr_storage *dst,
+            int mtu, const u8 *frame, size_t frmlen);
+
+int ip4_send_pkt(int fd, ip4_t src, ip4_t dst, u16 ttl, u8 proto, u16 off, const u8 *opt,
+                 int optlen, const char *data, size_t datalen, int mtu);
 
 char *ip4_util_strsrc(void);
 int   ip4_util_strdst(const char* dns, char* ipbuf, size_t buflen);
@@ -343,6 +289,10 @@ int   ip6_util_strdst(const char *dns, char *ipbuf, size_t buflen);
 int   ip4_send_raw(int fd, const struct sockaddr_in *dst, const u8 *frame, size_t frmlen);
 int   ip4_send_eth(struct ethtmp *eth, const u8 *frame, size_t frmlen);
 int   ip6_send_eth(struct ethtmp *eth, const u8 *frame, size_t frmlen);
+
+/* ipaddr.c */
+char *ip_ntoa(const ip4_t *ip4);
+char *ip6_ntoa(const ip6_t *ip6);
 
 __END_DECLS
 

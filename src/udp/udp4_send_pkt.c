@@ -24,14 +24,14 @@
 
 #include <ncsnet/udp.h>
 
-int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                  int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
-                  u16 dstport, u16 off, u8 *frame, size_t frmlen, int mtu, bool badsum)
+ssize_t udp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
+                      int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
+                      u16 dstport, u16 off, u8 *frame, size_t frmlen, int mtu, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
   size_t pktlen;
-  int res;
+  ssize_t res;
   u8 *pkt;
 
   pkt=udp4_build_pkt(src, dst, ttl, ipid, IP_TOS_DEFAULT, off, ipopt,
@@ -40,9 +40,9 @@ int udp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
     return -1;
 
   memset(&_dst, 0, sizeof(_dst));
-  dst_in = (struct sockaddr_in*)&_dst;
-  dst_in->sin_family = AF_INET;
-  dst_in->sin_addr.s_addr = dst;
+  dst_in=(struct sockaddr_in*)&_dst;
+  dst_in->sin_family=AF_INET;
+  dst_in->sin_addr.s_addr=ip4t_u32(&dst);
 
   res=ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
 

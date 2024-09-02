@@ -113,6 +113,8 @@ char       *read_util_fmtipopt(const u8 *ipopt, int ipoptlen);
 #define asciichar_len(currentlen) (currentlen+1)
 void    asciihex(const u8 *txt, size_t txtlen, char *asciibuf, char *hexbuf);
 
+
+
 __END_DECLS
 
 #endif

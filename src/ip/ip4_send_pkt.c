@@ -25,13 +25,12 @@
 #include <ncsnet/ip.h>
 #include <ncsnet/utils.h>
 
-int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, u16 off,
-                 const u8 *opt, int optlen, const char *data, size_t datalen,
-                 int mtu)
+int ip4_send_pkt(int fd, ip4_t src, ip4_t dst, u16 ttl, u8 proto, u16 off, const u8 *opt,
+                 int optlen, const char *data, size_t datalen, int mtu)
 {
   struct sockaddr_in dst_in;
   size_t pktlen;
-  int res = -1;
+  int res;
   u8 *pkt;
 
   pkt=ip4_build(src, dst, proto, ttl, random_u16(), 5, off,
@@ -40,9 +39,9 @@ int ip4_send_pkt(int fd, u32 src, u32 dst, u16 ttl, u8 proto, u16 off,
     return -1;
 
   memset(&dst_in, 0, sizeof(struct sockaddr_in));
-  dst_in.sin_addr.s_addr = dst;
-  dst_in.sin_port = 0;
-  dst_in.sin_family = AF_INET;
+  dst_in.sin_addr.s_addr=ip4t_u32(&dst);
+  dst_in.sin_port=0;
+  dst_in.sin_family=AF_INET;
 
   res=ip4_send(NULL, fd, &dst_in, mtu, pkt, pktlen);
 

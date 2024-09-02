@@ -47,6 +47,8 @@
   #include <net/if_types.h>
 #elif defined(IS_LINUX)
   #include <net/if.h>
+  #include <net/if_arp.h>
+  #include <sys/param.h>
   #if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 1
     #include <netpacket/packet.h>
     #include <net/ethernet.h>

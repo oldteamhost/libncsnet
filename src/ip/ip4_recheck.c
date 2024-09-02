@@ -25,6 +25,9 @@
 #include <ncsnet/ip.h>
 #include <ncsnet/trace.h>
 #include <ncsnet/igmp.h>
+#include <ncsnet/tcp.h>
+#include <ncsnet/udp.h>
+#include <ncsnet/sctp.h>
 
 void ip4_recheck(u8 *pkt, u32 pktlen)
 {

@@ -24,14 +24,14 @@
 
 #include <ncsnet/udp.h>
 
-void udp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
-		const struct in6_addr *dst, bool badsum)
+void udp6_check(u8 *frame, size_t frmlen, const ip6_t src,
+  const ip6_t dst, bool badsum)
 {
   udph_t *udp;
 
-  udp = (udph_t*)frame;
-  udp->check = 0;
-  udp->check = ip6_pseudocheck(src, dst, IPPROTO_UDP, frmlen, udp);
+  udp=(udph_t*)frame;
+  udp->check=0;
+  udp->check=ip6_pseudocheck(src, dst, IPPROTO_UDP, frmlen, udp);
 
   if (badsum)
     udp->check = 0xffff;

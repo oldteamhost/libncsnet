@@ -4,7 +4,9 @@
 #include <assert.h>
 
 #include "../ncsnet/inet.h"
+#include "../ncsnet/addr.h"
 #include "../ncsnet/ip.h"
+#include "../ncsnet/log.h"
 
 void test_ncs_inet_aton(void)
 {
@@ -50,8 +52,34 @@ void test_ncs_inet_ntop(void)
   printf("ncs_inet_ntop passed\n");
 }
 
-int main(void)
+void
+addr_usage(void)
 {
+  fprintf(stderr, "Usage: dnet addr <address> ...\n");
+  exit(1);
+}
+
+int
+addr_main(int argc, char *argv[])
+{
+  struct addr addr;
+  int c;
+  if (argc == 1 || *(argv[1]) == '-')
+    addr_usage();
+  for (c = 1; c < argc; c++) {
+    if (addr_aton(argv[c], &addr) < 0)
+      addr_usage();
+    char tmp[BUFSIZ];
+    addr_ntop(&addr, tmp, BUFSIZ);
+    printf("%s\n", tmp);
+
+  }
+  exit(0);
+}
+
+int main(int argc, char **argv)
+{
+  return addr_main(argc, argv);
   test_ncs_inet_aton();
   test_ncs_inet_addr();
   test_ncs_inet_ntoa();

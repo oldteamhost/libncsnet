@@ -22,13 +22,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//#include <ncsnet/udplite.h>
-#include "../../ncsnet/udplite.h"
+#include <ncsnet/udplite.h>
 
-u8 *udplite4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
-                   u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
-                   u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen,
-                   bool badsum)
+u8 *udplite4_build_pkt(const ip4_t src, const ip4_t dst, int ttl, u16 ipid, u8 tos,
+                       u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
+                       u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen,
+                       bool badsum)
 {
   udpliteh_t *udplite;
   size_t udplitelen;

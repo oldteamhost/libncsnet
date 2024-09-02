@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -20,55 +20,18 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
-#include <ncsnet/utils.h>
+#include <ncsnet/intf.h>
 
-u8 *hexbin(char *str, size_t *outlen)
+extern int _match_intf_src(const intf_entry *entry, void *arg);
+int intf_get_src(intf_t *i, intf_entry *entry, addr_t *src)
 {
-  char auxbuff[1024];
-  static u8 dst[16384];
-  size_t dstlen=16384;
-  char *start=NULL;
-  char twobytes[3];
-  u32 i = 0, j = 0;
+  memcpy(&entry->intf_addr, src, sizeof(*src));
 
-  if (str == NULL || outlen == NULL)
-    return NULL;
-  if (strlen(str) == 0)
-    return NULL;
-  else
-    memset(auxbuff,0,1024);
-  if (!strncmp("0x", str, 2)) {
-    if (strlen(str) == 2)
-      return NULL;
-    start=str+2;
+  if (intf_loop(i, _match_intf_src, entry)!=1) {
+    errno=ENXIO;
+    return -1;
   }
-  else if(!strncmp("\\x", str, 2)) {
-    if (strlen(str) == 2)
-      return NULL;
-    for (i = 0; i < strlen(str) && j<1023; i++) {
-      if(str[i]!='\\' && str[i]!='x' && str[i]!='X')
-        auxbuff[j++] = str[i];
-    }
-    auxbuff[j]='\0';
-    start=auxbuff;
-  }
-  else
-    start=str;
-  for (i = 0; i < strlen(start); i++){
-    if (!isxdigit(start[i]))
-      return NULL;
-  }
-  if (strlen(start) % 2 != 0)
-    return NULL;
-  for (i = 0, j = 0; j < dstlen && i < strlen(start)- 1; i += 2) {
-    twobytes[0] = start[i];
-    twobytes[1] = start[i+1];
-    twobytes[2] = '\0';
-    dst[j++] = (u8)strtol(twobytes, NULL, 16);
-  }
-
-  *outlen=j;
-  return dst;
+  return 0;
 }

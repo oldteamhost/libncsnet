@@ -24,28 +24,27 @@
 
 #include <ncsnet/icmp.h>
 
-int icmp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
-		   const struct in6_addr *dst, u8 tc, u32 flowlabel,
-		   u8 hoplimit, u8 type, u8 code, u8 *msg, u16 msglen,
-		   bool badsum)
+ssize_t icmp6_send_pkt(struct ethtmp *eth, int fd, const ip6_t src, const ip6_t dst,
+                       u8 tc, u32 flowlabel, u8 hoplimit, u8 type, u8 code, u8 *msg,
+                       u16 msglen, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in6 *dst_in;
-  int res = -1;
   size_t pktlen;
+  ssize_t res;
   u8 *pkt;
 
-  pkt = icmp6_build_pkt(src, dst, tc, flowlabel, hoplimit, type, code, msg,
-      msglen, &pktlen, badsum);
+  pkt=icmp6_build_pkt(src, dst, tc, flowlabel, hoplimit, type, code, msg,
+    msglen, &pktlen, badsum);
   if (!pkt)
     return -1;
 
   memset(&_dst, 0, sizeof(_dst));
-  dst_in = (struct sockaddr_in6*)&_dst;
-  dst_in->sin6_family = AF_INET6;
-  dst_in->sin6_addr = *dst;
-  
-  res = ip_send(eth, fd, &_dst, 0, pkt, pktlen);
+  dst_in=(struct sockaddr_in6*)&_dst;
+  dst_in->sin6_family=AF_INET6;
+  ip6t_copy(&dst_in->sin6_addr, &dst);
+
+  res=ip_send(eth, fd, &_dst, 0, pkt, pktlen);
 
   free(pkt);
   return res;

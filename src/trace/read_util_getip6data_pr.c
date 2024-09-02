@@ -42,7 +42,7 @@ const void *read_util_getip6data_pr(const struct ip6_hdr *ip6, u32 *len, u8 *nxt
   
   p = (unsigned char *) ip6;
   end = p + *len;
-  *nxt = ip6->IP6_NXT;
+  *nxt = ip6->nxt;
   p += sizeof(*ip6);
   
   while (p < end && ip6_is_extension_header(*nxt)) {

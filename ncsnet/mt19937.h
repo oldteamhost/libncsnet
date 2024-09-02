@@ -31,16 +31,17 @@
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
 
-#define MT19937_N 624
-#define MT19937_M 397
-
+#define MT19937_N          624
+#define MT19937_M          397
 #define MT19937_UPPER_MASK 0x80000000
 #define MT19937_LOWER_MASK 0x7FFFFFFF
 
 __BEGIN_DECLS
 
-void mt19937_seed(u32 seed);
-u32 mt19937_random(void);
+void   mt19937_seed(u32 seed);
+u32    mt19937_random(void);
+u32    mt19937_random_num(u32 min, u32 max);
+size_t __mt19937_random_num_call(size_t min, size_t max);
 
 __END_DECLS
 

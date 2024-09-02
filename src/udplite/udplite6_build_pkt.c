@@ -24,9 +24,9 @@
 
 #include <ncsnet/udplite.h>
 
-u8 *udplite6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                   u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                   u16 checkcrg, u8 *frame, size_t frmlen, size_t *pktlen, bool badsum)
+u8 *udplite6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
+                       u8 hoplimit, u16 srcport, u16 dstport, u16 checkcrg,
+                       u8 *frame, size_t frmlen, size_t *pktlen, bool badsum)
 {
   udpliteh_t *udplite;
   size_t udplitelen;

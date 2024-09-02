@@ -23,6 +23,8 @@
 */
 
 #include <ncsnet/ip.h>
+#include <ncsnet/tcp.h>
+#include <ncsnet/udp.h>
 
 int ip4_send_raw(int fd, const struct sockaddr_in *dst, const u8 *frame, size_t frmlen)
 {

@@ -30,10 +30,8 @@ const char *ip_info(const u8 *ip, size_t iplen, int detail, struct abstract_iphd
   int more_fragments=0, dont_fragment=0, reserved_flag=0, frag_off=0;
   char srchost[INET6_ADDRSTRLEN]="";
   char dsthost[INET6_ADDRSTRLEN]="";
-  u32 flow, ip6_fl, ip6_tc, datalen;  
-  const struct sockaddr_in6 *sin6;
   static char ipinfo[1024]="";
-  const struct sockaddr_in *sin;
+  u32 ip6_fl, ip6_tc, datalen;  
   const struct ip6_hdr *ip6;
   struct abstract_iphdr hdr;
   char fragnfo[64]="";
@@ -52,16 +50,14 @@ const char *ip_info(const u8 *ip, size_t iplen, int detail, struct abstract_iphd
 
  ip4:
   iph=(ip4h_t*)ip;
-  sin=(struct sockaddr_in*)&hdr.src;
-  ncs_inet_ntop(AF_INET, (void*)&sin->sin_addr.s_addr, srchost, sizeof(srchost));
-  sin=(struct sockaddr_in*) &hdr.dst;
-  ncs_inet_ntop(AF_INET, (void*)&sin->sin_addr.s_addr, dsthost, sizeof(dsthost));
-  
+  ip4t_ntop(&iph->src, srchost, sizeof(srchost));
+  ip4t_ntop(&iph->dst, dsthost, sizeof(dsthost));
+
   frag_off=8*(ntohs(iph->off)&8191);
   more_fragments=ntohs(iph->off)&IP4_MF;
   dont_fragment=ntohs(iph->off)&IP4_DF;
   reserved_flag=ntohs(iph->off)&IP4_RF;
-  
+
   if (frag_off||more_fragments)
     snprintf(fragnfo, sizeof(fragnfo), " frag offset=%d%s", frag_off, more_fragments ? "+" : "");
   if (detail==LOW_DETAIL)
@@ -94,28 +90,25 @@ const char *ip_info(const u8 *ip, size_t iplen, int detail, struct abstract_iphd
       iph->ihl==5?"":read_util_fmtipopt((u8*)iph+sizeof(ip4h_t), MIN((u32)(iph->ihl-5)*4, iplen-sizeof(ip4h_t))),
       iph->ihl==5?"":"}");
   goto ok;
-  
+
  ip6:
-  ip6=(struct ip6_hdr*)ip;
-  sin6=(struct sockaddr_in6*)&hdr.src;
-  ncs_inet_ntop(AF_INET6, (void*)sin6->sin6_addr.s6_addr, srchost, sizeof(srchost));
-  sin6=(struct sockaddr_in6*)&hdr.dst;
-  ncs_inet_ntop(AF_INET6, (void*)sin6->sin6_addr.s6_addr, dsthost, sizeof(dsthost));
-  
-  flow=ntohl(ip6->IP6_FLOW);
-  ip6_fl=flow & 0x000fffff;
-  ip6_tc=(flow & 0x0ff00000) >> 20;
-  
+  ip6=(ip6h_t*)ip;
+  ip6t_ntop(&ip6->src, srchost, sizeof(srchost));
+  ip6t_ntop(&ip6->dst, dsthost, sizeof(dsthost));
+
+  ip6_fl=((ip6->flags[1]&0x0F)<<16|(ip6->flags[2]<<8)|ip6->flags[3]);
+  ip6_tc=((ip6->flags[0]&0x0F)<<4)|((ip6->flags[1]>>4)&0x0F);
+
   if (detail==LOW_DETAIL)
     snprintf(ipinfo, sizeof(ipinfo), "ip %s -> %s hopl=%d flow=%x payloadlen=%hu",
-      srchost, dsthost, ip6->IP6_HLIM, ip6_fl, (u16)ntohs(ip6->IP6_PKTLEN));
+      srchost, dsthost, ip6->hoplimit, ip6_fl, (u16)ntohs(ip6->totlen));
   else if (detail==MEDIUM_DETAIL)
-    snprintf(ipinfo, sizeof(ipinfo), "ip %s -> %s hopl=%d tclass=%d flow=%x payloadlen=%hu",
-      srchost, dsthost, ip6->IP6_HLIM, ip6_tc, ip6_fl, (u16)ntohs(ip6->IP6_PKTLEN));
+    snprintf(ipinfo, sizeof(ipinfo), "ip %s -> %s hopl=%d tclass=%hhu(0x%02x) flow=%x payloadlen=%hu",
+      srchost, dsthost, ip6->hoplimit, ip6_tc, ip6_tc, ip6_fl, (u16)ntohs(ip6->totlen));
   else if (detail==HIGH_DETAIL)
-    snprintf(ipinfo, sizeof(ipinfo), "ip %s -> %s ver=6, tclass=%x flow=%x payloadlen=%hu nh=%s hopl=%d ",
-      srchost, dsthost, ip6_tc, ip6_fl, (u16)ntohs(ip6->IP6_PKTLEN),
-      read_util_nexthdrtoa(ip6->IP6_NXT, 1), ip6->IP6_HLIM);
- ok:  
+    snprintf(ipinfo, sizeof(ipinfo), "ip %s -> %s ver=6, tclass=%hhu(0x%02x) flow=%x payloadlen=%hu nh=%s hopl=%d ",
+      srchost, dsthost, ip6_tc, ip6_tc, ip6_fl, (u16)ntohs(ip6->totlen),
+      read_util_nexthdrtoa(ip6->nxt, 1), ip6->hoplimit);
+ ok:
   return ipinfo;
 }

@@ -28,7 +28,7 @@
   #define MIN(a,b) ((a) <= (b) ? (a) : (b))
 #endif
 
-u8 *igmp4_build_pkt(const u32 src, const u32 dst, u16 ttl, u16 ipid, u8 tos,
+u8 *igmp_build_pkt(const ip4_t src, const ip4_t dst, u16 ttl, u16 ipid, u8 tos,
                    u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code,
                    const char *data, size_t datalen, size_t *pktlen, bool badsum)
 {

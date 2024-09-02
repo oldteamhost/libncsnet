@@ -24,28 +24,28 @@
 
 #include <ncsnet/sctp.h>
 
-int sctp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, u16 ipid, u8 tos, u16 off, u8 *ipops, int ipoptlen,
-                   u16 srcport, u16 dstport, u8 *chunks, size_t chunkslen, u32 vtag,
-                   int mtu, bool adler32sum, bool badsum)
+ssize_t sctp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
+                       int ttl, u16 ipid, u8 tos, u16 off, u8 *ipops, int ipoptlen,
+                       u16 srcport, u16 dstport, u8 *chunks, size_t chunkslen, u32 vtag,
+                       int mtu, bool adler32sum, bool badsum)
 {
   struct sockaddr_storage _dst;
   struct sockaddr_in *dst_in;
   size_t pktlen;
-  int res;
+  ssize_t res;
   u8 *pkt;
 
-  pkt = sctp4_build_pkt(src, dst, ttl, ipid, tos, off, ipops, ipoptlen,
+  pkt=sctp4_build_pkt(src, dst, ttl, ipid, tos, off, ipops, ipoptlen,
     srcport, dstport, vtag, chunks, chunkslen, &pktlen, adler32sum, badsum);
   if (!pkt)
     return -1;
 
   memset(&_dst, 0, sizeof(_dst));
-  dst_in = (struct sockaddr_in*)&_dst;
-  dst_in->sin_family = AF_INET;
-  dst_in->sin_addr.s_addr = dst;
+  dst_in=(struct sockaddr_in*)&_dst;
+  dst_in->sin_family=AF_INET;
+  dst_in->sin_addr.s_addr=ip4t_u32(&dst);
 
-  res = ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
+  res=ip_send(eth, fd, &_dst, mtu, pkt, pktlen);
 
   free(pkt);
   return res;

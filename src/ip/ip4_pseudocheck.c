@@ -25,20 +25,20 @@
 #include <ncsnet/ip.h>
 #include <netinet/in.h>
 
-u16 ip4_pseudocheck(u32 src, u32 dst, u8 proto, u16 len, const void *hstart)
+u16 ip4_pseudocheck(const ip4_t src, const ip4_t dst, u8 proto, u16 len, const void *hstart)
 {
   struct pseudo
   {
-    u32 src;
-    u32 dst;
-    u8 zero;
-    u8 proto;
-    u16 length;
+    ip4_t src;
+    ip4_t dst;
+    u8    zero;
+    u8    proto;
+    u16   length;
   } hdr;
   int sum;
 
-  hdr.src    = src;
-  hdr.dst    = dst;
+  ip4t_copy(&hdr.src, &src);
+  ip4t_copy(&hdr.dst, &dst);
   hdr.zero   = 0;
   hdr.proto  = proto;
   hdr.length = htons(len);

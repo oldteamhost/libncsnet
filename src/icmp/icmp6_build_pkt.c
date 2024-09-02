@@ -24,19 +24,19 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                    u8 tc, u32 flowlabel, u8 hoplimit, u8 type, u8 code,
-		    u8 *msg, size_t msglen, size_t *pktlen, bool badsum)
+u8 *icmp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
+                    u8 hoplimit, u8 type, u8 code, u8 *msg, size_t msglen,
+                    size_t *pktlen, bool badsum)
 {
   size_t icmplen;
   icmp6h_t *icmp;
   u8 *pkt;
 
-  icmp = (icmp6h_t*)icmp_build(type, code, msg, msglen, &icmplen);
+  icmp=(icmp6h_t*)icmp_build(type, code, msg, msglen, &icmplen);
   if (!icmp)
     return NULL;
   icmp6_check((u8*)icmp, icmplen, src, dst, badsum);
-  pkt = ip6_build(src, dst, tc, flowlabel, IPPROTO_ICMPV6,
+  pkt=ip6_build(src, dst, tc, flowlabel, IPPROTO_ICMPV6,
       hoplimit, (u8*)icmp, icmplen, pktlen);
 
   free(icmp);

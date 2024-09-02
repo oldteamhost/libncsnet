@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -20,61 +20,60 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
-#include <ncsnet/utils.h>
+//#include <ncsnet/intf.h>
+#include "../../ncsnet/intf.h"
 
-u32 random_seed_u32(void)
+int _match_intf_src(const intf_entry *entry, void *arg)
 {
-  struct timespec ts;
-  if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
-    return -1;
-  return ((u32)(ts.tv_sec * 1000000000ULL + ts.tv_nsec));
-}
+  intf_entry *save=(intf_entry*)arg;
+  int matched=0, cnt;
 
-u32 random_num_u32(u32 min, u32 max)
-{
-  u32 range;
-  if (min > max)
+  if (entry->intf_addr.type==ADDR_TYPE_IP&&
+      ip4t_compare(entry->intf_addr.addr_ip4,save->intf_addr.addr_ip4))
+    matched=1;
+
+  for (cnt=0;!matched&&cnt<(int)entry->intf_alias_num;cnt++) {
+    if (entry->intf_alias_addrs[cnt].type!=ADDR_TYPE_IP)
+      continue;
+    if (ip4t_compare(entry->intf_alias_addrs[cnt].addr_ip4,save->intf_addr.addr_ip4))
+      matched=1;
+  }
+
+  if (matched) {
+    if (save->intf_len<entry->intf_len)
+      memcpy(save, entry, save->intf_len);
+    else
+      memcpy(save, entry, entry->intf_len);
     return 1;
-
-  range = (max >= min) ? (max - min) : (UINT_MAX - min);
-  mt19937_seed(random_seed_u32());
-  return (min + (mt19937_random() % range + 1));
+  }
+  return 0;
 }
 
-const char *random_ip4(void)
+int intf_get_dst(intf_t *i, intf_entry *entry, addr_t *dst)
 {
-  static char ip[16];
-  mt19937_seed(random_seed_u32());
+  struct sockaddr_in sin;
+  socklen_t n;
 
-  snprintf(ip, sizeof(ip), "%u.%u.%u.%u",
-      mt19937_random() % 256, mt19937_random() % 256,
-      mt19937_random() % 256, mt19937_random() % 256);
+  if (dst->type!=ADDR_TYPE_IP) {
+    errno=EINVAL;
+    return -1;
+  }
+  addr_ntos(dst, (struct sockaddr *)&sin);
+  sin.sin_port = htons(666);
 
-  return ip;
+  if (connect(i->fd, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+    return -1;
+
+  n=sizeof(sin);
+  if (getsockname(i->fd, (struct sockaddr *)&sin, &n)<0)
+    return -1;
+
+  addr_ston((struct sockaddr *)&sin, &entry->intf_addr);
+  if (intf_loop(i, _match_intf_src, entry)!=1)
+    return -1;
+
+  return 0;
 }
 
-char *random_str(int len, const char* dictionary)
-{
-  int dict_len, i;
-  char *result;
-
-  mt19937_seed(random_seed_u32());
-  result = (char*)malloc(len + 1);
-  if (!result)
-    return NULL;
-
-  dict_len = strlen(dictionary);
-  for (i = 0; i < len; i++)
-    result[i] = dictionary[mt19937_random() % dict_len];
-
-  result[len] = '\0';
-  return result;
-}
-
-u32 random_u32(void) { return random_num_u32(1, UINT_MAX); }
-u16 random_u16(void) { return (u16)random_num_u32(1, USHRT_MAX); }
-u8  random_u8(void) { return (u8)random_num_u32(1, UCHAR_MAX); }
-u16 random_check(void) { return ((u16)random_num_u32(1, 0xFFFF - 1)); }
-u16 random_srcport(void) { return((u16)random_num_u32(49151, USHRT_MAX)); }

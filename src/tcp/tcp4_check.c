@@ -24,13 +24,14 @@
 
 #include <ncsnet/tcp.h>
 
-void tcp4_check(u8 *frame, size_t frmlen, u32 src, u32 dst, bool badsum)
+void tcp4_check(u8 *frame, size_t frmlen, const ip4_t src,
+    const ip4_t dst, bool badsum)
 {
   tcph_t *tcp;
 
-  tcp = (tcph_t*)frame;
-  tcp->th_sum = 0;
-  tcp->th_sum = ip4_pseudocheck(src, dst, IPPROTO_TCP, frmlen, frame);
+  tcp=(tcph_t*)frame;
+  tcp->th_sum=0;
+  tcp->th_sum=ip4_pseudocheck(src, dst, IPPROTO_TCP, frmlen, frame);
 
   if (badsum)
     --tcp->th_sum;

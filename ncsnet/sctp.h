@@ -159,30 +159,28 @@ u8 *sctp_heartbeat_build(u8 type, u8 flags, u8 *info, size_t infolen, size_t *ch
 u8 *sctp_error_build(u8 flags, u8 code, u8 *info, size_t infolen, size_t *chunklen);
 u8 *sctp_shutdown_build(u8 flags, u32 tsnack, size_t *chunklen);
 
-#define sctp_shutdown_ack_build(flags, chunklen)		\
+#define sctp_shutdown_ack_build(flags, chunklen) \
   sctp_chunk_build(SCTP_SHUTDOWN_ACK, flags, NULL, 0, chunklen)
-#define sctp_shutdown_complete_build(flags, chunklen)			\
+#define sctp_shutdown_complete_build(flags, chunklen) \
   sctp_chunk_build(SCTP_SHUTDOWN_COMPLETE, flags, NULL, 0, chunklen)
 
-u8 *sctp4_build_pkt(u32 src, u32 dst, int ttl, u16 ipid, u8 tos, u16 off,
+u8 *sctp4_build_pkt(const ip4_t src, const ip4_t dst, int ttl, u16 ipid, u8 tos, u16 off,
                     u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport, u32 vtag,
                     u8 *chunks, size_t chunkslen, size_t *pktlen, bool adler32sum,
                     bool badsum);
 
-u8 *sctp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                    u32 vtag, u8 *chunks, size_t chunkslen, size_t *pktlen,
-                    bool adler32sum, bool badsum);
+u8 *sctp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 hoplimit,
+                    u16 srcport, u16 dstport, u32 vtag, u8 *chunks, size_t chunkslen,
+                    size_t *pktlen, bool adler32sum, bool badsum);
 
-int sctp4_send_pkt(struct ethtmp *eth, int fd, const u32 src, const u32 dst,
-                   int ttl, u16 ipid, u8 tos, u16 off, u8 *ipops, int ipoptlen,
-                   u16 srcport, u16 dstport, u8 *chunks, size_t chunkslen, u32 vtag,
-                   int mtu, bool adler32sum, bool badsum);
+ssize_t sctp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
+                       int ttl, u16 ipid, u8 tos, u16 off, u8 *ipops, int ipoptlen,
+                       u16 srcport, u16 dstport, u8 *chunks, size_t chunkslen, u32 vtag,
+                       int mtu, bool adler32sum, bool badsum);
 
-int sctp6_send_pkt(struct ethtmp *eth, int fd, const struct in6_addr *src,
-       const struct in6_addr *dst, u8 tc, u32 flowlabel, u8 hoplimit,
-       u16 srcport, u16 dstport, u32 vtag, u8 *chunks, size_t chunkslen,
-       bool adler32sum, bool badsum);
+ssize_t sctp6_send_pkt(struct ethtmp *eth, int fd, const ip6_t src, const ip6_t dst, u8 tc,
+                       u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport, u32 vtag,
+                       u8 *chunks, size_t chunkslen, bool adler32sum, bool badsum);
 
 __END_DECLS
 

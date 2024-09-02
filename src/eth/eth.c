@@ -239,48 +239,73 @@ ssize_t eth_send(eth_t *e, const void *buf, size_t len)
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
-  
-struct eth_handle { int fd; struct ifreq ifr; struct sockaddr_ll sll; };
 
-int eth_fd(eth_t *e) {
-  return e->fd;
-}
+struct eth_handle { int fd; struct ifreq ifr; struct sockaddr_ll sll; };
+int eth_fd(eth_t *e) { return e->fd; }
 
 eth_t *eth_open(const char *device)
 {
   eth_t *e;
-  
-  e = calloc(1, sizeof(*e));
+
+  if (!device)
+    return NULL;
+  e=calloc(1, sizeof(*e));
   if (!e)
     return e;
-
-  if ((e->fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0)
+  if ((e->fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL)))<0)
     return (eth_close(e));
 #ifdef SO_BROADCAST
   int n;
-  n = 1;
-  if (setsockopt(e->fd, SOL_SOCKET, SO_BROADCAST, &n, sizeof(n)) < 0)
+  n=1;
+  if (setsockopt(e->fd, SOL_SOCKET, SO_BROADCAST, &n, sizeof(n))<0)
     return (eth_close(e));
 #endif
   _strlcpy(e->ifr.ifr_name, device, sizeof(e->ifr.ifr_name));
-  if (ioctl(e->fd, SIOCGIFINDEX, &e->ifr) < 0)
+  if (ioctl(e->fd, SIOCGIFINDEX, &e->ifr)<0)
     return (eth_close(e));
 
-  e->sll.sll_family = AF_PACKET;
-  e->sll.sll_ifindex = e->ifr.ifr_ifindex;
+  memset(&e->sll, 0, sizeof(e->sll));
+  e->sll.sll_family=AF_PACKET;
+  e->sll.sll_ifindex=e->ifr.ifr_ifindex;
 
   return e;
 }
 
 ssize_t eth_send(eth_t *e, const void *buf, size_t len)
 {
-  struct eth_hdr *eth;
+  mach_t *eth;
 
-  eth = (struct eth_hdr*)buf;
-  e->sll.sll_protocol = eth->type;
+  if (!e||!buf||!len||
+    len<sizeof(mach_t))
+    return -1;
+
+  eth=(mach_t*)buf;
+  e->sll.sll_protocol=eth->type;
 
   return (sendto(e->fd, buf, len, 0,
-        (struct sockaddr*)&e->sll, sizeof(e->sll)));
+        (const struct sockaddr*)&e->sll, sizeof(e->sll)));
+}
+
+#include <ncsnet/addr.h>
+int eth_get(eth_t *e, mac_t *ea)
+{
+  addr_t ha;
+  if (ioctl(e->fd, SIOCGIFHWADDR, &e->ifr) < 0)
+    return -1;
+  if (addr_ston(&e->ifr.ifr_hwaddr, &ha) < 0)
+    return (-1);
+  memcpy(ea, &ha.addr_eth, sizeof(*ea));
+  return 0;
+}
+
+int eth_set(eth_t *e, const mac_t *ea)
+{
+  addr_t ha;
+  ha.type=ADDR_TYPE_ETH;
+  ha.bits=MAC_ADDR_BITS;
+  memcpy(&ha.addr_eth, ea, MAC_ADDR_LEN);
+  addr_ntos(&ha, &e->ifr.ifr_hwaddr);
+  return (ioctl(e->fd, SIOCSIFHWADDR, &e->ifr));
 }
 
 ssize_t eth_read(eth_t *e, u8 *buf, ssize_t len)

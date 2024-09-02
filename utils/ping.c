@@ -30,9 +30,12 @@
 #include "coreutils.h"
 #include "utils-config.h"
 
+#include "../ncsnet/ncsnet.h"
 #include "../ncsnet/log.h"
 #include "../ncsnet/utils.h"
+#include "../ncsnet/hex.h"
 #include "../ncsnet/udp.h"
+#include "../ncsnet/intf.h"
 #include "../ncsnet/tcp.h"
 #include "../ncsnet/ip.h"
 #include "../ncsnet/icmp.h"
@@ -82,7 +85,6 @@ static void tvrtt(void);
 
 struct sockaddr_storage
            *src, *dst;
-int         fd;
 size_t      ntransmitted=0;
 bool        rxc=0, txc=0, origc=0;
 size_t      rx, tx, orig;
@@ -94,7 +96,6 @@ size_t      tcpoptlen=0;
 int         mtu=0;
 bool        df=0,mf=0,evil=0;
 u32         mask;
-lr_t       *lr;
 int         tos=0;
 int         dstport=80 /* default dstport */ ,srcport;
 int         ident;
@@ -123,7 +124,6 @@ size_t      protoload, tsn;
 mac_t       macsrc, macdst;
 int         mactype=0;
 bool        eth=0;
-eth_t      *fdeth;
 
 static void pinger(void);
 static u8  *icmpmsgbuild(size_t *msglen);
@@ -132,6 +132,7 @@ static u8  *pingbuild(size_t *pinglen);
 
 const char *run;
 int         is=0;
+ncsnet_t    *n;
 long long   delay=to_ns(1000); /* classic one second delay */
 const char *node=NULL;
 char        ip4buf[16];
@@ -307,8 +308,8 @@ static void tvsub(struct timeval *out, struct timeval *in)
  */
 static void tvrtt(void)
 {
-  tvsub(&lr->tstamp_e, &lr->tstamp_s);
-  triptime=lr->tstamp_e.tv_sec*1000+(lr->tstamp_e.tv_usec/1000);
+  tvsub(&n->sock.recvfd.lr->tstamp_e, &n->sock.recvfd.lr->tstamp_s);
+  triptime=n->sock.recvfd.lr->tstamp_e.tv_sec*1000+(n->sock.recvfd.lr->tstamp_e.tv_usec/1000);
   tsum+=triptime;
   if (triptime<tmin)
     tmin=triptime;
@@ -367,7 +368,7 @@ static bool received_ping_sctp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   }
 
   /* Check if the packet is addressed to us. */
-  dst_t.sin_addr.s_addr=ip->src;
+  dst_t.sin_addr.s_addr=ip4t_u32(&ip->src);
   src_t=(struct sockaddr_in*)dst;
   if (dst_t.sin_addr.s_addr==src_t->sin_addr.s_addr) {
     snprintf(v0msg, sizeof(v0msg), "%ld bytes from SCTP %s:%hu%s: %svtag=%lu ttl=%hhu", frmlen, ip4buf, ntohs(sctp->srcport), currentdns, chunktypestr, (unsigned long)ntohl(sctp->vtag), ip->ttl);
@@ -388,7 +389,7 @@ static bool received_ping_udp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   udp=(udph_t*)(frame+(ETH_HDR_LEN+sizeof(ip4h_t)));
 
   /* Check if the packet is addressed to us. */
-  dst_t.sin_addr.s_addr=ip->src;
+  dst_t.sin_addr.s_addr=ip4t_u32(&ip->src);
   src_t=(struct sockaddr_in*)dst;
   if (dst_t.sin_addr.s_addr==src_t->sin_addr.s_addr) {
     snprintf(v0msg, sizeof(v0msg), "%ld bytes from UDP %s:%hu%s: ttl=%hhu", frmlen, ip4buf, ntohs(udp->srcport), currentdns, ip->ttl);
@@ -435,7 +436,7 @@ static bool received_ping_tcp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   *p++ = '\0';
 
   /* Check if the packet is addressed to us. */
-  dst_t.sin_addr.s_addr=ip->src;
+  dst_t.sin_addr.s_addr=ip4t_u32(&ip->src);
   src_t=(struct sockaddr_in*)dst;
   if (dst_t.sin_addr.s_addr==src_t->sin_addr.s_addr) {
     snprintf(v0msg, sizeof(v0msg), "%ld bytes from TCP %s:%hu%s: flags=%s ttl=%hhu", frmlen, ip4buf, ntohs(tcp->th_sport), currentdns, tflags, ip->ttl);
@@ -472,7 +473,7 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
   if (icmp->type==ICMP4_ECHOREPLY||icmp->type==ICMP4_INFOREPLY||icmp->type==ICMP4_TSTAMPREPLY||icmp->type==ICMP4_MASKREPLY) {
 
     /* Check if the packet is addressed to us. */
-    dst_t.sin_addr.s_addr=ip->src;
+    dst_t.sin_addr.s_addr=ip4t_u32(&ip->src);
     src_t=(struct sockaddr_in*)dst;
     if (dst_t.sin_addr.s_addr==src_t->sin_addr.s_addr) {
 
@@ -522,9 +523,9 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
      * Does our IP4 address match the IP4 address of the sender inside the
      * IP4 header that is in the UNREACH message.
      */
-    dst_t.sin_addr.s_addr=ip2->src;
+    dst_t.sin_addr.s_addr=ip4t_u32(&ip2->src);
     src_t=(struct sockaddr_in*)src;
-    iptmp.s_addr=ip->src;
+    iptmp.s_addr=ip4t_u32(&ip->src);
     if (dst_t.sin_addr.s_addr!=src_t->sin_addr.s_addr)
       return false;
 
@@ -780,10 +781,10 @@ static void parsearg(int argc, char **argv)
     case 9: df=1; break;
     case 10: ttl=atoi(optarg); ttlc=1; break;
     case 11: mtu=atoi(optarg); break;
-    case 12: tcpopt=hexbin(optarg, &tcpoptlen); if (!tcpopt) errx(0,"err: invalid hex string specification"); break;
-    case 13: mac_aton(&macsrc, optarg); break;
+    case 12: tcpopt=hex_ahtoh(optarg, &tcpoptlen); if (!tcpopt) errx(0,"err: invalid hex string specification"); break;
+    case 13: mact_pton(optarg, &macsrc); break;
     case 14: noreply=1; if (vvv>=0) vvv=1; break;
-    case 15: mac_aton(&macdst, optarg); break;
+    case 15: mact_pton(optarg, &macdst); break;
     case 16: maxwait=delayconv(optarg); break;
     case 17: tcp=1; break;
     case 18: dstport=atoi(optarg); break;
@@ -817,7 +818,7 @@ static void parsearg(int argc, char **argv)
     case 40: chunktype=atoi(optarg); break;
     case 41: vtag=atoll(optarg); break;
     case 42: adler32cksum=1; break;
-    case 43: data=(char*)hexbin(optarg, &datalen); if (!data) errx(0,"err: invalid hex string specification"); break;
+    case 43: data=(char*)hex_ahtoh(optarg, &datalen); if (!data) errx(0,"err: invalid hex string specification"); break;
     case 44: mactype=atoi(optarg); break;
     case 45: itag=atoll(optarg); itagc=1; break;
     case 46: arwnd=atoll(optarg); arwndc=1; break;
@@ -912,10 +913,14 @@ static u8 *pingbuild(size_t *pinglen)
 {
   u8 *ping=NULL, *preping=NULL, *msg=NULL;
   struct sockaddr_in *dst4=NULL, *src4=NULL;
+  ip4_t src_, dst_;
   u16 off=0;
 
   dst4=(struct sockaddr_in*)dst;
   src4=(struct sockaddr_in*)src;
+
+  u32_ip4t(src4->sin_addr.s_addr, &src_);
+  u32_ip4t(dst4->sin_addr.s_addr, &dst_);
 
   if (!srcportc)
     srcport=random_srcport();
@@ -923,7 +928,7 @@ static u8 *pingbuild(size_t *pinglen)
   switch (mode) {
   case MODE_UDP:
     preping=udp_build(srcport, dstport, (u8*)data, datalen, pinglen);
-    udp4_check(preping, *pinglen, src4->sin_addr.s_addr, dst4->sin_addr.s_addr, badsum);
+    udp4_check(preping, *pinglen, src_, dst_, badsum);
     break;
   case MODE_TCP:
     if (!seqc)
@@ -931,7 +936,7 @@ static u8 *pingbuild(size_t *pinglen)
     preping=tcp_build(srcport, dstport, seq, ack, 0,
       flags, winlen, urp, tcpopt, tcpoptlen, (u8*)data,
       datalen, pinglen);
-    tcp4_check(preping, *pinglen, src4->sin_addr.s_addr, dst4->sin_addr.s_addr, badsum);
+    tcp4_check(preping, *pinglen, src_, dst_, badsum);
     break;
   case MODE_ICMP:
     msg=icmpmsgbuild(pinglen);
@@ -957,13 +962,13 @@ static u8 *pingbuild(size_t *pinglen)
   if (evil)
     off|=IP4_RF;
 
-  ping=ip4_build(src4->sin_addr.s_addr, dst4->sin_addr.s_addr, mode, ttl,
-    ident, tos, off, ipopt, ipoptslen, preping, *pinglen,
+  ping=ip4_build(src_, dst_, mode, ttl, ident, tos, off,
+      ipopt, ipoptslen, preping, *pinglen,
     pinglen);
   free(preping);
 
   if (eth)
-    return (eth_build(macsrc, macdst, mactype, ping, *pinglen, pinglen));
+    ping=eth_build(macsrc, macdst, mactype, ping, *pinglen, pinglen);
 
   return ping;
 }
@@ -986,10 +991,7 @@ static void pinger(void)
   if (!ping)
     return;
 
-  if (eth)
-    eth_send(fdeth, ping, pinglen);
-  else
-    ip_send(NULL, fd, dst, mtu, ping, pinglen);
+  ncssend(n, ping, pinglen);
   ntransmitted++;
 
   v123sendmgs=frminfo(ping, pinglen, LOW_DETAIL, flags);
@@ -1104,13 +1106,8 @@ static noreturn void finish(int sig)
     free(src);
   if (dst)
     free(dst);
-  if (eth)
-    eth_close(fdeth);
-  else
-    if (fd>0)
-      close(fd);
-  if (lr)
-    lr_close(lr);
+  if (n)
+    ncsclose(n);
   if (nreceived)
     exit(0);
   else
@@ -1188,9 +1185,9 @@ static void ping(const char *target)
 
   for (;;) {
     lasttarget=target;
-    packet=(u8*)calloc(65535, sizeof(u8));
     pinger();
-    cc=lr_live(lr, &packet, 65535);
+    cc=ncsrecv(n, received_ping_callback, 777);
+    packet=ncsrbuf(n, 777, ncsrbuf_len(n, 777));
     if (cc<=0) {
       free(packet);
       prefinish(target);
@@ -1241,7 +1238,6 @@ static void targetsproc(void)
 int main(int argc, char **argv)
 {
   struct sockaddr_in *src4=NULL;
-  const char *dev=NULL;
   char *strsrc=NULL;
   size_t index=0;
 
@@ -1269,13 +1265,9 @@ int main(int argc, char **argv)
   src4->sin_family=AF_INET;
   src4->sin_port=0;
 
-  dev=getinterface();
-  lr=lr_open(maxwait);
-  lr_callback(lr, received_ping_callback);
-  if (eth)
-    fdeth=eth_open(dev);
-  else
-    fd=socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+  n=ncsopen();
+  ncsopts(n, NCSOPT_RBUFLEN|NCSOPT_RTIMEOUT|NCSOPT_PROTO,
+    65535, maxwait, ((eth)?255:IPPROTO_IP));
   targetsproc();
 
   for (;index<num;index++) {

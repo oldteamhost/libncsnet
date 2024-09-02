@@ -62,8 +62,7 @@ struct url_query     { char *query; char *value; struct url_query *nxt; };
 struct url_path      { char *path; struct url_path *nxt; };
 struct url_authority { char *host; char *userinfo; char *port; };
 
-typedef struct url_addr
-{
+typedef struct url_addr {
   char*                 scheme;
   struct url_authority *authority;
   struct url_path      *path;
@@ -88,23 +87,23 @@ void    url_print(url_t *url);
 void    url_field(url_t *url, const char *txt, int field);
 
 url_t  *url_build(const char *scheme, const char *paths,
-		  const char *host, const char *userinfo,
-		  const char *port, const char *querys,
-		  int type);
+                  const char *host, const char *userinfo,
+                  const char *port, const char *querys,
+                  int type);
 
-#define url_scheme(url, scheme)			\
+#define url_scheme(url, scheme) \
   url_field((url), (scheme), URL_SCHEME)
-#define url_query(url, query)			\
+#define url_query(url, query) \
   url_field((url), (query), URL_QUERY)
-#define url_path(url, path)			\
+#define url_path(url, path) \
   url_field((url), (path), URL_PATH)
-#define url_host(url, host)			\
+#define url_host(url, host) \
   url_field((url), (host), URL_AUTHORITY_HOST)
-#define url_port(url, port)			\
+#define url_port(url, port) \
   url_field((url), (port), URL_AUTHORITY_PORT)
-#define url_userinfo(url, userinfo)			\
+#define url_userinfo(url, userinfo) \
   url_field((url), (userinfo), URL_AUTHORITY_USERINFO)
-#define url_fragment(url, fragment)		\
+#define url_fragment(url, fragment) \
   url_field((url), (fragment), URL_FRAGMENT)
 
 __END_DECLS

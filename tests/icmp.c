@@ -3,39 +3,13 @@
 #include "../ncsnet/icmp.h"
 #include "../ncsnet/eth.h"
 #include "../ncsnet/mac.h"
+#include "../ncsnet/intf.h"
 #include "../ncsnet/udplite.h"
 #include "../ncsnet/utils.h"
 #include "../ncsnet/eth.h"
 #include "../ncsnet/linuxread.h"
 #include "../ncsnet/trace.h"
-struct sockaddr_in src;
-
-#include <linux/if_ether.h>
-#include <linux/filter.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <arpa/inet.h>
-
-bool callback(u8 *frame, size_t frmlen)
-{
-  struct sockaddr_in dst;
-  ip4h_t *ip;
-  
-  ip=(ip4h_t*)(frame + ETH_HDR_LEN);
-  dst.sin_addr.s_addr=ip->src;
-  if (dst.sin_addr.s_addr==src.sin_addr.s_addr)
-    return true;
-  return false;
-}
-
-static void tvsub(struct timeval *out, struct timeval *in)
-{
-  if ((out->tv_usec-=in->tv_usec)<0) {
-    out->tv_sec--;
-    out->tv_usec+=1000000;
-  }
-  out->tv_sec-=in->tv_sec;
-}
+#include "../ncsnet/ncsnet.h"
 
 int main(void)
 {
@@ -78,7 +52,6 @@ int main(void)
     // closing the connected socket
     close(client_fd);
     return 0;
-*/
 
 
     u8 *opts, *sack, *tstamp, *nop, *wscale;
@@ -97,7 +70,7 @@ int main(void)
 
     opts=frmbuild_hex(&optslen, NULL, "020405b40402080a04e1700d0000000001030307");
     struct ethtmp t;
-    const char *tmpdev=getinterface();
+    const char *tmpdev=intf_getupintf();
     sprintf(t.devname, "%s",tmpdev);
     mac_aton(&t.dst, "04:bf:6d:0d:3a:50");
     mac_aton(&t.src, "40:b0:76:47:8f:9a");
@@ -167,41 +140,72 @@ int main(void)
   eth_close(eth);
 
   return 0;
+*/
 
-  int fd; 
+  //int fd;
+  int id_rb=1;
+  ncsnet_t *n;
+  n=ncsopen();
+
+try:
+  u8 *msg, *opt, *preopt;
+  size_t msglen;
+  size_t optlen, preoptlen;
   size_t reslen=0;
   u8 *pkt=NULL;
-  lr_t *lr;
 
-  fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-  lr = lr_open(to_ns(1000));
-  if (!lr)
-    puts("Not support???");
+  ncsopts(n, NCSOPT_RBUFLEN|NCSOPT_RTIMEOUT, 65535, to_ns(2000));
+  ncsopts(n, NCSOPT_RINFO|NCSOPT_SINFO, 3, 3);
 
-  memset(&src, 0, sizeof(src));
-  src.sin_family = AF_INET;
-  src.sin_addr.s_addr = ncs_inet_addr("173.194.222.138");
+  ip6_t iii6, src6;
+  ip6t_pton("2001:4860:4860::8888", &iii6);
+  ip6t_pton("fe80::a25c:de0b:cf51:4b8", &src6);
 
-  //  msg=icmp4_msg_info_build(random_u16(), 100, &msglen);
-  // msg=icmp4_msg_tstamp_build(random_u16(), 1, 100, 30, 344, &msglen);
-  pkt=icmp4_build_pkt(ncs_inet_addr("192.168.1.33"), src.sin_addr.s_addr, 121,
-		      12342, 0, 0, NULL, 0, ICMP4_ECHO, 0, msg, msglen, &reslen, false);
-  //  printf("%s\n", frminfo(pkt, reslen, 3));
-  ip4_send(NULL, fd, &src, 0, pkt, reslen);
+  preopt=icmp6_opt_mtu_build(64, &preoptlen);
+  opt=icmp6_opt_build(ICMP6_OPTION_MTU, preopt, preoptlen, &optlen);
+  free(preopt);
+  msg=icmp6_msg_ndsol_build(iii6, opt, optlen, &msglen);
+  free(opt);
 
-  u8 *res = (u8*)calloc(65535, sizeof(u8));
-  lr_callback(lr, callback);
-  size_t len;
-  len = lr_live(lr, &res, 65535);
-  printf("%s\n", frminfo(res, len, 3,1));
-  
-  tvsub(&lr->tstamp_e, &lr->tstamp_s);
-  size_t triptime=lr->tstamp_e.tv_sec*1000+(lr->tstamp_e.tv_usec/1000);
-  printf("%ld\n", triptime);
-  
-  lr_close(lr);
-  free(res);
-  
+  pkt=icmp_build(ICMP6_NEIGHBOR_SOLICITATION, 0, msg, msglen, &reslen);
+  icmp6_check(pkt, reslen, src6, iii6, false);
+
+  ncsopts(n, NCSOPT_PROTO, PR_ICMPV6);
+  ncssend(n, pkt, reslen, ncssend_getnip(iii6));
+
+  ncsbind(n, iii6);
+
+  /*
+  ip4_t iii;
+  ip4t_pton("77.88.55.88", &iii);
+  ncsopts(n, NCSOPT_PROTO, PR_ICMP);
+  msg=icmp4_msg_echo_build(random_u16(), id_rb, NULL, &msglen);
+  pkt=icmp_build(ICMP4_ECHO, 0, msg, msglen, &reslen);
+  icmp4_check(pkt, reslen, false);
+  ncsbind(n, iii);
+  ncssend(n, pkt, reslen, ncssend_getnip(iii));
+  */
+
+  ncsrecv(n, NULL, id_rb);
+
+  free(msg);
+  free(pkt);
+
+  id_rb++;
+  if (id_rb==4) {
+    printf("rtt: %lld\n", ncsrbuf_rtt(n, 1)/1000000LL);
+    printf("rtt: %lld\n", ncsrbuf_rtt(n, 2)/1000000LL);
+    printf("rtt: %lld\n", ncsrbuf_rtt(n, 3)/1000000LL);
+    ncsclose(n);
+    return 0;
+  }
+  goto try;
+
+/*
+  pkt=icmp4_build_pkt(ncs_inet_addr("192.168.1.33"), ip4t_u32(&iii), 121,
+      12342, 0, 0, NULL, 0, ICMP4_ECHO, 0, msg, msglen, &reslen, false);
+      */
+
   /*
   msg = icmp4_msg_info_build(43, 1, &msglen);
   icmp4_send_pkt(NULL, fd, ncs_inet_addr("192.168.1.34"),
@@ -227,8 +231,6 @@ int main(void)
 		 0, false, NULL, 0, ICMP4_MASK, 0, msg,
 		 msglen, 0, false);
   */
-  free(msg);
-  close(fd);
   
   return 0;
 }

@@ -35,6 +35,7 @@ __BEGIN_DECLS
 
 void cmwc_seed(u64 seed);
 u64  cmwc_random(void);
+size_t __cmwc_random_num_call(size_t min, size_t max);
 
 __END_DECLS
 

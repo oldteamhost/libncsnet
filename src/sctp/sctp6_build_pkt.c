@@ -24,20 +24,19 @@
 
 #include <ncsnet/sctp.h>
 
-u8 *sctp6_build_pkt(const struct in6_addr *src, const struct in6_addr *dst,
-                    u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                    u32 vtag, u8 *chunks, size_t chunkslen, size_t *pktlen,
-		    bool adler32sum, bool badsum)
+u8 *sctp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 hoplimit,
+                    u16 srcport, u16 dstport, u32 vtag, u8 *chunks, size_t chunkslen,
+                    size_t *pktlen, bool adler32sum, bool badsum)
 {
   size_t sctplen;
   sctph_t *sctp;
   u8 *pkt;
-  
-  sctp = (sctph_t*)sctp_build(srcport, dstport, vtag, chunks, chunkslen, &sctplen);
+
+  sctp=(sctph_t*)sctp_build(srcport, dstport, vtag, chunks, chunkslen, &sctplen);
   if (!sctp)
     return NULL;
   sctp_check((u8*)sctp, sctplen, adler32sum, badsum);
-  pkt = ip6_build(src, dst, tc, flowlabel, IPPROTO_SCTP,
+  pkt=ip6_build(src, dst, tc, flowlabel, IPPROTO_SCTP,
       hoplimit, (u8*)sctp, sctplen, pktlen);
 
   free(sctp);

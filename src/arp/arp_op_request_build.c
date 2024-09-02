@@ -30,7 +30,7 @@ u8 *arp_op_request_build(u8 hln, u8 pln, u8 *sha, u8 *spa,
   u8 *op;
 
   *oplen=((hln*2)+(pln*2));
-  op=calloc(0, *oplen);
+  op=calloc(1, *oplen); /* not fucking 0, just 1. (-31 allocated error) */
   if (!op)
     return NULL;
 

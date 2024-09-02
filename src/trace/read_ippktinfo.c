@@ -22,7 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/trace.h>
+//#include <ncsnet/trace.h>
+#include "../../ncsnet/trace.h"
 
 const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
 {
@@ -113,20 +114,19 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
     sin6 = (struct sockaddr_in6 *) &hdr.dst;
     ncs_inet_ntop(AF_INET6, (void *)sin6->sin6_addr.s6_addr, dsthost, sizeof(dsthost));
 
-    u32 flow = ntohl(ip6->IP6_FLOW);
-    u32 ip6_fl = flow & 0x000fffff;
-    u32 ip6_tc = (flow & 0x0ff00000) >> 20;
-    
+    u32 ip6_fl=(ip6->flags[1]&0x0F)<<16|(ip6->flags[2]<<8)|ip6->flags[3];
+    u32 ip6_tc=(ip6->flags[0]&0x0F)<<4|(ip6->flags[1]>>4);
+
     if (detail == LOW_DETAIL)
       snprintf(ipinfo, sizeof(ipinfo), "hopl=%d flow=%x payloadlen=%hu",
-	       ip6->IP6_HLIM, ip6_fl, (u16)ntohs(ip6->IP6_PKTLEN));
+	       ip6->hoplimit, ip6_fl, (u16)ntohs(ip6->totlen));
     else if (detail == MEDIUM_DETAIL)
       snprintf(ipinfo, sizeof(ipinfo), "hopl=%d tclass=%d flow=%x payloadlen=%hu",
-	       ip6->IP6_HLIM, ip6_tc, ip6_fl, (u16)ntohs(ip6->IP6_PKTLEN));
+	       ip6->hoplimit, ip6_tc, ip6_fl, (u16)ntohs(ip6->totlen));
     else if (detail==HIGH_DETAIL)
       snprintf(ipinfo, sizeof(ipinfo), "ver=6, tclass=%x flow=%x payloadlen=%hu nh=%s hopl=%d ",
-	       ip6_tc, ip6_fl, (u16)ntohs(ip6->IP6_PKTLEN),
-	       read_util_nexthdrtoa(ip6->IP6_NXT, 1), ip6->IP6_HLIM);
+	       ip6_tc, ip6_fl, (u16)ntohs(ip6->totlen),
+	       read_util_nexthdrtoa(ip6->nxt, 1), ip6->hoplimit);
   }
 
   if (hdr.proto == IPPROTO_TCP) {
@@ -466,7 +466,7 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
           }
         }
 	struct in_addr addr;
-	addr.s_addr = htonl(ip2->dst);
+	addr.s_addr = htonl(ip4t_u32(&ip2->dst));
         ip2dst = ncs_inet_ntoa(addr);
         switch (icmppkt->code) {
 	  case 0:

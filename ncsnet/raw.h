@@ -39,8 +39,9 @@
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"
 
-#define FMTBUF_MAXLEN 65535
-#define ERRBUF_MAXLEN 4096
+#define FMTBUF_MAXLEN  65535
+#define ERRBUF_MAXLEN  4096
+#define FMTTYPE_MAXLEN 1024
 
 __BEGIN_DECLS
 
@@ -77,8 +78,6 @@ u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ..
  * specified in frame, its length in frmlen. The old frame is
  * specified in oldframe, its length in oldfrmlen, where, by the
  * way, the new length will be written after the addition.
- *
- * If frame = NULL, it returns oldframe.
  */
 u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, char *errbuf);
 
@@ -89,7 +88,7 @@ typedef struct __fmtopt {
 # define TYPE_U64  3
 # define TYPE_STR  4
   int type;
-  const char *val;
+  char *val;
 } fmtopt;
 
 u8    *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap);

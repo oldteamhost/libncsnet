@@ -35,6 +35,8 @@
 #include "utils-config.h"
 
 #include "../ncsnet/log.h"
+#include "../ncsnet/hex.h"
+#include "../ncsnet/intf.h"
 #include "../ncsnet/utils.h"
 #include "../ncsnet/trace.h"
 
@@ -143,7 +145,7 @@ static void gethexlinelist(size_t line)
       fclose(f);
       if (charline[linelen-1]!='\0')
         charline[linelen-1]='\0';
-      hexpkt=hexbin(charline, &hexpktlen);
+      hexpkt=hex_ahtoh(charline, &hexpktlen);
       if (see)
         printf("%s\n", frminfo(hexpkt, hexpktlen, 3, 0));
       if (hexpktlen > MAXFRAMELEN)
@@ -174,7 +176,7 @@ static void parseargs(int argc, char **argv)
     case 3: threadsnum=atoll(optarg); break;
     case 4:
       hexc=1;
-      hexpkt=hexbin(optarg, &hexpktlen);
+      hexpkt=hex_ahtoh(optarg, &hexpktlen);
       if (hexpktlen>MAXFRAMELEN)
         errx(2, "err: max frame len is %lld, your len is \"%lld\"", MAXFRAMELEN, hexpktlen);
       break;
@@ -201,7 +203,7 @@ static void openfds(void)
 {
   const char *dev=NULL;
   size_t i=0;
-  dev=getinterface();
+  dev=intf_getupintf();
   memset(&fds, 0, MAXFDS+1);
   for (;fdnum;fdnum--)
     fds[++i]=eth_open(dev);

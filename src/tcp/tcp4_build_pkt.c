@@ -24,11 +24,11 @@
 
 #include <ncsnet/tcp.h>
 
-u8 *tcp4_build_pkt(u32 src, u32 dst, u8 ttl, u16 id, u8 tos, u16 off,
+u8 *tcp4_build_pkt(const ip4_t src, const ip4_t dst, u8 ttl, u16 id, u8 tos, u16 off,
                    const u8 *ipopt, size_t ipoptlen, u16 srcport, u16 dstport,
                    u32 seq, u32 ack, u8 reserved, u8 flags, u16 win, u16 urp,
-                   const u8 *opt, size_t optlen, u8 *frame, size_t frmlen, size_t *pktlen,
-                   bool badsum)
+                   const u8 *opt, size_t optlen, u8 *frame, size_t frmlen,
+                   size_t *pktlen, bool badsum)
 {
   size_t tcplen;
   tcph_t *tcp;

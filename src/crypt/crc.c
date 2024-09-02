@@ -126,6 +126,7 @@ u16 crc16(const u8 *buf, size_t len, const u16 *customtab)
   size_t a;
   u16 res;
   
+  
   if (!crc_tab16_init)
     init_crc16_tab(customtab);
   

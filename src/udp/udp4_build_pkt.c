@@ -24,7 +24,7 @@
 
 #include <ncsnet/udp.h>
 
-u8 *udp4_build_pkt(const u32 src, const u32 dst, int ttl, u16 ipid, u8 tos,
+u8 *udp4_build_pkt(const ip4_t src, const ip4_t dst, int ttl, u16 ipid, u8 tos,
                    u16 off, u8 *ipopt, int ipoptlen, u16 srcport, u16 dstport,
                    u8 *frame, size_t frmlen, size_t *pktlen, bool badsum)
 {

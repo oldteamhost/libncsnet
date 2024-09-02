@@ -24,14 +24,14 @@
 
 #include <ncsnet/tcp.h>
 
-void tcp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
-		const struct in6_addr *dst, bool badsum)
+void tcp6_check(u8 *frame, size_t frmlen, const ip6_t src,
+    const ip6_t dst, bool badsum)
 {
   tcph_t *tcp;
 
-  tcp = (tcph_t*)frame;
-  tcp->th_sum = 0;
-  tcp->th_sum = ip6_pseudocheck(src, dst, IPPROTO_TCP, frmlen, frame);
+  tcp=(tcph_t*)frame;
+  tcp->th_sum=0;
+  tcp->th_sum=ip6_pseudocheck(src, dst, IPPROTO_TCP, frmlen, frame);
 
   if (badsum)
     --tcp->th_sum;

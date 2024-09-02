@@ -121,7 +121,7 @@ bool read_util_validate_pkt(const u8 *ipc, unsigned *len)
     if (data == NULL)
       return false;
     
-    iplen = ntohs(ip6->IP6_PKTLEN);
+    iplen = ntohs(ip6->totlen);
     if (datalen > iplen)
       *len -= datalen - iplen;
   }

@@ -24,14 +24,14 @@
 
 #include <ncsnet/icmp.h>
 
-void icmp6_check(u8 *frame, size_t frmlen, const struct in6_addr *src,
-		 const struct in6_addr *dst, bool badsum)
+void icmp6_check(u8 *frame, size_t frmlen, const ip6_t src,
+    const ip6_t dst, bool badsum)
 {
   icmp6h_t *icmp;
 
-  icmp = (icmp6h_t*)frame;
-  icmp->check = 0;
-  icmp->check = ip6_pseudocheck(src, dst, IPPROTO_ICMPV6, (u32)frmlen, icmp);
+  icmp=(icmp6h_t*)frame;
+  icmp->check=0;
+  icmp->check=ip6_pseudocheck(src, dst, IPPROTO_ICMPV6, (u32)frmlen, icmp);
 
   if (badsum)
     --icmp->check;

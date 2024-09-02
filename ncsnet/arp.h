@@ -124,16 +124,23 @@ struct arp_hdr
 
 typedef struct arp_hdr arph_t;
 
-typedef struct arp_op_hdr_request {
+struct arp_ethip4 {
+  u8 data[ARP_ETHIP_LEN];
+};
+
+typedef struct arp_op_hdr_request{
   u8 sha[sizeof(u8)];
   u8 spa[sizeof(u8)];
   u8 tha[sizeof(u8)];
   u8 tpa[sizeof(u8)];
 } arp_op_request;
 
-struct arp_ethip4 {
-  u8 data[ARP_ETHIP_LEN];
-};
+typedef struct arp_op_hdr_request_ethip {
+  mac_t sha;
+  ip4_t spa;
+  mac_t tha;
+  ip4_t tpa;
+} arp_op_request_ethip;
 
 __BEGIN_DECLS
 
