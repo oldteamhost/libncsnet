@@ -38,7 +38,7 @@ char *ip6_util_strsrc(void)
     sa6 = (struct sockaddr_in6*)ifa->ifa_addr;
     if (!(ifa->ifa_flags & IFF_LOOPBACK)) {
       localipv6 = (char*)malloc(INET6_ADDRSTRLEN);
-      ncs_inet_ntop(AF_INET6, &(sa6->sin6_addr), localipv6, INET6_ADDRSTRLEN);
+      inet_ntop(AF_INET6, &(sa6->sin6_addr), localipv6, INET6_ADDRSTRLEN);
       break;
     }
   }

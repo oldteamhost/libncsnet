@@ -34,6 +34,7 @@
 #include <stdbool.h>
 
 #include "eth.h"
+#include "ip.h"
 #include "utils.h"
 #include "raw.h"
 #include "mt19937.h"

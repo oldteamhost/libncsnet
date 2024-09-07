@@ -42,7 +42,7 @@ int ip4_util_strdst(const char* dns, char* ipbuf, size_t buflen)
     return -1;
   }
   addr = (struct sockaddr_in*)addrinfo_result->ai_addr;
-  ip = ncs_inet_ntoa(addr->sin_addr);
+  ip = inet_ntoa(addr->sin_addr);
   strncpy(ipbuf, ip, buflen);
   ipbuf[buflen - 1] = '\0';
 

@@ -119,7 +119,7 @@ char *read_util_fmtipopt(const u8 *ipopt, int ipoptlen)
 	option_pt -= i;
 	CHECK(pt+3);
 	tptr = &ipopt[pt]; pt+=4;
-	if (ncs_inet_ntop(AF_INET, (char *) tptr, ipstring, sizeof(ipstring)) == NULL)
+	if (inet_ntop(AF_INET, (char *) tptr, ipstring, sizeof(ipstring)) == NULL)
 	  return NULL;
 	STRAPP("%c%s",(pt-3-option_sta)==option_pt?'#':' ', ipstring);
 	if (pt == option_end)
@@ -151,7 +151,7 @@ char *read_util_fmtipopt(const u8 *ipopt, int ipoptlen)
 	if (option_fl!=0){
 	  CHECK(pt+3);
 	  tptr = &ipopt[pt]; pt+=4;
-	  if (ncs_inet_ntop(AF_INET, (char *) tptr, ipstring, sizeof(ipstring)) == NULL){
+	  if (inet_ntop(AF_INET, (char *) tptr, ipstring, sizeof(ipstring)) == NULL){
 	    return NULL;
 	  }
 	  STRAPP("%s@", ipstring);

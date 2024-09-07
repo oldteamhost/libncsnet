@@ -230,9 +230,12 @@ static void icmp4msg(void)
     msg=icmp4_msg_tstamp_build((u16)cmwc_random(), (u16)cmwc_random(), (u32)cmwc_random(), (u32)cmwc_random(),
       (u32)cmwc_random(), &msglen);
     break;
-  case ICMP4_MASK:
-    msg=icmp4_msg_mask_build((u16)cmwc_random(), (u16)cmwc_random(), ncs_inet_addr(random_ip4()), &msglen);
+  case ICMP4_MASK: {
+    ip4_t tmp;
+    ip4t_pton(random_ip4(), &tmp);
+    msg=icmp4_msg_mask_build((u16)cmwc_random(), (u16)cmwc_random(), tmp, &msglen);
     break;
+  }
   }
 }
 
@@ -285,6 +288,9 @@ static void icmp4udpt(void)
     }
     case ICMP4_MASK: {
       icmp4_msg_mask *mask=(icmp4_msg_mask*)(pkt+(sizeof(icmp4h_t)+sizeof(ip4h_t)));
+      ip4_t tmp;
+
+      ip4t_pton(random_ip4(), &tmp);
       mask->id=htons((u16)cmwc_random());
       mask->seq=htons((u16)cmwc_random());
 
@@ -292,7 +298,7 @@ static void icmp4udpt(void)
        * Since inet_addr itself already translates the IP address
        * as after htonl, specifying via htonl is not required.
        */
-      mask->mask=ncs_inet_addr(random_ip4());
+      mask->mask=tmp;
       break;
     }
   }

@@ -38,7 +38,7 @@ void dns_util_getip6(const char* dst, int srcport, char* dnsbuf, size_t buflen)
   timeout.tv_sec = 600;
   timeout.tv_usec = 0;
 
-  if (ncs_inet_pton(AF_INET6, dst, &addr) != 1)
+  if (inet_pton(AF_INET6, dst, &addr) != 1)
     goto fail;
 
   sa.sin6_addr = addr;

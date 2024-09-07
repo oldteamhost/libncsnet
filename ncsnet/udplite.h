@@ -28,6 +28,7 @@
 #include <stdbool.h>
 
 #include "raw.h"
+#include "ip.h"
 
 #include "../ncsnet-config.h"
 #include "sys/types.h"

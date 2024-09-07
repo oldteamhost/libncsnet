@@ -24,16 +24,6 @@
 
 //#include <ncsnet/ncsnet.h>
 #include "../../ncsnet/ncsnet.h"
-#include "../../ncsnet/route.h"
-#include "../../ncsnet/trace.h"
-#include "../../ncsnet/addr.h"
-#include "../../ncsnet/arp.h"
-#include "../../ncsnet/arp.h"
-#include "../../ncsnet/linuxread.h"
-#include <alloca.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <sys/socket.h>
 
 static int __ip_v(void *frame, size_t frmlen, bool eth)
 {
@@ -211,6 +201,7 @@ static u8 *__generate_802_3_ip(ncsnet_t *n, u8 *frame, size_t frmlen, size_t *ou
     ip6h_t *ip6hdr;
     ip6hdr=(ip6h_t*)frame;
     ip6hdr->hoplimit=0;
+
     /* fix warning on getmac */
     n->sock.sendfd.dlt_802_3.mactype=ETH_TYPE_IPV6;
   }
@@ -229,11 +220,9 @@ static u8 *__generate_ip(ncsnet_t *n, u8 *frame, size_t frmlen, size_t *outlen, 
   if (nip->af==4)
     ip=ip4_build(n->sock.sendfd.src.srcip4, nip->dst.dst4, n->sock.proto,
       random_num_u32(54, 200), random_u16(), 0, 0, NULL, 0, frame, frmlen, outlen);
-  else {
-    ip6t_pton("fe80::a25c:de0b:cf51:4b8", &n->sock.sendfd.src.srcip6);
+  else
     ip=ip6_build(n->sock.sendfd.src.srcip6, nip->dst.dst6, 0, 1, n->sock.proto,
         random_num_u32(54, 200), frame, frmlen, outlen);
-  }
 
   res=__generate_802_3_ip(n, ip, *outlen, outlen);
 
@@ -265,27 +254,21 @@ ssize_t __ncssend(ncsnet_t *n, void *frame, size_t frmlen, void *arg)
   if (!n)
     n=ncsopen();
 
-  /*
-   * RAW send
-   */
+  /* RAW send */
   if (n->sock.proto==PR_RAW) {
     sndfrm=(u8*)frame;
     sndfrmlen=frmlen;
     goto send;
   }
 
-  /*
-   * For send IP (auto datalink)
-   */
+  /* For send IP (auto datalink) */
   if (n->sock.proto==PR_IP) {
     sndfrm=__generate_802_3_ip(n, (u8*)frame, frmlen, &sndfrmlen);
     edited=1;
     goto send;
   }
 
-  /*
-   * For send IPPROTO-S (auto datalink and ip header)
-   */
+  /* For send IPPROTO-S (auto datalink and ip header) */
   if (arg) {
     nip=(ncsaddr_ip*)arg;
     sndfrm=__generate_ip(n, frame, frmlen, &sndfrmlen, nip);

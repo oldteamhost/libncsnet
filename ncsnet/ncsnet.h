@@ -33,6 +33,7 @@
 
 #include "eth.h"
 #include "utils.h"
+#include "trace.h"
 #include "addr.h"
 #include "route.h"
 #include "random.h"

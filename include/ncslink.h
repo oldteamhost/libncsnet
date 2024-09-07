@@ -25,7 +25,6 @@
 #ifndef NCSLINKHDR
 #define NCSLINKHDR
 #include "ncsbase.h"
-#include "../ncsnet/inet.h" // XXX
 #include "../ncsnet/eth.h"
 #include "../ncsnet/arp.h"
 #include "../ncsnet/route.h"

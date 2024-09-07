@@ -31,7 +31,6 @@
 #include <unistd.h>
 
 #include "socket.h"
-#include "inet.h"
   
 #include "sys/types.h"
 #include "sys/nethdrs.h"

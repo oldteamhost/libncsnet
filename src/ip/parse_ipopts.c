@@ -102,7 +102,7 @@ int parse_ipopts(const char *txt, u8 *data, int datalen, int* firsthopoff,
         if(errstr) snprintf(errstr, errstrlen, "ipopts, buffer too small. Or input data too big :)");
         return -1;
       }
-      i = ncs_inet_pton(AF_INET, buf, d);
+      i = inet_pton(AF_INET, buf, d);
       if(i < 1) {
         if(errstr) snprintf(errstr, errstrlen, "ipopts, not a valid ipv4 address '%s'",buf);
         return -1;

@@ -62,9 +62,9 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
     
     ip = (struct ip4_hdr*)pkt;
     sin = (struct sockaddr_in *) &hdr.src;
-    ncs_inet_ntop(AF_INET, (void *)&sin->sin_addr.s_addr, srchost, sizeof(srchost));
+    inet_ntop(AF_INET, (void *)&sin->sin_addr.s_addr, srchost, sizeof(srchost));
     sin = (struct sockaddr_in *) &hdr.dst;
-    ncs_inet_ntop(AF_INET, (void *)&sin->sin_addr.s_addr, dsthost, sizeof(dsthost));
+    inet_ntop(AF_INET, (void *)&sin->sin_addr.s_addr, dsthost, sizeof(dsthost));
 	
     frag_off = 8 * (ntohs(ip->off) & 8191);
     more_fragments = ntohs(ip->off) & IP4_MF;
@@ -110,9 +110,9 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
 
     ip6 = (struct ip6_hdr*)pkt;
     sin6 = (struct sockaddr_in6 *) &hdr.src;
-    ncs_inet_ntop(AF_INET6, (void *)sin6->sin6_addr.s6_addr, srchost, sizeof(srchost));
+    inet_ntop(AF_INET6, (void *)sin6->sin6_addr.s6_addr, srchost, sizeof(srchost));
     sin6 = (struct sockaddr_in6 *) &hdr.dst;
-    ncs_inet_ntop(AF_INET6, (void *)sin6->sin6_addr.s6_addr, dsthost, sizeof(dsthost));
+    inet_ntop(AF_INET6, (void *)sin6->sin6_addr.s6_addr, dsthost, sizeof(dsthost));
 
     u32 ip6_fl=(ip6->flags[1]&0x0F)<<16|(ip6->flags[2]<<8)|ip6->flags[3];
     u32 ip6_tc=(ip6->flags[0]&0x0F)<<4|(ip6->flags[1]>>4);
@@ -467,7 +467,7 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
         }
 	struct in_addr addr;
 	addr.s_addr = htonl(ip4t_u32(&ip2->dst));
-        ip2dst = ncs_inet_ntoa(addr);
+        ip2dst = inet_ntoa(addr);
         switch (icmppkt->code) {
 	  case 0:
             snprintf(icmptype, sizeof icmptype, "Network %s unreachable", ip2dst);
@@ -545,7 +545,7 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
         else
           strcpy(icmptype, "Redirect (unknown code)");
         icmpredir = (struct icmp_redir *) icmppkt;
-        ncs_inet_ntop(AF_INET, &icmpredir->addr, auxbuff, sizeof(auxbuff));
+        inet_ntop(AF_INET, &icmpredir->addr, auxbuff, sizeof(auxbuff));
         snprintf(icmpfields, sizeof(icmpfields), "addr=%s", auxbuff);
         break;
       case 8:
@@ -608,7 +608,7 @@ const char *read_ippktinfo(const u8 *pkt, u32 len, int detail)
       case 18:
         snprintf(icmptype, sizeof(icmptype), "Address mask %s", (icmppkt->type == 17)? "request" : "reply");
         icmpmask = (struct icmp_amask *) icmppkt;
-        ncs_inet_ntop(AF_INET, &icmpmask->mask, auxbuff, sizeof(auxbuff));
+        inet_ntop(AF_INET, &icmpmask->mask, auxbuff, sizeof(auxbuff));
         snprintf(icmpfields, sizeof(icmpfields), "id=%u seq=%u mask=%s",
             (u16)ntohs(ping->id), (u16)ntohs(ping->seq), auxbuff);
         break;

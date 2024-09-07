@@ -24,11 +24,16 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_redir_build(u32 gateway, u8 *frame, size_t frmlen, size_t *msglen)
+u8 *icmp4_msg_redir_build(ip4_t gateway, u8 *frame, size_t frmlen, size_t *msglen)
 {
   u8 *res;
-  res = frmbuild(msglen, NULL, "u32(%u)", htonl(gateway)); /* htonl ??? */
-  if (frame && frmlen && res)
-    res = frmbuild_addfrm(frame, frmlen, res, msglen, NULL);
+
+  res=frmbuild(msglen, NULL, "u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu)",
+    ip4t_getid(&gateway,0), ip4t_getid(&gateway,1),
+    ip4t_getid(&gateway,2), ip4t_getid(&gateway,3));
+
+  if (frame&&frmlen&&res)
+    res=frmbuild_addfrm(frame, frmlen, res, msglen, NULL);
+
   return res;
 }

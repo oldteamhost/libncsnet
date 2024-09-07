@@ -42,7 +42,7 @@ int ip6_util_strdst(const char* dns, char* ipbuf, size_t buflen)
     return -1;
   }
   addr = (struct sockaddr_in6*)addrinfo_result->ai_addr;
-  ip = ncs_inet_ntop(AF_INET6, &(addr->sin6_addr), ipbuf, buflen);
+  ip = inet_ntop(AF_INET6, &(addr->sin6_addr), ipbuf, buflen);
   if (ip == NULL) {
     strncpy(ipbuf, "n/a", buflen);
     freeaddrinfo(addrinfo_result);

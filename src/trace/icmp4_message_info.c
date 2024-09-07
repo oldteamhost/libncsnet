@@ -29,7 +29,7 @@ const char *icmp4_message_info(const u8 *msg, size_t msglen, u8 type, u8 code)
 {
   static char icmp4info[TRACE_PROTO_MAX_LEN]="";
   size_t datalen=0;
-  
+
   switch (type) {
   case ICMP4_ECHOREPLY:
   case ICMP4_ECHO: {
@@ -51,7 +51,7 @@ const char *icmp4_message_info(const u8 *msg, size_t msglen, u8 type, u8 code)
   case ICMP4_INFOREPLY: {
     icmp4_msg_info *info=(icmp4_msg_info*)msg;
     snprintf(icmp4info, sizeof(icmp4info), "id=%hu seq=%hu", (u16)ntohs(info->id),
-      (u16)ntohs(info->seq));    
+      (u16)ntohs(info->seq));
     break;
   }
   case ICMP4_TSTAMP:
@@ -59,7 +59,7 @@ const char *icmp4_message_info(const u8 *msg, size_t msglen, u8 type, u8 code)
     icmp4_msg_tstamp *tstamp=(icmp4_msg_tstamp*)msg;
     snprintf(icmp4info, sizeof(icmp4info), "id=%hu seq=%hu orig=%u rx=%u tx=%u",
       (u16)ntohs(tstamp->id), (u16)ntohs(tstamp->seq), (u32)ntohl(tstamp->orig),
-      (u32)ntohl(tstamp->rx), (u32)ntohl(tstamp->tx)); 
+      (u32)ntohl(tstamp->rx), (u32)ntohl(tstamp->tx));
     break;
   }
   case ICMP4_SRCQUENCH: {
@@ -76,7 +76,7 @@ const char *icmp4_message_info(const u8 *msg, size_t msglen, u8 type, u8 code)
       snprintf(icmp4info, sizeof(icmp4info), "(Fragment reassembly time exceeded)");
       break;
     default:
-      snprintf(icmp4info, sizeof(icmp4info), "(Time exceeded, Bad Code: 0x%x)", code);      
+      snprintf(icmp4info, sizeof(icmp4info), "(Time exceeded, Bad Code: 0x%x)", code);
       break;
     break;
   }
@@ -86,7 +86,7 @@ const char *icmp4_message_info(const u8 *msg, size_t msglen, u8 type, u8 code)
     u8 *ptr=NULL;
     ptr=(u8*)(msg);
     unsed=(u32*)(msg+sizeof(u8));
-    snprintf(icmp4info, sizeof(icmp4info), "ptr=%hhu unsed=%u (Parameter problem: error detected at byte)", *ptr, (u32)ntohl(*unsed));      
+    snprintf(icmp4info, sizeof(icmp4info), "ptr=%hhu unsed=%u (Parameter problem: error detected at byte)", *ptr, (u32)ntohl(*unsed));
     break;
   }
   case ICMP4_REDIRECT: {
@@ -95,9 +95,7 @@ const char *icmp4_message_info(const u8 *msg, size_t msglen, u8 type, u8 code)
   case ICMP4_MASK:
   case ICMP4_MASKREPLY: {
     icmp4_msg_mask *mask=(icmp4_msg_mask*)msg;
-    char auxbuf[128]="";
-    ncs_inet_ntop(AF_INET, &mask->mask, auxbuf, 128);
-    snprintf(icmp4info, sizeof(icmp4info), "id=%hu seq=%hu mask=%s", (u16)ntohs(mask->id), (u16)ntohs(mask->seq), auxbuf);      
+    snprintf(icmp4info, sizeof(icmp4info), "id=%hu seq=%hu mask=%s", (u16)ntohs(mask->id), (u16)ntohs(mask->seq), (ip4t_ntop_c(&mask->mask)));
     break;
   }
   case ICMP4_UNREACH: {

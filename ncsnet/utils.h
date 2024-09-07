@@ -37,7 +37,6 @@
 
 #include "mt19937.h"
 #include "eth.h"
-#include "inet.h"
 
 #include "sys/types.h"
 #include "sys/nethdrs.h"

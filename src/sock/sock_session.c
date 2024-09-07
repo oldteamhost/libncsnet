@@ -25,7 +25,7 @@
 #include <ncsnet/socket.h>
 
 int sock_session(const char* dst, u16 port, long long ns,
-		 u8* pkt, size_t pktlen)
+   u8* pkt, size_t pktlen)
 {
   struct sockaddr_in server_addr;
   int sockfd, r;
@@ -36,7 +36,7 @@ int sock_session(const char* dst, u16 port, long long ns,
 
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(port);
-  ncs_inet_pton(AF_INET, dst, &server_addr.sin_addr);
+  inet_pton(AF_INET, dst, &server_addr.sin_addr);
 
   if (!(sock_util_timeoutns(sockfd, ns, true, true)))
     goto fail;

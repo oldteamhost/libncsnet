@@ -158,7 +158,7 @@ typedef struct icmp4_message_echo {
 } icmp4_msg_echo;
 
 typedef struct icmp4_message_mask {
-  u16 id, seq; u32 mask;
+  u16 id, seq; ip4_t mask;
 } icmp4_msg_mask;
 
 typedef struct icmp4_message_needfrag {
@@ -170,7 +170,7 @@ typedef struct icmp4_message_tstamp {
 } icmp4_msg_tstamp;
 
 typedef struct icmp4_message_redir {
-  u32 gateway; /* and ip */
+  ip4_t gateway; /* and ip */
 } icmp4_msg_redir;
 
 typedef struct icmp4_message_info {
@@ -237,10 +237,10 @@ void icmp6_check(u8 *frame, size_t frmlen, const ip6_t src,
 /* XXX data */
 u8 *icmp4_msg_echo_build(u16 id, u16 seq, const char *data, size_t *msglen);
 
-u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen);
+u8 *icmp4_msg_mask_build(u16 id, u16 seq, ip4_t mask, size_t *msglen);
 u8 *icmp4_msg_needfrag_build(u16 mtu, u8 *frame, size_t frmlen, size_t *msglen);
 u8 *icmp4_msg_tstamp_build(u16 id, u16 seq, u32 orig, u32 rx, u32 tx, size_t *msglen);
-u8 *icmp4_msg_redir_build(u32 gateway, u8 *frame, size_t frmlen, size_t *msglen);
+u8 *icmp4_msg_redir_build(ip4_t gateway, u8 *frame, size_t frmlen, size_t *msglen);
 
 #define icmp4_msg_info_build(id, seq, msglen) \
   icmp4_msg_echo_build((id), (seq), NULL, (msglen))

@@ -5,7 +5,8 @@
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
@@ -95,7 +96,7 @@ u8         *tcpopt=NULL;
 size_t      tcpoptlen=0;
 int         mtu=0;
 bool        df=0,mf=0,evil=0;
-u32         mask;
+ip4_t       mask;
 int         tos=0;
 int         dstport=80 /* default dstport */ ,srcport;
 int         ident;
@@ -605,69 +606,69 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
     if (icmp->type==ICMP4_UNREACH) {
       switch (icmp->code) {
       case ICMP4_UNREACH_HOST:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Host Unreachable)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Host Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       case ICMP4_UNREACH_NET:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Network Unreachable)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Network Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       case ICMP4_UNREACH_PROTO:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Protocol Unreachable)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Protocol Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       case ICMP4_UNREACH_PORT:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Port Unreachable)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Port Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       case ICMP4_UNREACH_NEEDFRAG:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragmentation needed and DF set)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragmentation needed and DF set)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       case ICMP4_UNREACH_SRCFAIL:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Source Route Failed)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Source Route Failed)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Dest Unreachable, Bad Code: 0x%x)", frmlen, ncs_inet_ntoa(iptmp), protoinfo, icmp->code);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Dest Unreachable, Bad Code: 0x%x)", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code);
 	break;
       }
     }
     else if (icmp->type==ICMP4_SRCQUENCH)
-      snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Source Quench)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+      snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Source Quench)", frmlen, inet_ntoa(iptmp), protoinfo);
     else if (icmp->type==ICMP4_TIMEXCEED) {
       switch (icmp->code) {
       case ICMP4_TIMEXCEED_INTRANS:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time to live exceeded in transit)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time to live exceeded in transit)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       case ICMP4_TIMEXCEED_REASS:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragment reassembly time exceeded)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragment reassembly time exceeded)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time exceeded, Bad Code: 0x%x)", frmlen, ncs_inet_ntoa(iptmp), protoinfo, icmp->code);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time exceeded, Bad Code: 0x%x)", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code);
 	break;
       }
     }
     else if (icmp->type==ICMP4_PARAMPROB) {
       switch (icmp->code) {
       case 0:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Parameter problem: error detected at byte (ptr_unsed) %u)", frmlen, ncs_inet_ntoa(iptmp), protoinfo, *unsed);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Parameter problem: error detected at byte (ptr_unsed) %u)", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
 	break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Unspecified parameter problem)", frmlen, ncs_inet_ntoa(iptmp), protoinfo);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Unspecified parameter problem)", frmlen, inet_ntoa(iptmp), protoinfo);
 	break;
       }
     }
     else if (icmp->type==ICMP4_REDIRECT) {
       switch (icmp->code) {
       case ICMP4_REDIRECT_NET:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Network Redirect (New addr: %u))", frmlen, ncs_inet_ntoa(iptmp), protoinfo, *unsed);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Network Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
 	break;
       case ICMP4_REDIRECT_HOST:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Host Redirect (New addr: %u))", frmlen, ncs_inet_ntoa(iptmp), protoinfo, *unsed);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Host Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
 	break;
       case ICMP4_REDIRECT_TOSNET:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Network Redirect (New addr: %u))", frmlen, ncs_inet_ntoa(iptmp), protoinfo, *unsed);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Network Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
 	break;
       case ICMP4_REDIRECT_TOSHOST:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Host Redirect (New addr: %u))", frmlen, ncs_inet_ntoa(iptmp), protoinfo, *unsed);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Host Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
 	break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Redirect, Bad Code: 0x%x (New addr: %u))", frmlen, ncs_inet_ntoa(iptmp), protoinfo, icmp->code, *unsed);
+	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Redirect, Bad Code: 0x%x (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code, *unsed);
 	break;
       }
     }
@@ -754,7 +755,7 @@ static void parsearg(int argc, char **argv)
       break;
     case 3: {
       struct sockaddr_in *addr4;
-      if (ncs_inet_pton(AF_INET, optarg, &((struct sockaddr_in*)src)->sin_addr)==1) {
+      if (inet_pton(AF_INET, optarg, &((struct sockaddr_in*)src)->sin_addr)==1) {
         addr4=(struct sockaddr_in*)src;
         addr4->sin_family=AF_INET;
         addr4->sin_port=0;
@@ -813,7 +814,7 @@ static void parsearg(int argc, char **argv)
     case 35: rx=atoll(optarg); rxc=1; break;
     case 36: orig=atoll(optarg); origc=1; break;
     case 37: tx=atoll(optarg); txc=1; break;
-    case 38: mask=ncs_inet_addr(optarg); maskc=1; break;
+    case 38: ip4t_pton(optarg, &mask); maskc=1; break;
     case 39: sctp=1; break;
     case 40: chunktype=atoi(optarg); break;
     case 41: vtag=atoll(optarg); break;
@@ -863,7 +864,7 @@ static u8 *icmpmsgbuild(size_t *msglen)
     break;
   case ICMP4_MASK:
     if (!maskc)
-      mask=ncs_inet_addr(random_ip4());
+      ip4t_pton(random_ip4(), &mask);
     msg=icmp4_msg_mask_build(icmpid, seq, mask, msglen);
     break;
   }
@@ -1160,7 +1161,7 @@ static void ping(const char *target)
     dst4 = (struct sockaddr_in*)dst;
     if (getipv4(target, ip4buf, 16)==-1)
       errx(1, "err: failed resolv for target \"%s\"", target);
-    dst4->sin_addr.s_addr=ncs_inet_addr(ip4buf);
+    dst4->sin_addr.s_addr=inet_addr(ip4buf);
     dst4->sin_port=0;
     dst4->sin_family=AF_INET;
   }
@@ -1260,7 +1261,7 @@ int main(int argc, char **argv)
   src4=(struct sockaddr_in*)src;
   if (!(strsrc=ip4_util_strsrc()))
     errx(1, "err: failed getting source ipaddr");
-  src4->sin_addr.s_addr=ncs_inet_addr(strsrc);
+  src4->sin_addr.s_addr=inet_addr(strsrc);
   free(strsrc);
   src4->sin_family=AF_INET;
   src4->sin_port=0;

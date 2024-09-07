@@ -38,7 +38,7 @@ char *ip4_util_strsrc(void)
     sa = (struct sockaddr_in *) ifa->ifa_addr;
     if (!(ifa->ifa_flags & IFF_LOOPBACK)) {
       localip = (char*)malloc(INET_ADDRSTRLEN);
-      ncs_inet_ntop(AF_INET, &(sa->sin_addr), localip, INET_ADDRSTRLEN);
+      inet_ntop(AF_INET, &(sa->sin_addr), localip, INET_ADDRSTRLEN);
       break;
     }
   }

@@ -24,12 +24,9 @@
 
 #include <ncsnet/icmp.h>
 
-u8 *icmp4_msg_mask_build(u16 id, u16 seq, u32 mask, size_t *msglen)
+u8 *icmp4_msg_mask_build(u16 id, u16 seq, ip4_t mask, size_t *msglen)
 {
-  /*
-   * Mask is not passed through htonl because it is supposed to be
-   * passed through the inet_addr function
-   */
-  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u32(%u)",
-    htons(id), htons(seq), mask));
+  return (frmbuild(msglen, NULL, "u16(%hu), u16(%hu), u8(%hhu), u8(%hhu), u8(%hhu), u8(%hhu)",
+    htons(id), htons(seq), ip4t_getid(&mask, 0), ip4t_getid(&mask, 1),
+    ip4t_getid(&mask, 2), ip4t_getid(&mask, 3)));
 }

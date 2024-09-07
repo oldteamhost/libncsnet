@@ -34,7 +34,7 @@ void dns_util_getip4(const char* dst, int srcport, long long timeoutns, char* dn
   memset(&sa, 0, sizeof(sa));
   sa.sin_family = AF_INET;
 
-  if (ncs_inet_pton(AF_INET, dst, &addr) != 1)
+  if (inet_pton(AF_INET, dst, &addr) != 1)
     goto fail;
 
   sa.sin_addr = addr;
