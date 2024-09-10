@@ -153,38 +153,20 @@ try:
   size_t optlen, preoptlen;
   size_t reslen=0;
   u8 *pkt=NULL;
+  ip4_t iii;
 
   ncsopts(n, NCSOPT_RBUFLEN|NCSOPT_RTIMEOUT, 65535, to_ns(2000));
   ncsopts(n, NCSOPT_RINFO|NCSOPT_SINFO, 3, 3);
 
-  ip6_t iii6, src6;
-  ip6t_pton("2001:4860:4860::8888", &iii6);
-  ip6t_pton("fe80::a25c:de0b:cf51:4b8", &src6);
-
-  preopt=icmp6_opt_mtu_build(64, &preoptlen);
-  opt=icmp6_opt_build(ICMP6_OPTION_MTU, preopt, preoptlen, &optlen);
-  free(preopt);
-  msg=icmp6_msg_ndsol_build(iii6, opt, optlen, &msglen);
-  free(opt);
-
-  pkt=icmp_build(ICMP6_NEIGHBOR_SOLICITATION, 0, msg, msglen, &reslen);
-  icmp6_check(pkt, reslen, src6, iii6, false);
-
-  ncsopts(n, NCSOPT_PROTO, PR_ICMPV6);
-  ncssend(n, pkt, reslen, ncssend_getnip(iii6));
-
-  ncsbind(n, iii6);
-
-  /*
-  ip4_t iii;
   ip4t_pton("77.88.55.88", &iii);
   ncsopts(n, NCSOPT_PROTO, PR_ICMP);
+
   msg=icmp4_msg_echo_build(random_u16(), id_rb, NULL, &msglen);
   pkt=icmp_build(ICMP4_ECHO, 0, msg, msglen, &reslen);
   icmp4_check(pkt, reslen, false);
+
   ncsbind(n, iii);
   ncssend(n, pkt, reslen, ncssend_getnip(iii));
-  */
 
   ncsrecv(n, NULL, id_rb);
 
