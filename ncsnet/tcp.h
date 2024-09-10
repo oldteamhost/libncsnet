@@ -204,7 +204,7 @@ ssize_t tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
 struct tcp_flags tcp_util_exflags(u8 type);
 struct tcp_flags tcp_util_str_setflags(const char *flags);
 struct tcp_flags tcp_util_getflags(u8 flags);
-u8 tcp_util_setflags(struct tcp_flags *tf);
+u8               tcp_util_setflags(struct tcp_flags *tf);
 
 __END_DECLS
 

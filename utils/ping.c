@@ -686,11 +686,9 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
  */
 static bool received_ping_callback(u8 *frame, size_t frmlen)
 {
-  int fragoff=0;
-  bool valid=0;
   size_t hlen, tmplen=frmlen;
-  ip4h_t *ip;
   u8 *frmtmp=frame;
+  ip4h_t *ip;
 
   /*
    * Get IP4 header, brings a pointer to the packet, skipping
@@ -699,18 +697,6 @@ static bool received_ping_callback(u8 *frame, size_t frmlen)
   ip=(ip4h_t*)(frame+ETH_HDR_LEN);
   hlen=ip->ihl<<2;
   frmlen-=hlen;
-
-  /* Validate packet */
-  valid=read_util_validate_pkt(frame+ETH_HDR_LEN, (u32*)&frmlen);
-  if (!valid)
-    return false;
-
-  /* Frag check */
-  fragoff=8*(ntohs(ip->off)&8191);
-  if (fragoff) {
-    snprintf(v0msg, sizeof(v0msg), "%ld bytes from %s%s: ttl=%hhu (incomplete)", frmlen, ip4buf, currentdns, ip->ttl);
-    return true;
-  }
 
   /* v0 message build and filtering */
   if (ip->proto==IPPROTO_ICMP)
