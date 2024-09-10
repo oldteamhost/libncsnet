@@ -79,9 +79,9 @@ int intf_loop(intf_t *i, intf_handler callback, void *arg)
     for (p = buf; *p == ' '; p++);
 
     memset(ebuf, 0, sizeof(ebuf));
-    strlcpy(entry->intf_name, p, sizeof(entry->intf_name));
-    strlcpy(entry->os_intf_name, p, sizeof(entry->os_intf_name));
-    strlcpy(entry->pcap_intf_name, p, sizeof(entry->pcap_intf_name));
+    _strlcpy(entry->intf_name, p, sizeof(entry->intf_name));
+    _strlcpy(entry->os_intf_name, p, sizeof(entry->os_intf_name));
+    _strlcpy(entry->pcap_intf_name, p, sizeof(entry->pcap_intf_name));
     intf_get_drv_info(i, entry);
     entry->intf_len=sizeof(ebuf);
 

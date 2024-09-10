@@ -29,7 +29,7 @@ static int _intf_delete_addrs(intf_t *intf, intf_entry *entry)
   dnet_ncs_ifalreq ifra;
 
   memset(&ifra, 0, sizeof(ifra));
-  strlcpy(ifra.ifra_name, entry->intf_name, sizeof(ifra.ifra_name));
+  _strlcpy(ifra.ifra_name, entry->intf_name, sizeof(ifra.ifra_name));
   if (entry->intf_addr.type==ADDR_TYPE_IP) {
     addr_ntos(&entry->intf_addr, &ifra.ifra_addr);
     ioctl(intf->fd, SIOCDIFADDR, &ifra);
@@ -69,7 +69,7 @@ static int _intf_add_aliases(intf_t *intf, const intf_entry *entry)
       return -1;
   }
 
-  strlcpy(ifr.ifr_name, entry->intf_name, sizeof(ifr.ifr_name));
+  _strlcpy(ifr.ifr_name, entry->intf_name, sizeof(ifr.ifr_name));
   return 0;
 }
 
@@ -92,7 +92,7 @@ int intf_set(intf_t *intf, const intf_entry *entry)
     return -1;
 
   memset(&ifr, 0, sizeof(ifr));
-  strlcpy(ifr.ifr_name, entry->intf_name, sizeof(ifr.ifr_name));
+  _strlcpy(ifr.ifr_name, entry->intf_name, sizeof(ifr.ifr_name));
 
   if (entry->intf_mtu!=0) {
     ifr.ifr_mtu=entry->intf_mtu;

@@ -30,6 +30,7 @@
 
 #include "sys/types.h"
 #include "sys/nethdrs.h"
+#include "sys/debianfix.h"
 #include "../ncsnet-config.h"
 
 #define INTF_NAME_LEN 32

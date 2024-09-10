@@ -33,7 +33,7 @@ int _intf_get_noalias(intf_t *intf, intf_entry *entry)
   entry->intf_index=if_nametoindex(entry->intf_name);
   if (entry->intf_index==0)
     return -1;
-  strlcpy(ifr.ifr_name, entry->intf_name, sizeof(ifr.ifr_name));
+  _strlcpy(ifr.ifr_name, entry->intf_name, sizeof(ifr.ifr_name));
   if (ioctl(intf->fd, SIOCGIFFLAGS, &ifr)<0)
     return -1;
 
@@ -106,7 +106,7 @@ int _intf_get_aliases(intf_t *intf, intf_entry *entry)
     else if (ap->type==ADDR_TYPE_IP) {
       if (ip4t_compare(ap->addr_ip4, entry->intf_addr.addr_ip4)||ip4t_compare(ap->addr_ip4,entry->intf_dst_addr.addr_ip4))
         continue;
-      strlcpy(tmpifr.ifr_name, ifr->ifr_name, sizeof(tmpifr.ifr_name));
+      _strlcpy(tmpifr.ifr_name, ifr->ifr_name, sizeof(tmpifr.ifr_name));
       if (ioctl(intf->fd, SIOCGIFNETMASK, &tmpifr)==0)
         addr_stob(&tmpifr.ifr_addr, &ap->bits);
     }
@@ -178,6 +178,6 @@ intf_get_index(intf_t *intf, intf_entry *entry, int af, unsigned int index)
   devname=if_indextoname(index, namebuf);
   if (!devname)
     return -1;
-  strlcpy(entry->intf_name, devname, sizeof(entry->intf_name));
+  _strlcpy(entry->intf_name, devname, sizeof(entry->intf_name));
   return intf_get(intf, entry);
 }
