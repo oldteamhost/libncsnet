@@ -641,6 +641,7 @@ ac_header_c_list=
 enable_year2038=no
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+SOURCES
 MAKE_P
 host_os
 host_vendor
@@ -702,6 +703,10 @@ ac_user_opts='
 enable_option_checking
 enable_largefile
 enable_linuxread
+with_base
+with_datalink
+with_network
+with_transport
 enable_year2038
 '
       ac_precious_vars='build_alias
@@ -1337,6 +1342,18 @@ Optional Features:
   --disable-largefile     omit support for large files
   --disable-linuxread     Disable linuxread support (default is enabled)
   --enable-year2038       support timestamps after 2038
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-base             Use specific base module for source files
+                          compilation
+  --with-datalink         Use specific datalink module for source files
+                          compilation
+  --with-network          Use specific network module for source files
+                          compilation
+  --with-transport        Use specific transport module for source files
+                          compilation
 
 Some influential environment variables:
   CC          C compiler command
@@ -2661,7 +2678,6 @@ ac_config_headers="$ac_config_headers config.h:config.h.in"
 
 
 
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3678,10 +3694,8 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-
 CFLAGS="-Wall -fPIC -DHAVE_CONFIG_H -march=native -mtune=native -g -flto"
 OCFLAGS="-O3 -fforce-addr"
-
 
 
 
@@ -3958,6 +3972,8 @@ fi
 
 
 
+
+
   # Make sure we can run config.sub.
 $SHELL "${ac_aux_dir}config.sub" sun4 >/dev/null 2>&1 ||
   as_fn_error $? "cannot run $SHELL ${ac_aux_dir}config.sub" "$LINENO" 5
@@ -4057,6 +4073,8 @@ printf "%s\n" "$OS_TYPE" >&6; }
     ;;
 esac
 
+
+
 MAKE_P="make"
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for make util" >&5
 printf %s "checking for make util... " >&6; }
@@ -4065,6 +4083,8 @@ if test "$OS_TYPE" = "bsd"; then
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MAKE_P" >&5
 printf "%s\n" "$MAKE_P" >&6; }
+
+
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the processor supports DIVIDE instruction" >&5
@@ -4097,6 +4117,8 @@ if test "$ac_cv_prog_divide_support" = yes; then
 printf "%s\n" "#define HAVE_DIVIDE_SUPPORT 1" >>confdefs.h
 
 fi
+
+
 
 ac_header= ac_cache=
 for ac_item in $ac_header_c_list
@@ -4182,6 +4204,8 @@ printf "%s\n" "#define LITTLE_ENDIAN_SYSTEM 1" >>confdefs.h
 
 fi
 
+
+
 ac_fn_c_check_func "$LINENO" "htons" "ac_cv_func_htons"
 if test "x$ac_cv_func_htons" = xyes
 then :
@@ -4194,6 +4218,8 @@ if test "x$ac_cv_func_htons" = "xno"; then
 printf "%s\n" "#define HAVE_NETDB_HOST 1" >>confdefs.h
 
 fi
+
+
 
 # Check whether --enable-linuxread was given.
 if test ${enable_linuxread+y}
@@ -4208,21 +4234,71 @@ fi
 
 printf "%s\n" "#define HAVE_LINUX_READ 1" >>confdefs.h
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: linuxread support is enabled by default" >&5
-printf "%s\n" "$as_me: linuxread support is enabled by default" >&6;}
 if test "x$linuxread_disable" = "xyes"; then
 
 printf "%s\n" "#define HAVE_LINUX_READ 0" >>confdefs.h
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: linuxread support is disabled" >&5
-printf "%s\n" "$as_me: linuxread support is disabled" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking linuxread support... disabled" >&5
+printf "%s\n" "checking linuxread support... disabled" >&6; }
 else
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: linuxread support is enabled" >&5
-printf "%s\n" "$as_me: linuxread support is enabled" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking linuxread support... enabled" >&5
+printf "%s\n" "checking linuxread support... enabled" >&6; }
 fi
 
-UTILS_PATH="utils/Makefile"
-as_ac_File=`printf "%s\n" "ac_cv_file_$UTILS_PATH" | sed "$as_sed_sh"`
+
+
+BASE_DIRS="src/"
+
+
+# Check whether --with-base was given.
+if test ${with_base+y}
+then :
+  withval=$with_base; BASE_DIRS="src/utils src/hex src/ip4addr src/ip6addr src/mac src/random src/raw src/crypt src/cidr src/url" BASE_ENABLED=yes
+fi
+
+
+
+# Check whether --with-datalink was given.
+if test ${with_datalink+y}
+then :
+  withval=$with_datalink; BASE_DIRS="src/utils src/hex src/ip4addr src/ip6addr src/mac src/random src/raw src/crypt src/cidr src/url src/eth src/arp src/route src/intf src/ncsnet src/addr" DATALINK_ENABLED=yes
+fi
+
+
+
+# Check whether --with-network was given.
+if test ${with_network+y}
+then :
+  withval=$with_network; BASE_DIRS="src/utils src/hex src/ip4addr src/ip6addr src/mac src/random src/raw src/crypt src/cidr src/url src/eth src/arp src/route src/intf src/ncsnet src/ip src/icmp src/igmp" NETWORK_ENABLED=yes
+fi
+
+
+
+# Check whether --with-transport was given.
+if test ${with_transport+y}
+then :
+  withval=$with_transport; BASE_DIRS="src/utils src/hex src/ip4addr src/ip6addr src/mac src/random src/raw src/crypt src/cidr src/url src/eth src/arp src/route src/intf src/ncsnet src/ip src/icmp src/igmp src/tcp src/udp src/sctp src/udplite src/trace" TRANSPORT_ENABLED=yes
+fi
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: checking directories for compile... $BASE_DIRS" >&5
+printf "%s\n" "checking directories for compile... $BASE_DIRS" >&6; }
+SOURCES=$(find $BASE_DIRS -name '*.c' | xargs)
+if test -z "$SOURCES"
+then :
+
+    as_fn_error $? "no source files found in the specified directories!" "$LINENO" 5
+
+fi
+
+
+
+
+if test -z "$BASE_ENABLED$DATALINK_ENABLED$NETWORK_ENABLED$TRANSPORT_ENABLED"
+then :
+
+    UTILS_PATH="utils/Makefile"
+    as_ac_File=`printf "%s\n" "ac_cv_file_$UTILS_PATH" | sed "$as_sed_sh"`
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $UTILS_PATH" >&5
 printf %s "checking for $UTILS_PATH... " >&6; }
 if eval test \${$as_ac_File+y}
@@ -4249,14 +4325,16 @@ else case e in #(
 esac
 fi
 
-if test "$UTILS_FOUND" = "no"; then
-    echo "utils (Makefile) not found, configuring utils"
-    echo ""
-    echo "RUNNING CONFIGURE UTILS/"
-    echo ""
-    (cd utils;./configure;cd ..)
-else
-    echo "utils (Makefile) found, no need to configure"
+    if test "$UTILS_FOUND" = "no"; then
+        echo "utils (Makefile) not found, configuring utils"
+        echo ""
+        echo "RUNNING CONFIGURE UTILS/"
+        echo ""
+        (cd utils; ./configure; cd ..)
+    else
+        echo "checking utils (Makefile) found, no need to configure"
+    fi
+
 fi
 
 ac_config_files="$ac_config_files Makefile"

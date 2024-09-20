@@ -24,6 +24,8 @@
 
 #include <ncsnet/cmwc.h>
 
+static u64 Q[4096], c=362436;
+
 #include <time.h>
 u64 random_seed_u64(void)
 {
@@ -33,36 +35,33 @@ u64 random_seed_u64(void)
   return ((u64)(ts.tv_sec * 1000000000ULL + ts.tv_nsec));
 }
 
-static u64 Q[4096], c = 362436;
 void cmwc_seed(u64 seed)
 {
   int i;
-  
-  Q[0] = seed;
-  Q[1] = seed + PHI;
-  Q[2] = seed + PHI + PHI;
-  
-  for (i = 3; i < 4096; i++)
-    Q[i] = Q[i - 3] ^ Q[i - 2] ^ PHI ^ i;
+  Q[0]=seed;
+  Q[1]=seed+PHI;
+  Q[2]=seed+PHI+PHI;
+  for (i=3;i<4096;i++)
+    Q[i]=Q[i-3]^Q[i-2]^PHI^i;
 }
 
-u64 cmwc_random(void)
+u64 cmwc(void)
 {
-  u64 x, r = 0xfffffffe;
-  u64 t, a = 18782LL;
-  static u64 i = 4095;
-  
-  i = (i + 1) & 4095;
-  t = a * Q[i] + c;
-  c = (t >> 32);
-  x = t + c;
-  
-  if (x < c) {
+  u64 x, r=0xfffffffe;
+  u64 t, a=18782LL;
+  static u64 i=4095;
+
+  i=(i+1)&4095;
+  t=a*Q[i]+c;
+  c=(t>>32);
+  x=t+c;
+
+  if (x<c) {
     x++;
     c++;
   }
-  
-  return (Q[i] = r - x);
+
+  return (Q[i]=r-x);
 }
 
 u64 cmwc_random_num(u64 min, u64 max)
@@ -71,7 +70,7 @@ u64 cmwc_random_num(u64 min, u64 max)
   if (min>max)
     return 1;
   range=(max>=min)?(max-min):(sizeof(u64)-min);
-  return (min+(cmwc_random()%range+1));
+  return (min+(cmwc()%range+1));
 }
 
 size_t __cmwc_random_num_call(size_t min, size_t max)

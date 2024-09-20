@@ -22,12 +22,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef NCSLINKHDR
-#define NCSLINKHDR
-#include "ncsbase.h"
-#include "../ncsnet/eth.h"
-#include "../ncsnet/arp.h"
-#include "../ncsnet/route.h"
-#include "../ncsnet/intf.h"
-#include "../ncsnet/ncsnet.h"
+#ifndef NCSNETWHDR
+#define NCSNETWHDR
+#include "datalink.h"
+#include "base.h"
+
+#include "../ncsnet/ip.h"
+#include "../ncsnet/icmp.h"
+#include "../ncsnet/igmp.h"
 #endif

@@ -216,7 +216,7 @@ static void icmp4msg(void)
 {
   switch (type) {
   case ICMP4_ECHO:
-    msg=icmp4_msg_echo_build((u16)cmwc_random(), (u16)cmwc_random(), data, &msglen);
+    msg=icmp4_msg_echo_build((u16)cmwc(), (u16)cmwc(), data, &msglen);
     break;
 
   /*
@@ -224,16 +224,16 @@ static void icmp4msg(void)
    * is no point in adding it.
    */
   case ICMP4_INFO:
-    msg=icmp4_msg_info_build((u16)cmwc_random(), (u16)cmwc_random(), &msglen);
+    msg=icmp4_msg_info_build((u16)cmwc(), (u16)cmwc(), &msglen);
     break;
   case ICMP4_TSTAMP:
-    msg=icmp4_msg_tstamp_build((u16)cmwc_random(), (u16)cmwc_random(), (u32)cmwc_random(), (u32)cmwc_random(),
-      (u32)cmwc_random(), &msglen);
+    msg=icmp4_msg_tstamp_build((u16)cmwc(), (u16)cmwc(), (u32)cmwc(), (u32)cmwc(),
+      (u32)cmwc(), &msglen);
     break;
   case ICMP4_MASK: {
     ip4_t tmp;
     ip4t_pton(random_ip4(), &tmp);
-    msg=icmp4_msg_mask_build((u16)cmwc_random(), (u16)cmwc_random(), tmp, &msglen);
+    msg=icmp4_msg_mask_build((u16)cmwc(), (u16)cmwc(), tmp, &msglen);
     break;
   }
   }
@@ -248,7 +248,7 @@ static void icmp4msg(void)
 static void icmp4build(void)
 {
   icmp4msg();
-  pkt=icmp4_build_pkt(src, dst, ttl, (u16)cmwc_random(), 0, false, ipopt, ipoptslen,
+  pkt=icmp4_build_pkt(src, dst, ttl, (u16)cmwc(), 0, false, ipopt, ipoptslen,
     type, code, msg, msglen, &pktlen, badsum);
   free(msg);
   if (data)
@@ -273,17 +273,17 @@ static void icmp4udpt(void)
     case ICMP4_INFO:
     case ICMP4_ECHO: {
       icmp4_msg_echo *echo=(icmp4_msg_echo*)(pkt+(sizeof(icmp4h_t)+sizeof(ip4h_t)));
-      echo->id=htons((u16)cmwc_random());
-      echo->seq=htons((u16)cmwc_random());
+      echo->id=htons((u16)cmwc());
+      echo->seq=htons((u16)cmwc());
       break;
     }
     case ICMP4_TSTAMP: {
       icmp4_msg_tstamp *tstamp=(icmp4_msg_tstamp*)(pkt+(sizeof(icmp4h_t)+sizeof(ip4h_t)));
-      tstamp->id=htons((u16)cmwc_random());
-      tstamp->seq=htons((u16)cmwc_random());
-      tstamp->orig=htonl((u32)cmwc_random());
-      tstamp->rx=htonl((u32)cmwc_random());
-      tstamp->tx=htonl((u32)cmwc_random());
+      tstamp->id=htons((u16)cmwc());
+      tstamp->seq=htons((u16)cmwc());
+      tstamp->orig=htonl((u32)cmwc());
+      tstamp->rx=htonl((u32)cmwc());
+      tstamp->tx=htonl((u32)cmwc());
       break;
     }
     case ICMP4_MASK: {
@@ -291,8 +291,8 @@ static void icmp4udpt(void)
       ip4_t tmp;
 
       ip4t_pton(random_ip4(), &tmp);
-      mask->id=htons((u16)cmwc_random());
-      mask->seq=htons((u16)cmwc_random());
+      mask->id=htons((u16)cmwc());
+      mask->seq=htons((u16)cmwc());
 
       /*
        * Since inet_addr itself already translates the IP address

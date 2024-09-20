@@ -1,17 +1,15 @@
 CC = @CC@
 CFLAGS = @CFLAGS@ @OCFLAGS@ -I.
 MAKE_P = @MAKE_P@
-PROG = libncsnet
-STATIC_LIB = $(PROG).a
-DYNAMIC_LIB = $(PROG).so
-SRC_DIR = src
-BIN_DIR = bin
-UTILS_DIR = utils
-
-SRCS = $(shell find $(SRC_DIR) -name '*.c')
+SRCS = @SOURCES@
 OBJS = $(SRCS:.c=.o)
 
+PROG = libncsnet
+UTILS_DIR = utils
 TESTS_DIR = tests
+
+STATIC_LIB = $(PROG).a
+DYNAMIC_LIB = $(PROG).so
 
 all: endmsg
 

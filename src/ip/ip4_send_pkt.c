@@ -25,7 +25,7 @@
 #include <ncsnet/ip.h>
 #include <ncsnet/utils.h>
 
-int ip4_send_pkt(int fd, ip4_t src, ip4_t dst, u16 ttl, u8 proto, u16 off, const u8 *opt,
+int ip4_send_pkt(int fd, ip4_t src, ip4_t dst, u16 ttl, u8 proto, u16 off, u8 *opt,
                  int optlen, const char *data, size_t datalen, int mtu)
 {
   struct sockaddr_in dst_in;

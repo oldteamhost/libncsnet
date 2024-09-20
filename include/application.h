@@ -24,7 +24,11 @@
 
 #ifndef NCSAPPLHDR
 #define NCSAPPLHDR
-#include "ncstrns.h"
+#include "transport.h"
+#include "network.h"
+#include "datalink.h"
+#include "base.h"
+
 #include "../ncsnet/http.h"
 #include "../ncsnet/smtp.h"
 #include "../ncsnet/ftp.h"

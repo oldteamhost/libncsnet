@@ -39,7 +39,6 @@ hexflood: hexflood.o $(LIB)
 	$(E) "  LINK    " $(BUILDDIR)/$@
 	$(Q) $(CC) $(CFLAGS) -o $(BUILDDIR)/$@ $< $(LIB)
 
-
 icmpflood: icmpflood.o $(LIB)
 	$(E) "  LINK    " $(BUILDDIR)/$@
 	$(Q) $(CC) $(CFLAGS) -o $(BUILDDIR)/$@ $< $(LIB)

@@ -35,8 +35,11 @@
 
 __BEGIN_DECLS
 
-void msm_seed(u32 seed);
-u32  msm(void);
+u32    msm(void);
+void   msm_seed(u32 seed);
+u32    msm_random_num(u32 min, u32 max);
+
+size_t __msm_random_num_call(size_t min, size_t max);
 
 __END_DECLS
 

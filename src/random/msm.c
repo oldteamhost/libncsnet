@@ -26,24 +26,33 @@
 
 static u32 _seed;
 
+#include <time.h>
+u32 random_seed_u32_(void)
+{
+  struct timespec ts;
+  if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+    return -1;
+  return ((u32)(ts.tv_sec * 1000000000ULL + ts.tv_nsec));
+}
+
 static u32 num_of_digit(u32 n)
 {
-  u32 digits = 0;
+  u32 digits=0;
   do {
-    n /= 10;
+    n/=10;
     digits++;
-  } while (n != 0);
+  } while (n!=0);
   return digits;
 }
 
 static u32 int_pow(u32 base, u32 exp)
 {
-  u32 result = 1;
-  while (exp != 0) {
-    if (exp % 2 == 1)
-      result *= base;
-    exp /= 2;
-    base *= base;
+  u32 result=1;
+  while (exp!=0) {
+    if (exp%2==1)
+      result*=base;
+    exp/=2;
+    base*=base;
   }
   return result;
 }
@@ -56,15 +65,30 @@ u32 msm(void)
   u32 res;
   u64 sq;
 
-  res = _seed;
-  digits = num_of_digit(_seed);
+  res=_seed;
+  digits=num_of_digit(_seed);
 
-  sq = (u64)res * res;
-  sqd = num_of_digit(sq);
-  start = (sqd / 2) - (digits / 2);
-  if (start < 0)
-    start = 0;
-  res = (sq / ((u64)int_pow(10, start))) % ((u64)int_pow(10, digits));
-  
+  sq=(u64)res*res;
+  sqd=num_of_digit(sq);
+  start=(sqd/2)-(digits/2);
+  if (start<0)
+    start=0;
+  res=(sq/((u64)int_pow(10, start)))%((u64)int_pow(10, digits));
+
   return res;
+}
+
+u32 msm_random_num(u32 min, u32 max)
+{
+  u32 range=0;
+  if (min>max)
+    return 1;
+  range=(max>=min)?(max-min):(UINT_MAX-min);
+  return (min+(msm()%range+1));
+}
+
+size_t __msm_random_num_call(size_t min, size_t max)
+{
+  msm_seed(random_seed_u32_());
+  return msm_random_num((u64)min, (u64)max);
 }

@@ -41,14 +41,22 @@ static bool ncsopt_rtimeout(ncsnet_t *n, ncstime_t val)
 
 static bool ncsopt_rbuflen(ncsnet_t *n, size_t val)
 {
+  void *new=NULL;
   if (val==0) {
     __ncsseterror("%s: rbuflen cannot be 0\n", __FUNCTION__);
     return 0;
   }
 
   /* realloc buffer*/
+  new=calloc(1, val);
+  if (!new) {
+    __ncsseterror("%s: realloc failed\n", __FUNCTION__);
+    return 0;
+  }
+  if (n->sock.recvfd.rbuf)
+    free(n->sock.recvfd.rbuf);
   n->sock.rbuflen=val;
-  n->sock.recvfd.rbuf=realloc(n->sock.recvfd.rbuf, n->sock.rbuflen);
+  n->sock.recvfd.rbuf=new;
 
   return 1;
 }

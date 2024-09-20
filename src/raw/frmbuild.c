@@ -24,6 +24,9 @@
 
 //#include <ncsnet/raw.h>
 #include "../../ncsnet/raw.h"
+#include <stdbool.h>
+#include <string.h>
+#include <unistd.h>
 
 u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...)
 {
@@ -176,33 +179,21 @@ static size_t str_to_size_t(const char *str)
 
 static void __fmtopt_free(fmtopt *opt)
 {
-  if (opt&&opt->val) {
-    free(opt->val);
-    opt->val=NULL;
+  if (opt)  {
+    if (opt->val) {
+      free(opt->val);
+      opt->val=NULL;
+    }
   }
 }
 
-u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap)
+static u8 *__frmbuild_alloc(size_t *frmlen, char *errbuf, char *buf)
 {
-  char      buf[FMTBUF_MAXLEN];
-  char      tmp[FMTBUF_MAXLEN];
-  size_t    curlen, check;
-  fmtopt    opt;
-  char     *tok;
-  u16       val16;
-  u32       val32;
-  u64       val64;
-  u8        val8, *res, *cur;
-
-  *frmlen=0;
-  if (errbuf)
-    *errbuf='\0';
-  else
-    return NULL;
-
-  vsnprintf(buf, FMTBUF_MAXLEN, fmt, ap);
-  to_lower(buf); /* XXX */
-  del_spaces(buf);
+  char      tmp[FMTBUF_MAXLEN]={0};
+  size_t    tmplen=0;
+  char     *tok=NULL;
+  fmtopt    opt={};
+  u8       *res=NULL;
 
 
   /*
@@ -219,137 +210,257 @@ u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap
     if (*errbuf!='\0')
       return NULL;
     switch (opt.type) {
-      case TYPE_U8:  *frmlen+=sizeof(u8);      break;
-      case TYPE_U16: *frmlen+=sizeof(u16);     break;
-      case TYPE_U32: *frmlen+=sizeof(u32);     break;
-      case TYPE_U64: *frmlen+=sizeof(u64);     break;
+      case TYPE_U:    tmplen+=opt.bits;        break;
+      case TYPE_U8:  *frmlen+=1;               break;
+      case TYPE_U16: *frmlen+=2;               break;
+      case TYPE_U32: *frmlen+=4;               break;
+      case TYPE_U64: *frmlen+=8;               break;
       case TYPE_STR: *frmlen+=strlen(opt.val); break;
     }
     __fmtopt_free(&opt);
     tok=strtok(NULL, ",");
   }
   __fmtopt_free(&opt);
+
+
+  /*
+   * Convert bits to bytes, add 7 so that if the number is not a multiple
+   * of 8, round it off.
+   */
+  *frmlen+=((tmplen+7)/8);
   if (*frmlen==0) {
     snprintf(errbuf, ERRBUF_MAXLEN,
       "Frame len <frmlen> is (0)");
     return NULL;
   }
 
-
-  /*
-   * Now, allocate memory for our internet frame, the size of which we
-   * obtained in the previous step, and go through "fmt" again, sequentially
-   * adding the specified values to our frame. At the same time, we keep
-   * track of the size of the types.
-   */
-  res=(u8*)calloc(1, (*frmlen));
+  res=(u8*)calloc(1,(*frmlen));
   if (!res) {
     snprintf(errbuf, ERRBUF_MAXLEN,
       "Allocated failed");
     return NULL;
   }
-  cur=res;
+
+  return res;
+}
+
+static bool __frmbuild_add_bits_buf(u8 *buf, char *errbuf, u32 val, size_t bits, size_t *bit_pos)
+{
+  size_t byte_pos, bit_offset, i=0;
+  byte_pos=*bit_pos/8;
+  bit_offset=*bit_pos%8;
+  for (;i<bits;i++) {
+    if (val&(1<<(bits-i-1)))
+      buf[byte_pos]|=(1<<(7-bit_offset));
+    bit_offset++;
+    if (bit_offset==8) {
+      bit_offset=0;
+      byte_pos++;
+    }
+  }
+  *bit_pos+=bits;
+  return true;
+}
+
+static bool __frmbuild_add_1_bytes_buf(u8 *buf, char *errbuf, size_t val, size_t *pos)
+{
+  u8 byte=0;
+  if (val>UCHAR_MAX||val<0) {
+    snprintf(errbuf, ERRBUF_MAXLEN,
+      "Field \"%ld\" len error, valid range is, (0-%d)",
+      val, UCHAR_MAX);
+    return false;
+  }
+  byte=(u8)val;
+  memcpy((buf+*pos), &byte, 1);
+  *pos+=1;
+  return true;
+}
+
+static bool __frmbuild_add_2_bytes_buf(u8 *buf, char *errbuf, size_t val, size_t *pos)
+{
+  u16 twobytes=0;
+  if (val>USHRT_MAX||val<0) {
+    snprintf(errbuf, ERRBUF_MAXLEN,
+      "Field \"%ld\" len error, valid range is, (0-%d)",
+      val, USHRT_MAX);
+    return false;
+  }
+  twobytes=(u16)val;
+  memcpy((buf+*pos), &twobytes, 2);
+  *pos+=2;
+  return true;
+}
+
+static bool __frmbuild_add_4_bytes_buf(u8 *buf, char *errbuf, size_t val, size_t *pos)
+{
+  u32 fourbytes=0;
+  if (val>UINT_MAX||val<0) {
+    snprintf(errbuf, ERRBUF_MAXLEN,
+      "Field \"%ld\" len error, valid range is, (0-%d)",
+      val, UINT_MAX);
+    return false;
+  }
+  fourbytes=(u32)val;
+  memcpy((buf+*pos), &fourbytes, 4);
+  *pos+=4;
+  return true;
+}
+
+static bool __frmbuild_add_8_bytes_buf(u8 *buf, char *errbuf, size_t val, size_t *pos)
+{
+  u64 eightbytes=0;
+  if (val>ULONG_MAX||val<0) {
+    snprintf(errbuf, ERRBUF_MAXLEN,
+      "Field \"%ld\" len error, valid range is, (0-%ld)",
+      val, ULONG_MAX);
+    return false;
+  }
+  eightbytes=(u64)val;
+  memcpy((buf+*pos), &eightbytes, 8);
+  *pos+=8;
+  return true;
+}
+
+static bool __frmbuild_add_str_buf(u8 *buf, const char *str, char *errbuf, size_t *pos)
+{
+  size_t strlen_t;
+  strlen_t=strlen(str);
+  memcpy((buf+*pos), (char*)str, strlen_t);
+  *pos+=strlen_t;
+  return true;
+}
+
+static bool __frmbuild_add_loop(u8 *frame, size_t *frmlen, char *errbuf, char *buf)
+{
+  size_t    check=0, pos=0, bitpos=0, i=0, j=0, bitstmp=0;
+  char      tmp[FMTBUF_MAXLEN]={0};
+  fmtopt    opts[1024]={};
+  char     *tok=NULL;
+  bool      try=0;
+
   strcpy(tmp, buf);
   tok=strtok(tmp, ",");
-
   while (tok) {
-    __fmtopt_free(&opt);
-    opt=__fmtoptparse(tok, errbuf);
-    val8=val16=val32=val64=check=0;
-    check=str_to_size_t(opt.val);
-
-    switch (opt.type) {
-      case TYPE_U8: {
-        if (check>UCHAR_MAX||check<0) {
-          snprintf(errbuf, ERRBUF_MAXLEN,
-            "Field \"%s\" len error, valid range is, (0-%d)",
-            tok, UCHAR_MAX);
-          goto fail;
-        }
-        val8=(u8)check;
-        curlen=sizeof(u8);
-        memcpy(cur, &val8, curlen);
-        cur+=curlen; /* next */
-        break;
-      }
-      case TYPE_U16: {
-        if (check>USHRT_MAX||check < 0) {
-          snprintf(errbuf, ERRBUF_MAXLEN,
-            "Field \"%s\" len error, valid range is, (0-%d)",
-            tok, USHRT_MAX);
-          goto fail;
-        }
-        val16=(u16)check;
-        curlen=sizeof(u16);
-        memcpy(cur, &val16, curlen);
-        cur+=curlen; /* next */
-        break;
-      }
-
-      case TYPE_U32: {
-        if (check>UINT_MAX||check < 0) {
-          snprintf(errbuf, ERRBUF_MAXLEN,
-            "Field \"%s\" len error, valid range is, (0-%u)",
-             tok, UINT_MAX);
-          goto fail;
-        }
-        val32=(u32)check;
-        curlen=sizeof(u32);
-        memcpy(cur, &val32, curlen);
-        cur+=curlen; /* next */
-        break;
-      }
-
-      case TYPE_U64: {
-        if (check>ULONG_MAX||check < 0) {
-          snprintf(errbuf, ERRBUF_MAXLEN,
-            "Field \"%s\" len error, valid range is, (0-%ld)",
-            tok, ULONG_MAX);
-          goto fail;
-        }
-        val64=(u64)check;
-        curlen=sizeof(u64);
-        memcpy(cur, &val64, curlen);
-        cur+=curlen; /* next */
-        break;
-      }
-
-      case TYPE_STR: {
-        curlen=strlen(opt.val);
-        memcpy(cur, (char*)opt.val, curlen);
-        cur+=curlen; /* next */
-        break;
-      }
-    }
+    opts[i++]=__fmtoptparse(tok, errbuf);
     tok=strtok(NULL, ",");
   }
 
-  __fmtopt_free(&opt);
-  return res;
+  for (;j<i;j++) {
+    check=str_to_size_t(opts[j].val);
 
+
+    /*
+     * We add bits to our Internet frame, if the number of bits is not a multiple of 8,
+     * ie they do not stretch on one byte, then first check whether the next value is not
+     * also a bit, and so on until the end until it is a multiple of 8. Or if the next
+     * value is not a bit, we just fill the rest of the value with zeros until there are
+     * no bytes.
+     */
+    if (opts[j].type==TYPE_U) {
+      bitpos=pos*8;
+      try=__frmbuild_add_bits_buf(frame, errbuf, (u32)check, opts[j].bits, &bitpos);
+reply:
+      pos=(bitpos/8);
+      if (try) {
+        if ((bitpos%8)!=0) {
+          if (opts[j+1].type==TYPE_U) {
+            __fmtopt_free(&opts[j]);
+            j+=1;
+            check=str_to_size_t(opts[j].val);
+            try=__frmbuild_add_bits_buf(frame, errbuf, check, opts[j].bits, &bitpos);
+            goto reply;
+          }
+          else {
+            bitstmp=(8-(bitpos % 8)%8);
+            try=__frmbuild_add_bits_buf(frame, errbuf, check, bitstmp, &bitpos);
+          }
+        }
+      }
+    }
+
+
+    /*
+     * Add other values, it is not difficult since they are multiples of 8.
+     */
+    else if (opts[j].type==TYPE_U8)
+      try=__frmbuild_add_1_bytes_buf(frame, errbuf, check, &pos);
+    else if (opts[j].type==TYPE_U16)
+     try=__frmbuild_add_2_bytes_buf(frame, errbuf, check, &pos);
+    else if (opts[j].type==TYPE_U32)
+     try=__frmbuild_add_4_bytes_buf(frame, errbuf, check, &pos);
+    else if (opts[j].type==TYPE_U64)
+     try=__frmbuild_add_8_bytes_buf(frame, errbuf, check, &pos);
+    else if (opts[j].type==TYPE_STR)
+     try=__frmbuild_add_str_buf(frame, opts[j].val, errbuf,  &pos);
+
+    __fmtopt_free(&opts[j]);
+  }
+  if (!try)
+    return false;
+
+  return true;
+}
+
+u8 *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap)
+{
+  char buf[FMTBUF_MAXLEN];
+  u8 *res=NULL;
+
+  if (errbuf) *errbuf='\0';
+  else return NULL;
+  *frmlen=0;
+
+  vsnprintf(buf, FMTBUF_MAXLEN, fmt, ap);
+  to_lower(buf);
+  del_spaces(buf);
+
+  if (!(res=__frmbuild_alloc(frmlen, errbuf, buf)))
+    goto fail;
+
+
+  /*
+   * Now, in this allocated memory for our internet frame, the size of which we
+   * obtained in the previous step, go through "fmt" again, sequentially
+   * adding the specified values to our frame. At the same time, we keep
+   * track of the size of the types.
+   */
+  if (!(__frmbuild_add_loop(res, frmlen, errbuf, buf)))
+    goto fail;
+
+  return res;
 fail:
-  __fmtopt_free(&opt);
-  free(res);
+  if (res)
+    free(res);
   return NULL;
 }
 
 
-int __fmtopttype(const char *type)
+int __fmtopttype(fmtopt *f, const char *type)
 {
-#define C(x) strcmp(type, x) == 0
-  if (C("u8"))
-    return TYPE_U8;
-  if (C("u16"))
-    return TYPE_U16;
-  if (C("u32"))
-    return TYPE_U32;
-  if (C("u64"))
-    return TYPE_U64;
-  if (C("str"))
-    return TYPE_STR;
+  size_t i_type=0;
+#define C(x) (strcmp(type, x) == 0)
+  if (C("u8")||C("8"))
+    return f->type=TYPE_U8;
+  else if (C("u16")||C("16"))
+    return f->type=TYPE_U16;
+  else if (C("u32")||C("32"))
+    return f->type=TYPE_U32;
+  else if (C("u64")||C("64"))
+    return f->type=TYPE_U64;
+  else if (C("str"))
+    return f->type=TYPE_STR;
 #undef C
-  return -1;
+  else {
+    i_type=atoi(type);
+    if (i_type<=0)
+      return f->type=-1;
+    f->type=TYPE_U;
+    return f->bits=i_type;
+  }
+  return f->type=-1;;
 }
+
 
 fmtopt __fmtoptparse(const char *txt, char *errbuf)
 {
@@ -378,8 +489,7 @@ fmtopt __fmtoptparse(const char *txt, char *errbuf)
       save);
     return res;
   }
-  if (*txt=='(') {
-    txt++;
+  if (*txt++=='(') {
     tmp=1;
     for (;*txt!='\0';txt++) {
       if (*txt==')') {
@@ -406,7 +516,7 @@ fmtopt __fmtoptparse(const char *txt, char *errbuf)
   }
 
   res.val=strdup(val);
-  res.type=__fmtopttype(type);
+  __fmtopttype(&res, type);
 
   if (res.type==-1)
     snprintf(errbuf, ERRBUF_MAXLEN,

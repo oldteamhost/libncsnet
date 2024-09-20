@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -22,39 +22,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/raw.h>
+#ifndef NCSLINKHDR
+#define NCSLINKHDR
+#include "base.h"
 
-ssize_t frmread(int fd, char *errbuf, u8 *buf, size_t buflen)
-{
-  char tmp[ERRBUF_MAXLEN];
-  ssize_t ret;
-
-  if (!errbuf)
-    errbuf = tmp;
-  
-  if (fd == -1) {
-    snprintf(errbuf, ERRBUF_MAXLEN,
-      "File descriptor error \"read_frame\"");
-    return -1;
-  }
-  if (!buf) {
-    snprintf(errbuf, ERRBUF_MAXLEN,
-      "Buffer error, it is NULL \"read_frame\"");
-    return -1;
-  }
-  if (buflen <= 0) {
-     snprintf(errbuf, ERRBUF_MAXLEN,
-       "Buffer len error, it is \"%ld\" in \"read_frame\"",
-       buflen);
-    return -1;
-  }
-  
-  ret = read(fd, buf, buflen);
-  if (ret < 0) {
-    snprintf(errbuf, ERRBUF_MAXLEN,
-      "Read error, errno \"%s\" in \"read_frame\"",
-      strerror(errno));
-  }
-
-  return ret;
-}
+#include "../ncsnet/ncsnet.h"
+#include "../ncsnet/route.h"
+#include "../ncsnet/intf.h"
+#include "../ncsnet/eth.h"
+#include "../ncsnet/arp.h"
+#endif

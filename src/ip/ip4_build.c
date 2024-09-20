@@ -25,38 +25,26 @@
 #include <ncsnet/ip.h>
 
 u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id, u8 tos, u16 off,
-              const u8 *opts, int optslen, u8 *frame, size_t frmlen,
-              size_t *pktlen)
+              u8 *opts, int optslen, u8 *frame, size_t frmlen, size_t *pktlen)
 {
-  ip4h_t *ip;
   u8 *pkt;
 
   assert(optslen<=IP4_OPT_LEN_MAX);
-  *pktlen=sizeof(ip4h_t)+optslen+frmlen;
-  pkt=(u8*)calloc(1, *pktlen);
-  if (!pkt)
-    return NULL;
+  pkt=frmbuild(pktlen, NULL, "4(4), 4(%hhu), 8(%hhu), 16(%hu), 16(%hu), 16(%hu), 8(%hhu), 8(%hhu), 16(0)",
+    (5+(optslen/4)), tos, htons(((sizeof(ip4h_t)+optslen)+frmlen)), htons(id), off, ttl, proto);
+  if (pkt)
+    pkt=frmbuild_add(pktlen, pkt, NULL, "8(%hhu), 8(%hhu), 8(%hhu), 8(%hhu)",
+      ip4t_getid(&src, 0), ip4t_getid(&src, 1), ip4t_getid(&src, 2), ip4t_getid(&src, 3));
+  if (pkt)
+    pkt=frmbuild_add(pktlen, pkt, NULL, "8(%hhu), 8(%hhu), 8(%hhu), 8(%hhu)",
+      ip4t_getid(&dst, 0), ip4t_getid(&dst, 1), ip4t_getid(&dst, 2), ip4t_getid(&dst, 3));
+  if (pkt&&opts&&optslen)
+    pkt=frmbuild_addfrm(opts, optslen, pkt, pktlen, NULL);
+  if (pkt)
+    ip4_check(pkt, sizeof(ip4h_t)+optslen, false);
 
-  ip=(ip4h_t*)pkt;
-  ip->version = 4;
-  ip->ihl     = 5+(optslen/4);
-  ip->tos     = tos;
-  ip->totlen  = htons(*pktlen);
-  ip->id      = htons(id);
-  ip->off     = off;
-  ip->ttl     = ttl;
-  ip->proto   = proto;
-  ip->src     = src;
-  ip->dst     = dst;
-
-  if (opts&&optslen)
-    memcpy((u8*)ip+sizeof(ip4h_t), opts, optslen);
-
-  ip4_check((u8*)ip, 20+optslen, false);
-
-  if (frame&&frmlen)
-    memcpy((u8*)ip+sizeof(ip4h_t)+optslen, frame,
-      frmlen);
+  if (pkt&&frame&&frmlen)
+    pkt=frmbuild_addfrm(frame, frmlen, pkt, pktlen, NULL);
 
   return pkt;
 }

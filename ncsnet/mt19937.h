@@ -38,9 +38,10 @@
 
 __BEGIN_DECLS
 
+u32    mt19937(void);
 void   mt19937_seed(u32 seed);
-u32    mt19937_random(void);
 u32    mt19937_random_num(u32 min, u32 max);
+
 size_t __mt19937_random_num_call(size_t min, size_t max);
 
 __END_DECLS

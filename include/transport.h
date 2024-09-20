@@ -24,9 +24,13 @@
 
 #ifndef NCSTRNSHDR
 #define NCSTRNSHDR
-#include "ncsnetw.h"
+#include "network.h"
+#include "datalink.h"
+#include "base.h"
+
 #include "../ncsnet/tcp.h"
 #include "../ncsnet/udp.h"
 #include "../ncsnet/sctp.h"
 #include "../ncsnet/udplite.h"
+#include "../ncsnet/trace.h"
 #endif

@@ -24,13 +24,11 @@
 
 #ifndef NCSBASEHDR
 #define NCSBASEHDR
-/* ncsutils */
 #include "../ncsnet/log.h"
 #include "../ncsnet/hex.h"
 #include "../ncsnet/raw.h"
-#include "../ncsnet/utils.h" // XXX
+#include "../ncsnet/utils.h"
 
-/* ncscrypt */
 #include "../ncsnet/sha1.h"
 #include "../ncsnet/sha256.h"
 #include "../ncsnet/sha512.h"
@@ -40,13 +38,11 @@
 #include "../ncsnet/md5.h"
 #include "../ncsnet/md4.h"
 
-/* ncsrandom */
 #include "../ncsnet/mt19937.h"
 #include "../ncsnet/cmwc.h"
 #include "../ncsnet/msm.h"
 #include "../ncsnet/random.h"
 
-/* ncsaddrs */
 #include "../ncsnet/ip4addr.h"
 #include "../ncsnet/ip6addr.h"
 #include "../ncsnet/mac.h"

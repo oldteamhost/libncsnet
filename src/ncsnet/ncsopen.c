@@ -22,8 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ncsnet/ncsnet.h>
-#include <ncsnet/random.h>
+//#include <ncsnet/ncsnet.h>
+//#include <ncsnet/random.h>
+#include "../../ncsnet/ncsnet.h"
 
 static int intf_read_callback(const intf_entry *entry, void *arg)
 {
@@ -87,6 +88,7 @@ ncsnet_t *ncsopen(void)
   }
   randutils_open(__cmwc_random_num_call);
   n->sock.bind=0;
+  n->sock.recvfd.rbuf=NULL;
   n->sock.recvfd.lr=lr_open(DEFAULT_RTIMEOUT);
   n->sock.rbuflen=DEFAULT_RBUFLEN;
   n->sock.bindproto=DEFAULT_BINDPROTO;

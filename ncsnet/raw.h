@@ -82,34 +82,20 @@ u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ..
 u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, char *errbuf);
 
 typedef struct __fmtopt {
+# define TYPE_U   -4
 # define TYPE_U8   0
 # define TYPE_U16  1
 # define TYPE_U32  2
 # define TYPE_U64  3
 # define TYPE_STR  4
-  int type;
-  char *val;
+  int    type;
+  char  *val;
+  size_t bits;
 } fmtopt;
 
 u8    *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap);
 fmtopt __fmtoptparse(const char *txt, char *errbuf);
-int    __fmtopttype(const char *type);
-
-/*
- * Write the "pkt" internet frame passed to it to the specified file
- * descriptor "fd" whose size corresponds to "pktlen". In case of
- * error returns -1 and writes the error to errbuf, in case of success
- * the number is greater than 0. Uses the write system call.
- */
-ssize_t frmwrite(int fd, char *errbuf, u8 *frame, size_t frmlen);
-
-/*
- * Reads an internet frame from the file descriptor specified in fd,
- * and writes to a buf whose size corresponds to buflen. In case of
- * error returns -1 and writes it to errbuf, in case of success returns
- * purely greater than 0.Uses the read system call.
- */
-ssize_t frmread(int fd, char *errbuf, u8 *buf, size_t buflen);
+int __fmtopttype(fmtopt *f, const char *type);
 
 __END_DECLS
 

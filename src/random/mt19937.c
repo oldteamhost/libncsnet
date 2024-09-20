@@ -44,7 +44,7 @@ void mt19937_seed(u32 seed)
   return;
 }
 
-u32 mt19937_random(void)
+u32 mt19937(void)
 {
   int i=0;
   u32 y;
@@ -78,10 +78,11 @@ u32 mt19937_random_num(u32 min, u32 max)
   if (min>max)
     return 1;
   range=(max>=min)?(max-min):(UINT_MAX-min);
-  return (min+(mt19937_random()%range+1));
+  return (min+(mt19937()%range+1));
 }
 
-size_t __mt19937_random_num_call(size_t min, size_t max) {
+size_t __mt19937_random_num_call(size_t min, size_t max)
+{
   mt19937_seed(random_seed_u32());
   return mt19937_random_num((u32)min, (u32)max);
 }

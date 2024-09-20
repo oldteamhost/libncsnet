@@ -68,7 +68,7 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
    * the information written above.
    */
   const char  *frminfo=NULL;
-  char         asciinew[TRACE_MAX_DATA_LEN];
+  char         asciinew[TRACE_MAX_DATA_LEN]="";
   char        *ascii=NULL;
   bool         valideth=0;
 
@@ -96,7 +96,7 @@ const char *frminfo(const u8 *frame, size_t frmlen, int detail, u32 flags)
    * ethtypeptr and ethtype, and increases skip according to MAC header
    * size, records eth protocol in traceinfo;
    */
-  char         ethinfo[TRACE_PROTO_MAX_LEN];
+  char         ethinfo[TRACE_PROTO_MAX_LEN]="";
   u16         *ethtypeptr=NULL, ethtype=0;
   char         traceinfo[TRACE_PROTO_MAX_LEN]="";
   size_t       skip=0;

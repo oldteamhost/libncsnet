@@ -33,8 +33,10 @@
 
 __BEGIN_DECLS
 
-void cmwc_seed(u64 seed);
-u64  cmwc_random(void);
+u64    cmwc(void);
+void   cmwc_seed(u64 seed);
+u64    cmwc_random_num(u64 min, u64 max);
+
 size_t __cmwc_random_num_call(size_t min, size_t max);
 
 __END_DECLS

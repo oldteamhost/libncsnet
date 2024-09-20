@@ -252,7 +252,7 @@ typedef struct ip6_hdr ip6h_t;
 __BEGIN_DECLS
 
 u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id, u8 tos, u16 off,
-              const u8 *opts, int optslen, u8 *frame, size_t frmlen,
+              u8 *opts, int optslen, u8 *frame, size_t frmlen,
               size_t *pktlen);
 
 u8 *ip6_build(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 nexthdr, int hoplimit,
@@ -278,7 +278,7 @@ int ip6_send(struct ethtmp *eth, int fd, const struct sockaddr_in6 *dst,
 int ip_send(struct ethtmp *eth, int fd, const struct sockaddr_storage *dst,
             int mtu, const u8 *frame, size_t frmlen);
 
-int ip4_send_pkt(int fd, ip4_t src, ip4_t dst, u16 ttl, u8 proto, u16 off, const u8 *opt,
+int ip4_send_pkt(int fd, ip4_t src, ip4_t dst, u16 ttl, u8 proto, u16 off, u8 *opt,
                  int optlen, const char *data, size_t datalen, int mtu);
 
 char *ip4_util_strsrc(void);

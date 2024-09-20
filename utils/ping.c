@@ -563,30 +563,30 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
       icmp2=(icmph_t*)(frame+((ETH_HDR_LEN+sizeof(ip4h_t)))+(sizeof(icmp4h_t)+sizeof(u32))+(sizeof(ip4h_t)));
 
       if (ip2->proto==IPPROTO_ICMP&&(icmp2->type==ICMP4_ECHO||icmp2->type==ICMP4_INFO||icmp2->type==ICMP4_TSTAMP)) {
-	u16 *icmp_seq=NULL;
+        u16 *icmp_seq=NULL;
 
-	/*
-	 * If the type of ICMP message inside the ICMP message UNREACH
-	 * (after the ip4 header), matches one of these, then we get the
-	 * seq that lies after all this and the id field weighing 16 bits,
-	 * skip it and come to the seq field. Here: [mac_hdr + ip4_hdr +
-	 *   icmp_hdr + icmp4_msg_unreach (one unsed field weighing 32 bytes) +
-	 *   ip4_hdr + icmp_hdr + id (16bit)].
-	 *
-	 *        1. MAC_HEADER                                 2. IP_HEADER
-	 * 0000   (40 b0 76 47 8f 9a 04 bf 6d 0d 3a 50 08 00) + (45 c0
-	 * 0010   00 38 67 c2 00 00 3c 01 81 66 0a c8 c8 47 c0 a8
-	 *                 3. ICMP_HEADER                 4. ICMP4_MSG_ERROR   5. IP_HEADER
-	 * 0020   01 25) + (03 01 fc fe 00 00 00 00 45) + (00 00) +              (1c 10 4b
-	 *                                                     6. ICMP_HEADER
-	 * 0030   00 00 c3 01 45 1e c0 a8 01 25 c0 a8 20 02) + (08 00
-	 *                 7. ICMP_ID (16 bit)  8. ICMP_SEQ (target)
-	 * 0040   58 eb) + (9f 12) +            (00 02)
-	 *
-	 */
-	icmp_seq=(u16*)(frame+((ETH_HDR_LEN+sizeof(ip4h_t)))+(sizeof(icmp4h_t)+sizeof(u32))+(sizeof(ip4h_t)+sizeof(icmph_t)+sizeof(u16)));
+        /*
+         * If the type of ICMP message inside the ICMP message UNREACH
+         * (after the ip4 header), matches one of these, then we get the
+         * seq that lies after all this and the id field weighing 16 bits,
+         * skip it and come to the seq field. Here: [mac_hdr + ip4_hdr +
+         *   icmp_hdr + icmp4_msg_unreach (one unsed field weighing 32 bytes) +
+         *   ip4_hdr + icmp_hdr + id (16bit)].
+         *
+         *        1. MAC_HEADER                                 2. IP_HEADER
+         * 0000   (40 b0 76 47 8f 9a 04 bf 6d 0d 3a 50 08 00) + (45 c0
+         * 0010   00 38 67 c2 00 00 3c 01 81 66 0a c8 c8 47 c0 a8
+         *                 3. ICMP_HEADER                 4. ICMP4_MSG_ERROR   5. IP_HEADER
+         * 0020   01 25) + (03 01 fc fe 00 00 00 00 45) + (00 00) +              (1c 10 4b
+         *                                                     6. ICMP_HEADER
+         * 0030   00 00 c3 01 45 1e c0 a8 01 25 c0 a8 20 02) + (08 00
+         *                 7. ICMP_ID (16 bit)  8. ICMP_SEQ (target)
+         * 0040   58 eb) + (9f 12) +            (00 02)
+         *
+         */
+        icmp_seq=(u16*)(frame+((ETH_HDR_LEN+sizeof(ip4h_t)))+(sizeof(icmp4h_t)+sizeof(u32))+(sizeof(ip4h_t)+sizeof(icmph_t)+sizeof(u16)));
 
-	sprintf(protoinfo, "icmp_seq=%hu", ntohs(*icmp_seq));
+        sprintf(protoinfo, "icmp_seq=%hu", ntohs(*icmp_seq));
       }
     }
     else if (ip2->proto==IPPROTO_UDP) {
@@ -606,26 +606,26 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
     if (icmp->type==ICMP4_UNREACH) {
       switch (icmp->code) {
       case ICMP4_UNREACH_HOST:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Host Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Host Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       case ICMP4_UNREACH_NET:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Network Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Network Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       case ICMP4_UNREACH_PROTO:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Protocol Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Protocol Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       case ICMP4_UNREACH_PORT:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Port Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Destination Port Unreachable)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       case ICMP4_UNREACH_NEEDFRAG:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragmentation needed and DF set)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragmentation needed and DF set)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       case ICMP4_UNREACH_SRCFAIL:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Source Route Failed)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Source Route Failed)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Dest Unreachable, Bad Code: 0x%x)", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Dest Unreachable, Bad Code: 0x%x)", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code);
+        break;
       }
     }
     else if (icmp->type==ICMP4_SRCQUENCH)
@@ -633,43 +633,43 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
     else if (icmp->type==ICMP4_TIMEXCEED) {
       switch (icmp->code) {
       case ICMP4_TIMEXCEED_INTRANS:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time to live exceeded in transit)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time to live exceeded in transit)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       case ICMP4_TIMEXCEED_REASS:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragment reassembly time exceeded)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Fragment reassembly time exceeded)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time exceeded, Bad Code: 0x%x)", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Time exceeded, Bad Code: 0x%x)", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code);
+        break;
       }
     }
     else if (icmp->type==ICMP4_PARAMPROB) {
       switch (icmp->code) {
       case 0:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Parameter problem: error detected at byte (ptr_unsed) %u)", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Parameter problem: error detected at byte (ptr_unsed) %u)", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
+        break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Unspecified parameter problem)", frmlen, inet_ntoa(iptmp), protoinfo);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Unspecified parameter problem)", frmlen, inet_ntoa(iptmp), protoinfo);
+        break;
       }
     }
     else if (icmp->type==ICMP4_REDIRECT) {
       switch (icmp->code) {
       case ICMP4_REDIRECT_NET:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Network Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Network Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
+        break;
       case ICMP4_REDIRECT_HOST:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Host Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Host Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
+        break;
       case ICMP4_REDIRECT_TOSNET:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Network Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Network Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
+        break;
       case ICMP4_REDIRECT_TOSHOST:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Host Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Type of Service and Host Redirect (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, *unsed);
+        break;
       default:
-	snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Redirect, Bad Code: 0x%x (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code, *unsed);
-	break;
+        snprintf(v0msg, sizeof(v0msg), "%ld bytes from ICMP %s: %s (Redirect, Bad Code: 0x%x (New addr: %u))", frmlen, inet_ntoa(iptmp), protoinfo, icmp->code, *unsed);
+        break;
       }
     }
     return true;
@@ -747,20 +747,20 @@ static void parsearg(int argc, char **argv)
         addr4->sin_port=0;
       }
       else
-	errx(1, "err: invalid convert ipaddr \"%s\"", optarg);
+        errx(1, "err: invalid convert ipaddr \"%s\"", optarg);
       break;
     }
     case 4:
       datalen=atoll(optarg);
       if (datalen>1400)
-	errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
+        errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
       data=random_str(datalen, DEFAULT_DICTIONARY);
      break;
     case 5:
       data=optarg;
       datalen=data?strlen(data):0;
       if (datalen>1400)
-	errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
+        errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
       break;
     case 6: npackets=atoll(optarg); break;
     case 7: tos=atoi(optarg); break;
@@ -960,6 +960,7 @@ static u8 *pingbuild(size_t *pinglen)
   return ping;
 }
 
+
 /*
  * Send ping probe, and generate v123sendmsg
  */
@@ -987,7 +988,7 @@ static void pinger(void)
   else if (vvv==3)
     v123sendmgs=frminfo(ping, pinglen, HIGH_DETAIL, flags);
   if (vvv>0)
-    printf("%s\n%s",v123sendmgs, (vvv>0&&vvv<3) ? "\n" : "");
+    printf("%s\n%s",v123sendmgs, (vvv>0&&vvv<3)?"\n":"");
   free(ping);
 }
 
