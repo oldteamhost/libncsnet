@@ -89,7 +89,7 @@ ncsnet_t *ncsopen(void)
   randutils_open(__cmwc_random_num_call);
   n->sock.bind=0;
   n->sock.recvfd.rbuf=NULL;
-  n->sock.recvfd.lr=lr_open(DEFAULT_RTIMEOUT);
+  n->sock.recvfd.lr=lr_open(n->sock.dev, DEFAULT_RTIMEOUT);
   n->sock.rbuflen=DEFAULT_RBUFLEN;
   n->sock.bindproto=DEFAULT_BINDPROTO;
   n->sock.proto=DEFAULT_PROTO;

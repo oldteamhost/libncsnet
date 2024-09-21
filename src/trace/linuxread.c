@@ -27,28 +27,43 @@
 #if defined(IS_LINUX) && (HAVE_LINUX_READ == 1)
 #include <linux/if_ether.h>
 #include <linux/filter.h>
-lr_t *lr_open(long long ns)
+lr_t *lr_open(const char *device, long long ns)
 {
   lr_t *lr;
 
   lr=calloc(1, sizeof(lr_t));
   if (!lr)
     return NULL;
-  lr->fd=socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-  if (lr->fd==-1)
+  lr->fd=NULL;
+  lr->fd=eth_open(device);
+  if (!lr->fd)
     goto fail;
-  if (!(sock_util_timeoutns(lr->fd, ns, true, true)))
+  if (!(sock_util_timeoutns(eth_fd(lr->fd), ns, true, true)))
     goto fail;
   lr->ns=ns;
   memset(&lr->tstamp_s, 0, sizeof(struct timeval));
   memset(&lr->tstamp_e, 0, sizeof(struct timeval));
   lr->callback=NULL;
-  lr->bpf=0;
 
   return lr;
  fail:
+  if (lr->fd)
+    eth_close(lr->fd);
   free(lr);
   return NULL;
+}
+
+bool lr_fd(lr_t *lr, eth_t *fd)
+{
+  if (!lr)
+    return 0;
+  if (!fd)
+    return 0;
+  eth_close(lr->fd);
+  lr->fd=fd;
+  if (!(sock_util_timeoutns(eth_fd(lr->fd), lr->ns, true, true)))
+    return 0;
+  return 1;
 }
 
 void lr_callback(lr_t *lr, lrcall_t callback)
@@ -61,16 +76,6 @@ lrcall_t lr_getcallback(lr_t *lr)
   return lr->callback;
 }
 
-void lr_bpf(lr_t *lr, bpf_t *code, size_t codelen)
-{
-  struct sock_fprog bpf;
-  bpf.len=codelen/sizeof(struct sock_filter);
-  bpf.filter=code;
-  lr->bpf=1;
-  setsockopt(lr->fd, SOL_SOCKET, SO_ATTACH_FILTER, &bpf, sizeof(bpf));
-  perror("kek");
-}
-
 ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
 {
   struct timespec start, current;
@@ -78,26 +83,15 @@ ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
   ssize_t res;
   u8 *tmpbuf;
 
-  if (!lr->callback&&!lr->bpf)
+  if (!lr->callback)
     return -1;
 
   tmpbuf=*buf;
   clock_gettime(CLOCK_MONOTONIC, &start);
   gettimeofday(&lr->tstamp_s, NULL);
 
-  if (lr->bpf) {
-    res=recv(lr->fd, tmpbuf, buflen, 0);
-    gettimeofday(&lr->tstamp_e, NULL);
-    if (res==-1)
-      return -1;
-    else {
-      *buf = tmpbuf;
-      return res;
-    }
-  }
-
   for (;;) {
-    res = recv(lr->fd, tmpbuf, buflen, 0);
+    res=eth_read(lr->fd, tmpbuf, buflen);
     gettimeofday(&lr->tstamp_e, NULL);
     if (res == -1)
       return -1;
@@ -118,7 +112,7 @@ ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
 
 void lr_close(lr_t *lr)
 {
-  close(lr->fd);
+  eth_close(lr->fd);
   free(lr);
 }
 
@@ -139,10 +133,10 @@ bool lrcall_default(u8 *frame, size_t frmlen)
   return true;
 }
 #else
-lr_t *lr_open(long long ns) { return NULL; }
+lr_t *lr_open(const char *device, long long ns) { return NULL; }
 void lr_callback(lr_t *lr, lrcall_t callback) { return; }
-void lr_bpf(lr_t *lr, bpf_t *code, size_t codelen){ return; }
 ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen) { return -1; }
 bool lrcall_default(u8 *frame, size_t frmlen) { return false; }
 void lr_close(lr_t *lr) { return; }
+bool lr_fd(lr_t *lr, eth_t *fd) { return false; }
 #endif

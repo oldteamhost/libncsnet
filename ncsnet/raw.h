@@ -53,17 +53,11 @@ __BEGIN_DECLS
  *
  * It is important to remember that the order of the fields
  * you specify will be taken into account.
- * 
- * [[<datatype>(<value>)], [<datatype>(<value>)], etc. (...,)]
+ *
+ * [[<bits>(<value>)], [<bits>(<value>)], etc. (...,)]
+ * ex: frmbuild (&len, NULL, "4(1), 4(2), 8(10), 16(%hhu)", htons(100));
  */
 u8 *frmbuild(size_t *frmlen, char *errbuf, const char *fmt, ...);
-
-/*
- * Takes a HEX sequence like this, 45002a00910b000079849bd6c0a801
- * 26adc2de8a0050c52f29498d23fa327b230900000a0000000611bb, and puts
- * it into a u8 pointer that returns.
- */
-u8 *frmbuild_hex(size_t *frmlen, char *errbuf, const char *hex);
 
 /*
  * Adds the specified data to an existing internet frame and
@@ -81,6 +75,13 @@ u8 *frmbuild_add(size_t *frmlen, u8 *oldframe, char *errbuf, const char *fmt, ..
  */
 u8 *frmbuild_addfrm(u8 *frame, size_t frmlen, u8 *oldframe, size_t *oldfrmlen, char *errbuf);
 
+/*
+ * Takes a HEX sequence like this, 45002a00910b000079849bd6c0a801
+ * 26adc2de8a0050c52f29498d23fa327b230900000a0000000611bb, and puts
+ * it into a u8 pointer that returns.
+ */
+u8 *frmbuild_hex(size_t *frmlen, char *errbuf, const char *hex);
+
 typedef struct __fmtopt {
 # define TYPE_U   -4
 # define TYPE_U8   0
@@ -95,7 +96,7 @@ typedef struct __fmtopt {
 
 u8    *__frmbuild_generic(size_t *frmlen, char *errbuf, const char *fmt, va_list ap);
 fmtopt __fmtoptparse(const char *txt, char *errbuf);
-int __fmtopttype(fmtopt *f, const char *type);
+int    __fmtopttype(fmtopt *f, const char *type);
 
 __END_DECLS
 

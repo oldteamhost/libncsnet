@@ -27,6 +27,7 @@
 const char* mact_ntop_c(mac_t *mac)
 {
   static char macbuf[MAC_ADDR_STRING_LEN];
+  memset(macbuf, 0, MAC_ADDR_STRING_LEN);
   mact_ntop(mac, macbuf, MAC_ADDR_STRING_LEN);
   return macbuf;
 }

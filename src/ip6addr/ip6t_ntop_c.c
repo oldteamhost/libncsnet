@@ -27,6 +27,7 @@
 const char *ip6t_ntop_c(const ip6_t *ip6)
 {
   static char ip6buf[IP6_ADDR_STRING_LEN];
+  memset(ip6buf, 0, IP6_ADDR_STRING_LEN);
   ip6t_ntop(ip6, ip6buf, IP6_ADDR_STRING_LEN);
   return ip6buf;
 }

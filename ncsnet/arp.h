@@ -85,6 +85,7 @@
 #define ARP_HDR_PUREIP        0x23  /* Pure IP                                     */
 #define ARP_HDR_HW_EXP1       0x24  /* HW_EXP1 [RFC5494]                           */
 #define ARP_HDR_HW_EXP2       0x25  /* HW_EXP2 [RFC5494]                           */
+#define ARP_HRD_FDDI          0x306
 
 #define ARP_OP_REQUEST        1     /* request to resolve ha given pa */
 #define ARP_OP_REPLY          2     /* response giving hardware address */

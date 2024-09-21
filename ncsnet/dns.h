@@ -31,7 +31,7 @@
 #include <unistd.h>
 
 #include "socket.h"
-  
+
 #include "sys/types.h"
 #include "sys/nethdrs.h"
 #include "../ncsnet-config.h"

@@ -59,4 +59,5 @@
   #endif
 #endif
 #include "dlt.h"
+#define AX25_PRO_IP 0xcc /* ARPA Internet Protocol */
 #endif

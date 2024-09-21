@@ -27,6 +27,7 @@
 const char *ip4t_ntop_c(const ip4_t *ip4)
 {
   static char ip4buf[IP4_ADDR_STRING_LEN];
+  memset(ip4buf, 0, IP4_ADDR_STRING_LEN);
   ip4t_ntop(ip4, ip4buf, IP4_ADDR_STRING_LEN);
   return ip4buf;
 }

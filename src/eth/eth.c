@@ -183,7 +183,7 @@ eth_t *eth_open(const char *device)
   e = calloc(1, sizeof(*e));
   if (!e)
     return e;
-  
+
   if ((e->fd = bpf_open()) < 0)
     return (eth_close(e));
 
