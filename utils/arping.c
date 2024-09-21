@@ -320,7 +320,6 @@ static void build_arp(void)
   mact_fill(&dstmac_arp, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
   if (!b&&reply_state&&arpreq)
     *dstmac_eth=arpreq->sha;
-
   if (t)
     mact_pton(tmpmac, dstmac_eth);
 
@@ -532,7 +531,7 @@ int main(int argc, char **argv)
         else if (!D)
           printf("%ld bytes from %s %s (%s) id=%ld time=%.4f ms\n",
             rbytes, arpreplytype, ip4t_ntop_c(&arpreq->spa),
-            mact_ntop_c(dstmac_eth), (totalnum-num), currtt);
+            mact_ntop_c(&arpreq->sha), (totalnum-num), currtt);
       }
       else {
         if (!D)
