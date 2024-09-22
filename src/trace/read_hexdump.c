@@ -28,7 +28,7 @@ char *read_hexdump(const u8 *txt, size_t txtlen)
 {
 #define HEX_START 7
 #define ASC_START 57
-#define LINE_LEN 74  
+#define LINE_LEN 74
   static char asciify[257];
   int asc_init=0;
   u32 i=0, hex=0, asc=0;
@@ -38,6 +38,9 @@ char *read_hexdump(const u8 *txt, size_t txtlen)
   char line2print[LINE_LEN];
   char printbyte[16];
   int bytes2alloc;
+  
+  if (!txt||!txtlen)
+    return NULL;
   
   memset(line2print, ' ', LINE_LEN);
   if (asc_init==0){

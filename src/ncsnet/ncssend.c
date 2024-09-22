@@ -173,15 +173,17 @@ static bool __proc_arpcache(ncsnet_t *n, const char *to, mac_t *dst)
   if (found)
     mact_pton(mac, dst);
   fclose(fp);
+  if (mact_compare(*dst, n->sock.sendfd.srcmac))
+    found=0;
   return found;
 }
 
 
 static bool __get_dstmac(ncsnet_t *n, const char *to, mac_t *dst)
 {
-  if ((__proc_arpcache(n, to, dst)))
-    return 1;
   if ((__proc_arpreq(n, to, dst)))
+    return 1;
+  if ((__proc_arpcache(n, to, dst)))
     return 1;
   return 0;
 }

@@ -31,7 +31,7 @@ u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id, u8 to
 
   assert(optslen<=IP4_OPT_LEN_MAX);
   pkt=frmbuild(pktlen, NULL, "4(4), 4(%hhu), 8(%hhu), 16(%hu), 16(%hu), 16(%hu), 8(%hhu), 8(%hhu), 16(0)",
-    (5+(optslen/4)), tos, htons(((sizeof(ip4h_t)+optslen)+frmlen)), htons(id), off, ttl, proto);
+    (5+(optslen/4)), tos, htons(((sizeof(ip4h_t)+optslen)+frmlen)), htons(id), htons(off), ttl, proto);
   if (pkt)
     pkt=frmbuild_add(pktlen, pkt, NULL, "8(%hhu), 8(%hhu), 8(%hhu), 8(%hhu)",
       ip4t_getid(&src, 0), ip4t_getid(&src, 1), ip4t_getid(&src, 2), ip4t_getid(&src, 3));

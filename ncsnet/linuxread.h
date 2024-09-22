@@ -50,6 +50,7 @@ typedef struct linuxread_hdr
 __BEGIN_DECLS
 
 lr_t        *lr_open(const char *device, long long ns);
+void         lr_ns(lr_t *lr, long long ns);
 bool         lr_fd(lr_t *lr, eth_t *fd);
 void         lr_callback(lr_t *lr, lrcall_t callback);
 lrcall_t     lr_getcallback(lr_t *lr);

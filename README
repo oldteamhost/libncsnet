@@ -40,7 +40,8 @@ check folder utils/.
 
   uitls/ping.c         connection test tool.
   utils/icmpflood.c    icmp ddos tool.
-  utils/arping.c       discovering hosts on a computer network.
   utils/hexflood.c     very fast ddos with any specified packages.
+  utils/arping.c       discovering hosts on a computer network.
+  utils/traceroute.c   displays possible routes and transit delays of packets.
 
 last updated 2024-09-21 (lomaster)

@@ -308,9 +308,9 @@ int eth_set(eth_t *e, const mac_t *ea)
   return (ioctl(e->fd, SIOCSIFHWADDR, &e->ifr));
 }
 
-ssize_t eth_read(eth_t *e, u8 *buf, ssize_t len)
+ssize_t eth_read(eth_t *e, u8 *buf, ssize_t len, int flags)
 {
-  return recv(e->fd, buf, len, 0);
+  return recv(e->fd, buf, len, flags);
 }
 
 eth_t *eth_close(eth_t *e)

@@ -25,27 +25,40 @@
 //#include <ncsnet/ncsnet.h>
 //#include <ncsnet/random.h>
 #include "../../ncsnet/ncsnet.h"
+#include <string.h>
+
+typedef struct __intf_info_ncsnet {
+  const char *find_dev;
+  char dev[IFNAMSIZ];
+  mac_t src;
+  ip4_t srcip4;
+  ip6_t srcip6;
+  int srctype;
+} intf_info_ncsnet_t;
 
 static int intf_read_callback(const intf_entry *entry, void *arg)
 {
-  ncsnet_t *n=(ncsnet_t*)arg;
+  intf_info_ncsnet_t *n=(intf_info_ncsnet_t*)arg;
   if (entry->intf_flags&INTF_FLAG_LOOPBACK||
     entry->intf_flags&INTF_FLAG_POINTOPOINT)
     return 0;
+  if (n->find_dev)
+    if (strcmp(n->find_dev, entry->intf_name)!=0)
+      return 0;
   if (entry->intf_flags&INTF_FLAG_UP) {
-    snprintf(n->sock.dev, IFNAMSIZ, "%s", entry->intf_name);
-    n->sock.sendfd.srcmac=entry->intf_link_addr.addr_eth;
-    n->sock.sendfd.srctype=entry->intf_addr.type;
+    snprintf(n->dev, IFNAMSIZ, "%s", entry->intf_name);
+    n->src=entry->intf_link_addr.addr_eth;
+    n->srctype=entry->intf_addr.type;
     if (entry->intf_addr.type==ADDR_TYPE_IP)
-      n->sock.sendfd.src.srcip4=entry->intf_addr.addr_ip4;
+      n->srcip4=entry->intf_addr.addr_ip4;
     else if (entry->intf_addr.type==ADDR_TYPE_IP6)
-       n->sock.sendfd.src.srcip6=entry->intf_addr.addr_ip6;
+       n->srcip6=entry->intf_addr.addr_ip6;
     return 1;
   }
   return 0;
 }
 
-static bool intf_read(ncsnet_t *n)
+static bool intf_read(intf_info_ncsnet_t *n)
 {
   intf_t *i;
   i=intf_open();
@@ -57,19 +70,31 @@ static bool intf_read(ncsnet_t *n)
   return 1;
 }
 
-ncsnet_t *ncsopen(void)
+static ncsnet_t *__ncsopen_generic(const char *device)
 {
-  ncsnet_t *n=calloc(1, sizeof(ncsnet_t));
+  intf_info_ncsnet_t info={0};
+  ncsnet_t *n=NULL;
+
+  n=calloc(1, sizeof(ncsnet_t));
   if (!n) {
     __ncsseterror(
         "%s: allocated failed\n", __FUNCTION__);
     return NULL;
   }
-  if (!intf_read(n)) {
+  if (device)
+    info.find_dev=device;
+  if (!intf_read(&info)) {
     __ncsseterror(
         "%s: failed read interface (check network)\n", __FUNCTION__);
     goto fail;
   }
+
+  n->sock.sendfd.srctype=info.srctype;
+  if (n->sock.sendfd.srctype==ADDR_TYPE_IP)
+    n->sock.sendfd.src.srcip4=info.srcip4;
+  else if (n->sock.sendfd.srctype==ADDR_TYPE_IP6)
+    n->sock.sendfd.src.srcip6=info.srcip6;
+  n->sock.sendfd.srcmac=info.src;
 
 
   /*
@@ -80,16 +105,18 @@ ncsnet_t *ncsopen(void)
    */
   n->sock.sendfd.dlttype=DLT_EN10MB;
   if (n->sock.sendfd.dlttype==DLT_EN10MB) {
-    if (!(n->sock.sendfd.dlt_802_3.eth2=eth_open((n->sock.dev)))) {
+    if (!(n->sock.sendfd.dlt_802_3.eth2=eth_open((info.dev)))) {
       __ncsseterror(
           "%s: failed open ethernet fd\n", __FUNCTION__);
-      goto fail;
+      return 0;
     }
   }
+
+  n->sock.recvfd.lr=lr_open(info.dev, DEFAULT_RTIMEOUT);
   randutils_open(__cmwc_random_num_call);
+
   n->sock.bind=0;
   n->sock.recvfd.rbuf=NULL;
-  n->sock.recvfd.lr=lr_open(n->sock.dev, DEFAULT_RTIMEOUT);
   n->sock.rbuflen=DEFAULT_RBUFLEN;
   n->sock.bindproto=DEFAULT_BINDPROTO;
   n->sock.proto=DEFAULT_PROTO;
@@ -101,6 +128,14 @@ ncsnet_t *ncsopen(void)
 fail:
   ncsclose(n);
   return NULL;
+}
+
+ncsnet_t *ncsopen(void) {
+  return (__ncsopen_generic(NULL));
+}
+
+ncsnet_t *ncsopen_s(const char *device) {
+  return (__ncsopen_generic(device));
 }
 
 void __ncsopen_info(ncsnet_t *n)

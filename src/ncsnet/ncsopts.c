@@ -36,6 +36,7 @@ static bool ncsopt_rtimeout(ncsnet_t *n, ncstime_t val)
     return 0;
   }
   n->sock.rtimeout=val;
+  lr_ns(n->sock.recvfd.lr, val);
   return 1;
 }
 

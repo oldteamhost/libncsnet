@@ -681,8 +681,8 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
 
 /*
  * Filters received packets, and at the same time emits messages
- * about their reception, for laying level 0. Handles IP4, IP6,
- * ICMP, TCP, TCP, SCTP, UDP, ICMP6.
+ * about their reception, for laying level 0. Handles IP4, ICMP,
+ * TCP, TCP, SCTP, UDP, ICMP6.
  */
 static bool received_ping_callback(u8 *frame, size_t frmlen)
 {
@@ -768,7 +768,13 @@ static void parsearg(int argc, char **argv)
     case 9: df=1; break;
     case 10: ttl=atoi(optarg); ttlc=1; break;
     case 11: mtu=atoi(optarg); break;
-    case 12: tcpopt=hex_ahtoh(optarg, &tcpoptlen); if (!tcpopt) errx(0,"err: invalid hex string specification"); break;
+    case 12:
+      tcpopt=hex_ahtoh(optarg, &tcpoptlen);
+      if (!tcpopt)
+        errx(0,"err: invalid hex string specification");
+      if (datalen>1400)
+        errx(1, "err: maximum ETH payload is (1400), your is \"%d\"", datalen);
+      break;
     case 13: mact_pton(optarg, &macsrc); break;
     case 14: noreply=1; if (vvv>=0) vvv=1; break;
     case 15: mact_pton(optarg, &macdst); break;

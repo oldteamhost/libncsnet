@@ -38,14 +38,13 @@ lr_t *lr_open(const char *device, long long ns)
   lr->fd=eth_open(device);
   if (!lr->fd)
     goto fail;
-  if (!(sock_util_timeoutns(eth_fd(lr->fd), ns, true, true)))
-    goto fail;
-  lr->ns=ns;
+  lr_ns(lr, ns);
   memset(&lr->tstamp_s, 0, sizeof(struct timeval));
   memset(&lr->tstamp_e, 0, sizeof(struct timeval));
   lr->callback=NULL;
 
   return lr;
+
  fail:
   if (lr->fd)
     eth_close(lr->fd);
@@ -76,38 +75,62 @@ lrcall_t lr_getcallback(lr_t *lr)
   return lr->callback;
 }
 
+#include <poll.h>
+
 ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen)
 {
-  struct timespec start, current;
-  long long elapsed;
-  ssize_t res;
-  u8 *tmpbuf;
+  struct timespec start={0}, current={0};
+  struct pollfd pfd={0};
+  u8 *tmpbuf=NULL;
+  ssize_t ret=0;
 
-  if (!lr->callback)
+  if (!lr||!lr->callback)
     return -1;
+
+  pfd.fd=eth_fd(lr->fd);
+  pfd.events=POLLIN;
 
   tmpbuf=*buf;
   clock_gettime(CLOCK_MONOTONIC, &start);
   gettimeofday(&lr->tstamp_s, NULL);
 
   for (;;) {
-    res=eth_read(lr->fd, tmpbuf, buflen);
-    gettimeofday(&lr->tstamp_e, NULL);
-    if (res == -1)
+    ret=poll(&pfd, 1, to_ms(lr->ns));
+    if (ret==-1) {
+      if (errno==EINTR)
+        continue;
       return -1;
-    if (!lr->callback(tmpbuf, res)) {
-      clock_gettime(CLOCK_MONOTONIC, &current);
-      elapsed=(current.tv_sec-start.tv_sec)*1000000000LL+(current.tv_nsec-start.tv_nsec);
-       if (elapsed>=lr->ns)
-         return -1;
-      continue;
     }
-    else {
-      *buf = tmpbuf;
-      return res;
+    else if (ret==0)
+      return -1;
+    else if (pfd.revents&POLLIN) {
+      pfd.revents=0;
+      ret=eth_read(lr->fd, tmpbuf, buflen, 0);
+      gettimeofday(&lr->tstamp_e, NULL);
+      if (ret==-1) {
+        if (errno==EINTR)
+          continue;
+        return -1;
+      }
+      if (!lr->callback(tmpbuf, ret)) {
+        clock_gettime(CLOCK_MONOTONIC, &current);
+         if (((current.tv_sec-start.tv_sec)*1000000000LL+(current.tv_nsec-start.tv_nsec))>=lr->ns)
+           return -1;
+        continue;
+      }
+      else {
+        *buf = tmpbuf;
+        return ret;
+      }
     }
   }
   /* NOTREACHED */
+}
+
+void lr_ns(lr_t *lr, long long ns)
+{
+  lr->ns=(ns<0)?0:ns;
+  sock_util_timeoutns(eth_fd(lr->fd), lr->ns, true, true);
 }
 
 void lr_close(lr_t *lr)
@@ -138,5 +161,6 @@ void lr_callback(lr_t *lr, lrcall_t callback) { return; }
 ssize_t lr_live(lr_t *lr, u8 **buf, size_t buflen) { return -1; }
 bool lrcall_default(u8 *frame, size_t frmlen) { return false; }
 void lr_close(lr_t *lr) { return; }
+void lr_ns(lr_t *lr, long long ns) {return;}
 bool lr_fd(lr_t *lr, eth_t *fd) { return false; }
 #endif

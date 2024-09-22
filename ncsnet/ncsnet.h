@@ -145,6 +145,7 @@ __BEGIN_DECLS
  */
 
 ncsnet_t *ncsopen(void);
+ncsnet_t *ncsopen_s(const char *device);
 void      ncsclose(ncsnet_t *n);
 void      __ncsopen_info(ncsnet_t *n);
 

@@ -13,9 +13,9 @@ CFLAGS = @CFLAGS@ @OCFLAGS@ -g
 BUILDDIR = @BUILDDIR@
 LIBNCSNETDIR = ../
 LIB=$(LIBNCSNETDIR)/libncsnet.a
-PROGS=icmpflood ping hexflood arping
-SRCS=icmpflood.c ping.c hexflood.c arping.c
-OBJS=icmpflood.o ping.o hexflood.o arping.o
+PROGS=icmpflood ping hexflood arping traceroute
+SRCS=icmpflood.c ping.c hexflood.c arping.c traceroute.c
+OBJS=icmpflood.o ping.o hexflood.o arping.o traceroute.o
 
 all: $(LIBNCSNETDIR)/libncsnet.a $(BUILDDIR) $(OBJS) $(PROGS)
 
@@ -39,6 +39,10 @@ arping.o: arping.c
 	$(E) "  CC      " $<
 	$(Q) $(CC) $(CFLAGS) -c -o $@ $<
 
+traceroute.o: traceroute.c
+	$(E) "  CC      " $<
+	$(Q) $(CC) $(CFLAGS) -c -o $@ $<
+
 hexflood: hexflood.o $(LIB)
 	$(E) "  LINK    " $(BUILDDIR)/$@
 	$(Q) $(CC) $(CFLAGS) -o $(BUILDDIR)/$@ $< $(LIB)
@@ -52,6 +56,10 @@ ping: ping.o $(LIB)
 	$(Q) $(CC) $(CFLAGS) -o $(BUILDDIR)/$@ $< $(LIB)
 
 arping: arping.o $(LIB)
+	$(E) "  LINK    " $(BUILDDIR)/$@
+	$(Q) $(CC) $(CFLAGS) -o $(BUILDDIR)/$@ $< $(LIB)
+
+traceroute: traceroute.o $(LIB)
 	$(E) "  LINK    " $(BUILDDIR)/$@
 	$(Q) $(CC) $(CFLAGS) -o $(BUILDDIR)/$@ $< $(LIB)
 

@@ -99,7 +99,7 @@ __BEGIN_DECLS
 
 eth_t   *eth_open(const char *device);
 int      eth_fd(eth_t *e);
-ssize_t  eth_read(eth_t *e, u8 *buf, ssize_t len);
+ssize_t  eth_read(eth_t *e, u8 *buf, ssize_t len, int flags);
 ssize_t  eth_send(eth_t *e, const void *buf, size_t len);
 int      eth_get(eth_t *e, mac_t *ea);
 int      eth_set(eth_t *e, const mac_t *ea);
