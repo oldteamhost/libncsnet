@@ -55,17 +55,13 @@ typedef struct __intf_info
   ip4_t srcip;
 } intf_info_hdr;
 
-typedef struct __traceroute_hop
-{
-  ip4_t source;
-  double rtt_1, rtt_2, rtt_3;
-  int hopid, hop;
-  bool ok, reached;
-} tr_hop_t;
-
-size_t          tmplen;
-u8             *tmp;
-const char     *run=NULL, *shortopts="hl:H:s:f:I:m:a", *node=NULL;
+ip4_t           source={0};
+int             hopid=1, hop=0;
+bool            ok=0, reached=0, success=0;
+double         *rtts=NULL;
+size_t          tmplen=0;
+u8             *tmp=NULL;
+const char     *run=NULL, *shortopts="hl:H:s:f:I:m:at", *node=NULL;
 int             rez=0, id=0, is=0;
 char            ip4buf[16];
 intf_info_hdr   intfhdr={0};
@@ -82,9 +78,11 @@ ip4_t           dstip={0};
 int             lastidip=0;
 int             ttl=1, tos=0, mttl=30;
 bool            csrcip=0, csrcmac=0, csrcport=0, all=0;
-size_t          nreceived=0, ntransmitted=0;
+size_t          nreceived=0, ntransmitted=0, try=3, j=1;
 int             off=0;
-tr_hop_t        curhop;
+char            tmpbuf[16];
+ip4_t           ip4_tmp;
+bool            p=0;
 
 const struct option
             longopts[]={
@@ -104,7 +102,8 @@ const struct option
   {"df", no_argument, 0, 12},
   {"mf", no_argument, 0, 13},
   {"rf", no_argument, 0, 14},
-  {"all", no_argument, 0, 'a'}
+  {"all", no_argument, 0, 'a'},
+  {"try", required_argument, 0, 't'},
 };
 
 
@@ -116,26 +115,24 @@ static noreturn void usage(void)
   puts("Usage");
   printf("  %s [flags] <target>\n\n", run);
   puts("  -maxwait <time>  set your timeout");
+  puts("  -t, -try <num>   set your num of try");
   puts("  -I <device>      set your interface");
-  puts("  -m <ttl>         set max ttl (hops)");
-  puts("  -f <ttl>         set first ttl");
-  puts("  -H, -hex <hex>   set payload in hex");
-  puts("  -s <str>         set payload in string");
-  puts("  -l <num>         set payload len");
-  puts("  -tos <num>       set type of service");
   puts("  -srcport <num>   set your srcport");
   puts("  -dstport <num>   set your dstport");
-  puts("  -src <ip>        set your srcip");
+  puts("  -tos <num>       set Type Of Service");
+  puts("  -src <ip>        set your source ip");
+  puts("  -m <ttl>         set max ttl (hops)");
+  puts("  -f <ttl>         set first ttl (start hop)");
+  puts("  -H, -hex <hex>   set payload in your hex");
+  puts("  -s <str>         set payload in your string");
+  puts("  -l <num>         set len random payload");
   putchar('\n');
   puts("  -a, -all    use all methods and protos");
-  puts("  -echo       use icmp echo packets (default)");
+  puts("  -echo       use icmp echo packets");
   puts("  -syn        use tcp syn packets");
   puts("  -crap       use udp packets");
   puts("  -lite-crap  use udp-lite packets");
   puts("  -cookie     use sctp cookie packets");
-  puts("  -df         set Don't fragment flag");
-  puts("  -mf         set More fragment flag");
-  puts("  -rf         set Reserved fragment flag");
   puts("  -h, -help   show this help message and exit");
   infohelp();
   exit(0);
@@ -212,6 +209,7 @@ static void parsearg(int argc, char **argv)
             UCHAR_MAX);
         break;
       case 'I': intfhdr.devicefind=optarg; break;
+      case 't': try=atoll(optarg); break;
       case 'h':
       case '?':
       default:
@@ -231,6 +229,10 @@ static u8 *build_traceroute_probe(size_t *probelen)
   ip4h_t *iphdr;
   int pr=0;
 
+  if (!probelen)
+    return NULL;
+  *probelen=0;
+
   switch (proto) {
     case ECHO_TR: pr=PR_ICMP; break;
     case SYN_TR: pr=PR_TCP; break;
@@ -239,34 +241,40 @@ static u8 *build_traceroute_probe(size_t *probelen)
     case COOKIE_TR: pr=PR_SCTP; break;
   }
 
-
   if (!csrcport)
     srcport=random_srcport();
   switch (pr) {
     case PR_UDP:
       res=udp_build(srcport, dstport, (u8*)data, datalen, probelen);
-      udp4_check(res, *probelen, intfhdr.srcip, dstip, false);
+      if (res)
+        udp4_check(res, *probelen, intfhdr.srcip, dstip, false);
       break;
     case PR_ICMP:
       msg=icmp4_msg_echo_build(random_u16(), random_u16(), data, probelen);
       if (!msg)
         return NULL;
       res=icmp_build(ICMP4_ECHO, 0, msg, *probelen, probelen);
-      icmp4_check(res, *probelen, false);
+      if (res)
+        icmp4_check(res, *probelen, false);
       free(msg);
       break;
     case PR_TCP:
       res=tcp_build(srcport, dstport, random_u32(), 0, 0, TCP_FLAG_SYN, 1024, 0, NULL, 0, (u8*)data, datalen, probelen);
-      tcp4_check(res, *probelen, intfhdr.srcip, dstip, false);
+      if (res)
+        tcp4_check(res, *probelen, intfhdr.srcip, dstip, false);
       break;
     case PR_SCTP:
       msg=sctp_cookie_build(SCTP_COOKIE_ECHO, 0, (u8*)data, datalen, probelen);
+      if (!msg)
+        return NULL;
       res=sctp_build(srcport, dstport, random_u32(), msg, *probelen, probelen);
-      sctp_check(res, *probelen, false, false);
+      if (res)
+        sctp_check(res, *probelen, false, false);
       break;
     case IPPROTO_UDPLITE:
       res=udplite_build(srcport, dstport, (u8*)data, datalen, probelen);
-      udplite4_check(res, *probelen, intfhdr.srcip, dstip, 0, false);
+      if (res)
+        udplite4_check(res, *probelen, intfhdr.srcip, dstip, 0, false);
       break;
 
   }
@@ -282,9 +290,10 @@ static u8 *build_traceroute_probe(size_t *probelen)
 
   iphdr=(ip4h_t*)ip;
   lastidip=ntohs(iphdr->id);
-  curhop.hop=iphdr->ttl;
+  hop=iphdr->ttl;
 
-  free(res);
+  if (res)
+    free(res);
   return ip;
 }
 
@@ -305,8 +314,8 @@ static bool __received_traceroute_callback(u8 *frame, size_t frmlen)
     return 0;
   iphdr=(ip4h_t*)(frame+14);
   if (ip4t_compare(dstip, iphdr->src)) {
-    curhop.source=iphdr->src;
-    return (curhop.reached=1);
+    source=iphdr->src;
+    return (reached=1);
   }
   if (iphdr->proto!=PR_ICMP)
     return 0;
@@ -315,7 +324,7 @@ static bool __received_traceroute_callback(u8 *frame, size_t frmlen)
     return 0;
   if (!ip4t_compare(intfhdr.srcip, iphdr->dst))
     return 0;
-  curhop.source=iphdr->src;
+  source=iphdr->src;
 
   iphdr_2=(ip4h_t*)((frame)+(14+20+(sizeof(icmph_t)+4)));
   if (ntohs(iphdr_2->id)!=lastidip)
@@ -346,17 +355,11 @@ static bool received_traceroute_callback(u8 *frame, size_t frmlen)
   bool ret=0;
 
   ret=__received_traceroute_callback(frame, frmlen);
-  curhop.ok=ret;
+  ok=ret;
   nreceived+=(int)ret;
 
-  if (curhop.ok&&curhop.hopid==0)
-    curhop.rtt_1=tvrtt(&n->sock.recvfd.lr->tstamp_s,
-      &n->sock.recvfd.lr->tstamp_e);
-  else if (curhop.ok&&curhop.hopid==1)
-    curhop.rtt_2=tvrtt(&n->sock.recvfd.lr->tstamp_s,
-      &n->sock.recvfd.lr->tstamp_e);
-  else if (curhop.ok&&curhop.hopid==2)
-    curhop.rtt_3=tvrtt(&n->sock.recvfd.lr->tstamp_s,
+  if (ok)
+    rtts[hopid-1]=tvrtt(&n->sock.recvfd.lr->tstamp_s,
       &n->sock.recvfd.lr->tstamp_e);
 
   return ret;
@@ -448,7 +451,6 @@ const char *getdns(ip4_t dst)
  */
 static noreturn void finish(int sig)
 {
-
   char date[20];
   struct tm *t;
   time_t now;
@@ -461,7 +463,7 @@ static noreturn void finish(int sig)
     printf(", %ld%% packet loss\n", (size_t)
       (((ntransmitted-nreceived)*100) / ntransmitted));
   printf("target %s %s %d hops\n", ip4t_ntop_c(&dstip),
-    (curhop.reached)?"was reached in":"has been missed for", curhop.hop);
+    (reached)?"was reached in":"has been missed for", hop);
   putchar('\n');
 
   now=time(NULL);
@@ -469,6 +471,8 @@ static noreturn void finish(int sig)
   strftime(date, sizeof(date), "%H:%M:%S", t);
   printf("Ending %s at %s and clearing the memory\n", __FILE_NAME__, date);
 
+  if (rtts)
+    free(rtts);
   if (n)
     ncsclose(n);
   exit(0);
@@ -503,41 +507,53 @@ int main(int argc, char **argv)
   if (!n)
     errx(1, "err: failed open socket!");
   ncsopts(n, NCSOPT_PROTO|NCSOPT_RTIMEOUT, PR_IP, maxwait);
+  rtts=(double*)calloc(try, sizeof(double));
 
   mttl=mttl-(ttl-1); /* fix size */
   for (;mttl;mttl--) {
+    memset(rtts, 0, (try*sizeof(double)));
+    success=p=0;
     printf("%d  ", ttl);
     fflush(stdout);
-    for (curhop.hopid=0;curhop.hopid<3;++curhop.hopid) {
+    for (hopid=1,ok=0;hopid<=try;hopid++) {
       tmp=build_traceroute_probe(&tmplen);
       ncssend(n, tmp, tmplen);
       ntransmitted++;
-      free(tmp);
+      if (tmp)
+        free(tmp);
       ncsrecv(n, received_traceroute_callback, 1);
-      if (!curhop.ok&&all) {
+      if (!ok&&all) {
         if (proto==LAST_TR) {
           proto=0;
           goto print;
         }
         proto++;
-        curhop.hopid--;
+        hopid--;
         continue;
       }
 print:
-      if (!curhop.ok) {
+      if (!ok){
         putchar('.');
         fflush(stdout);
       }
-      else break;
+      else if (ok&&(!p||!ip4t_compare(source, ip4_tmp))) {
+        ip4t_ntop(&source, tmpbuf, 16);
+        printf("%s %s", tmpbuf,
+            getdns(source));
+        p=1;
+        ip4t_copy(&ip4_tmp, &source);
+      }
+      if (!success&&ok)
+        success=ok;
     }
-    if (!curhop.ok)
-      putchar('\n');
-    if (curhop.ok) {
-      printf("%s %s    %0.4f %0.4f %0.4f (ms)\n",
-        ip4t_ntop_c(&curhop.source), getdns(curhop.source),
-        curhop.rtt_1, curhop.rtt_2, curhop.rtt_3);
+    if (success) {
+      printf("    ");
+      for (j=1;j<=try;j++)
+        printf("%0.4f ", rtts[j-1]);
+      printf("(ms)");
     }
-    if (curhop.reached)
+    putchar('\n');
+    if (reached)
       break;
     ttl++;
   }
