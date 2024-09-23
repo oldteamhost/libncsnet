@@ -40,6 +40,13 @@
 #include "../ncsnet/dns.h"
 #include "../include/transport.h"
 
+#define ECHO_TR      0
+#define SYN_TR       1
+#define COOKIE_TR    2
+#define CRAP_TR      3
+#define LITE_CRAP_TR 4
+#define LAST_TR      LITE_CRAP_TR
+
 typedef struct __intf_info
 {
   const char *devicefind;
@@ -58,7 +65,7 @@ typedef struct __traceroute_hop
 
 size_t          tmplen;
 u8             *tmp;
-const char     *run=NULL, *shortopts="hl:H:s:f:I:m:", *node=NULL;
+const char     *run=NULL, *shortopts="hl:H:s:f:I:m:a", *node=NULL;
 int             rez=0, id=0, is=0;
 char            ip4buf[16];
 intf_info_hdr   intfhdr={0};
@@ -68,13 +75,13 @@ ncstime_t       maxwait=to_ns(150);
 int             vvv=0;
 const char     *data=NULL;
 size_t          datalen=0;
-int             proto=PR_ICMP;
+int             proto=ECHO_TR;
 int             srcport=8000;
 int             dstport=80;
 ip4_t           dstip={0};
 int             lastidip=0;
 int             ttl=1, tos=0, mttl=30;
-bool            csrcip=0, csrcmac=0, csrcport=0;
+bool            csrcip=0, csrcmac=0, csrcport=0, all=0;
 size_t          nreceived=0, ntransmitted=0;
 int             off=0;
 tr_hop_t        curhop;
@@ -96,7 +103,8 @@ const struct option
   {"lite-crap", no_argument, 0, 11},
   {"df", no_argument, 0, 12},
   {"mf", no_argument, 0, 13},
-  {"rf", no_argument, 0, 14}
+  {"rf", no_argument, 0, 14},
+  {"all", no_argument, 0, 'a'}
 };
 
 
@@ -119,6 +127,7 @@ static noreturn void usage(void)
   puts("  -dstport <num>   set your dstport");
   puts("  -src <ip>        set your srcip");
   putchar('\n');
+  puts("  -a, -all    use all methods and protos");
   puts("  -echo       use icmp echo packets (default)");
   puts("  -syn        use tcp syn packets");
   puts("  -crap       use udp packets");
@@ -140,9 +149,9 @@ static void parsearg(int argc, char **argv)
 {
   while ((rez=getopt_long_only(argc, argv, shortopts, longopts, &id))!=-1) {
     switch (rez) {
-      case 1: proto=PR_ICMP; break;
-      case 3: proto=PR_TCP; break;
-      case 2: proto=PR_SCTP; break;
+      case 1: proto=ECHO_TR; break;
+      case 3: proto=SYN_TR; break;
+      case 2: proto=COOKIE_TR; break;
       case 4:
         srcport=atoi(optarg);
         if (srcport>USHRT_MAX)
@@ -165,11 +174,12 @@ static void parsearg(int argc, char **argv)
       case 7: ip4t_pton(optarg, &intfhdr.srcip); csrcip=1; break;
       case 8: mact_pton(optarg, &intfhdr.src); csrcmac=1; break;
       case 9: maxwait=delayconv(optarg); break;
-      case 10: proto=PR_UDP; break;
-      case 11: proto=IPPROTO_UDPLITE; break;
+      case 10: proto=CRAP_TR; break;
+      case 11: proto=LITE_CRAP_TR; break;
       case 12: off|=IP4_DF; break;
       case 13: off|=IP4_MF; break;
       case 14: off|=IP4_RF; break;
+      case 'a': all=1; break;
       case 'l':
         datalen=atoi(optarg);
         if (datalen>1400)
@@ -219,10 +229,20 @@ static u8 *build_traceroute_probe(size_t *probelen)
 {
   u8 *res=NULL, *ip=NULL, *msg=NULL;
   ip4h_t *iphdr;
+  int pr=0;
+
+  switch (proto) {
+    case ECHO_TR: pr=PR_ICMP; break;
+    case SYN_TR: pr=PR_TCP; break;
+    case CRAP_TR: pr=PR_UDP; break;
+    case LITE_CRAP_TR: pr=IPPROTO_UDPLITE; break;
+    case COOKIE_TR: pr=PR_SCTP; break;
+  }
+
 
   if (!csrcport)
     srcport=random_srcport();
-  switch (proto) {
+  switch (pr) {
     case PR_UDP:
       res=udp_build(srcport, dstport, (u8*)data, datalen, probelen);
       udp4_check(res, *probelen, intfhdr.srcip, dstip, false);
@@ -253,7 +273,7 @@ static u8 *build_traceroute_probe(size_t *probelen)
   if (!res)
     return NULL;
 
-  ip=ip4_build(intfhdr.srcip, dstip, proto, ttl, random_u16(), tos, off,
+  ip=ip4_build(intfhdr.srcip, dstip, pr, ttl, random_u16(), tos, off,
     NULL, 0, res, *probelen, probelen);
   if (!ip) {
     free(res);
@@ -494,10 +514,21 @@ int main(int argc, char **argv)
       ntransmitted++;
       free(tmp);
       ncsrecv(n, received_traceroute_callback, 1);
+      if (!curhop.ok&&all) {
+        if (proto==LAST_TR) {
+          proto=0;
+          goto print;
+        }
+        proto++;
+        curhop.hopid--;
+        continue;
+      }
+print:
       if (!curhop.ok) {
         putchar('.');
         fflush(stdout);
       }
+      else break;
     }
     if (!curhop.ok)
       putchar('\n');
