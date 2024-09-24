@@ -1,23 +1,5 @@
 
-
-
-                                            NCSUTILS
-
-ncsutils (nesca network utils): recently, along with the library comes a set of network utilities;
-check folder utils/.
-
-  uitls/ping.c         connection test.
-  utils/instat.c       traffic monitoring.
-  utils/icmpflood.c    icmp ddos tool.
-  utils/hexflood.c     very fast ddos with any specified packages.
-  utils/arping.c       discovering hosts on a computer network.
-  utils/traceroute.c   displays possible routes and transit delays of packets.
-
-last updated 2024-09-24 (lomaster)
-
-
-
-                                           LIBNCSNET
+                                               LIBNCSNET
 
 libncsnet (nesca network library): a free set of [low-level and no] networking tools;
 works on linux and (unlikely, but) bsd systems. Library provides the most flexible, fastest, and
@@ -49,3 +31,18 @@ To compile, run the following commands in the library's source directory,
 
 The first one is needed to customize the source code and Makefile. The
 second one is for source code compilation.
+
+
+                                            NCSUTILS
+
+ncsutils (nesca network utils): recently, along with the library comes a set of network utilities;
+check folder utils/.
+
+  uitls/ping.c         connection test.
+  utils/instat.c       traffic monitoring.
+  utils/icmpflood.c    icmp ddos tool.
+  utils/hexflood.c     very fast ddos with any specified packages.
+  utils/arping.c       discovering hosts on a computer network.
+  utils/traceroute.c   displays possible routes and transit delays of packets.
+
+last updated 2024-09-21 (lomaster)
