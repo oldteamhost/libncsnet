@@ -1,8 +1,8 @@
 AC_PREREQ([2.69])
 AC_INIT([netstalking-utils], [20240711])
 AC_CONFIG_HEADERS([config.h:config.h.in])
-CFLAGS="-Wall -D_HAVE_CONFIG_H"
-OCFLAGS="-O2"
+CFLAGS="-Wall -D_HAVE_CONFIG_H -lm"
+OCFLAGS="-O2 -lm"
 BUILDDIR="."
 AC_SUBST(CFLAGS)
 AC_SUBST(OCFLAGS)
