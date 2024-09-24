@@ -27,6 +27,7 @@
 #include <stdnoreturn.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <string.h>
 #include <time.h>
 #include <pthread.h>
 #include <signal.h>
@@ -65,7 +66,7 @@ const struct option longopts[]={
 const char             *run=NULL;
 eth_t                  *fds[MAXFDS];
 size_t                  fdnum=__DEFAULT_FDNUM;
-const char             *shortopts="h";
+const char             *shortopts="hI:";
 clock_t                 start, end;
 size_t                  pps=__DEFAULT_PPS;
 size_t                  threadsnum=__DEFAULT_THREADSNUM;
@@ -78,7 +79,7 @@ static pthread_mutex_t  call_mutex=PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t   call_cond=PTHREAD_COND_INITIALIZER;
 size_t                  fdcur=0;
 size_t                  updt=__DEFAULT_UPDT;
-const char             *listpath=NULL;
+const char             *listpath=NULL, *ndev=NULL;
 size_t                  numlines=0;
 size_t                  curline=0;
 bool                    see=__DEFAULT_SEE;
@@ -97,6 +98,7 @@ static noreturn void usage(void)
   puts("  -threads <num>        set num threads (default 1)");
   puts("  -fdnum <num>          set max fds for send (default 1)");
   puts("  -udpt <num>           change frame after <udpt> frames (default 10000)");
+  puts("  -I <dev>              set your interface for flood");
   puts("  -see                  show packets before send");
   puts("  -h, -help             show this help message and exit");
   infohelp();
@@ -167,6 +169,7 @@ static void parseargs(int argc, char **argv)
   while ((rez=getopt_long_only(argc, argv, shortopts, longopts, &index))!=-1){
     switch (rez) {
     case 'h': usage();
+    case 'I': ndev=optarg; break;
     case 1:
       fdnum=atoll(optarg);
       if (fdnum>MAXFDS)
@@ -195,18 +198,48 @@ static void parseargs(int argc, char **argv)
 
 
 /*
+ * Callback for interface information.
+ */
+static int intf_read_callback(const intf_entry *entry, void *arg)
+{
+  if (ndev)
+    if (strcmp(ndev, entry->intf_name))
+      return 0;
+  if (!(entry->intf_flags&INTF_FLAG_UP)) {
+    if (ndev)
+      errx(1, "err: interface %s is down!", ndev);
+    return 0;
+  }
+  if (entry->intf_flags&(INTF_FLAG_LOOPBACK)) {
+    if (ndev)
+      errx(1, "err: interface %s doesn't fit!", ndev);
+    return 0;
+  }
+  ndev=entry->intf_name;
+  return 1;
+}
+
+
+/*
  * Opens the desired number of sockets and writes them to fds.
  * The socket type is set to ETH_P_ALL, you cannot receive
  * packets from it, but you can send them.
  */
 static void openfds(void)
 {
-  const char *dev=NULL;
-  size_t i=0;
-  dev=intf_getupintf();
+  intf_t *i=NULL;
+  size_t j=0;
+
+  i=intf_open();
+  if (!(intf_loop(i, intf_read_callback, NULL))) {
+    intf_close(i);
+    errx(1, "err: interface not found!");
+  }
+  intf_close(i);
+
   memset(&fds, 0, MAXFDS+1);
   for (;fdnum;fdnum--)
-    fds[++i]=eth_open(dev);
+    fds[++j]=eth_open(ndev);
 }
 
 

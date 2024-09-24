@@ -115,6 +115,7 @@ static noreturn void usage(void)
   puts("  -ttl <count>          set TTL on IP header");
   puts("  -badsum               send packets with a bogus checksum");
   puts("  -ipopt <fmt>          adding ip option in packets (fmt <R|S [route]|L [route]|T|U |[HEX]>)");
+  puts("  -ipopt <fmt>          adding ip option in packets (fmt <R|S [route]|L [route]|T|U |[HEX]>)");
   puts("  -h, -help             show this help message and exit");
   infohelp();
   exit(0);

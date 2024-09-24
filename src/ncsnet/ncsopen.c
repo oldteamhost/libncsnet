@@ -64,8 +64,10 @@ static bool intf_read(intf_info_ncsnet_t *n)
   i=intf_open();
   if (!i)
     return 0;
-  if (!(intf_loop(i, intf_read_callback, n)))
+  if (!(intf_loop(i, intf_read_callback, n))) {
+    intf_close(i);
     return 0;
+  }
   intf_close(i);
   return 1;
 }

@@ -74,6 +74,7 @@ bool        filter=0;
 size_t      nreceived=0;
 u8         *packet;
 bool        noreply=0;
+const char *ndev=NULL;
 
 static bool received_ping_sctp_callback(u8 *frame, size_t frmlen, ip4h_t *ip);
 static bool received_ping_udp_callback(u8 *frame, size_t frmlen, ip4h_t *ip);
@@ -144,7 +145,7 @@ int         mode=MODE_ICMP; /* default mode icmp */
 bool        printstats=0;
 const char *lasttarget=NULL;
 char        currentdns[1024];
-const char *shortopts="h";
+const char *shortopts="hI:";
 const struct option
             longopts[]={
   {"help", no_argument, 0, 'h'},
@@ -231,6 +232,7 @@ static noreturn void usage(void)
   puts("  -v, -vv, -vvv\t\tincrease verbosity level (higher is greater effect)");
   puts("  -delay <time>\t\tadjust delay between probes");
   puts("  -noreply\t\tdo not show the response from the host");
+  puts("  -I <dev>\t\tset your interface for ping");
   puts("");
   puts("  -src <ip4addr>\tset your spoof src");
   puts("  -tos <num>\t\tset your type of service field");
@@ -733,6 +735,7 @@ static void parsearg(int argc, char **argv)
   while ((rez=getopt_long_only(argc, argv, shortopts, longopts, &index))!=-1) {
     switch (rez) {
     case 'h': usage();
+    case 'I': ndev=optarg; break;
     case 1: badsum=1; break;
     case 2:
       memset(ipopt, 0, sizeof(ipopt));
@@ -1246,6 +1249,12 @@ int main(int argc, char **argv)
     node=argv[optind];
   if (!check_root_perms())
     errx(1, "err: raw sockets on UNIX only sudo, (try \"sudo %s\")", argv[0]);
+  if (!ndev)
+    n=ncsopen();
+  else
+    n=ncsopen_s(ndev);
+  if (!n)
+    errx(1, "err: failed open socket");
 
   dst=(struct sockaddr_storage*)malloc(sizeof(struct sockaddr_storage));
   src=(struct sockaddr_storage*)malloc(sizeof(struct sockaddr_storage));
@@ -1259,7 +1268,6 @@ int main(int argc, char **argv)
   src4->sin_family=AF_INET;
   src4->sin_port=0;
 
-  n=ncsopen();
   ncsopts(n, NCSOPT_RBUFLEN|NCSOPT_RTIMEOUT|NCSOPT_PROTO,
     65535, maxwait, ((eth)?255:IPPROTO_IP));
   targetsproc();

@@ -351,9 +351,8 @@ static bool get_infointf(void)
   if (!i)
     return 0;
   if (!(intf_loop(i, intf_read_callback, &intfhdr))) {
-    errx(1, "err: interface not found!");
     intf_close(i);
-    return 0;
+    errx(1, "err: interface not found!");
   }
   intf_close(i);
   return 1;
