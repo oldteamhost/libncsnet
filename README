@@ -1,4 +1,6 @@
 
+
+
                                             NCSUTILS
 
 ncsutils (nesca network utils): recently, along with the library comes a set of network utilities;
@@ -12,6 +14,8 @@ check folder utils/.
   utils/traceroute.c   displays possible routes and transit delays of packets.
 
 last updated 2024-09-24 (lomaster)
+
+
 
                                            LIBNCSNET
 
