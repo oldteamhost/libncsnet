@@ -350,7 +350,7 @@ static double tvrtt(struct timeval *start, struct timeval *end)
 /*
  * Prototype callback for filtering.
  */
-static bool received_traceroute_callback(u8 *frame, size_t frmlen)
+static bool received_traceroute_callback(u8 *frame, size_t frmlen, void *arg)
 {
   bool ret=0;
 

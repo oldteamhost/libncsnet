@@ -263,7 +263,7 @@ static bool __received_arp_callback(u8 *frame, size_t frmlen)
 /*
  * Prototype callback for arp reception.
  */
-static bool received_arp_callback(u8 *frame, size_t frmlen)
+static bool received_arp_callback(u8 *frame, size_t frmlen, void *arg)
 {
   reply_state=__received_arp_callback(frame, frmlen);
   if (reply_state)
@@ -520,7 +520,7 @@ int main(int argc, char **argv)
     build_arp();
     if ((eth_send(eth, req, reqlen))>0) {
       ntransmitted++;
-      rbytes=lr_live(lr, &received, 256);
+      rbytes=lr_live(lr, &received, 256, NULL);
       if (reply_state) {
         currtt=tvrtt(&lr->tstamp_s, &lr->tstamp_e);
         if (v)

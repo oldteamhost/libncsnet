@@ -211,7 +211,7 @@ bool ncsopts(ncsnet_t *n, int opts, ...);
     ip6_t: __ncsbind_ip6,                 \
     mac_t: __ncsbind_mac)((n),(addr))
 
-bool __bind_callback(u8 *frame, size_t fmrlen);
+bool __bind_callback(u8 *frame, size_t fmrlen, void *arg);
 bool __ncsbind_general(ncsnet_t *n, int bind, ip4_t *ip4, ip6_t *ip6, mac_t *mac);
 
 inline bool __ncsbind_ip4(ncsnet_t *n, ip4_t ip4) {

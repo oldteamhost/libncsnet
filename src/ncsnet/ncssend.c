@@ -60,7 +60,7 @@ static bool __get_route(const char *to, addr_t *gateway)
  * Callback to filter and accept ARP response
  */
 static ip4_t tmpsrc;
-static bool received_arp_callback(u8 *frame, size_t frmlen)
+static bool received_arp_callback(u8 *frame, size_t frmlen, void *arg)
 {
   arp_op_request_ethip *arpreq;
   mach_t *datalink;
@@ -134,7 +134,7 @@ static bool __proc_arpreq(ncsnet_t *n, const char *to, mac_t *dst)
   tmpcb=lr_getcallback(n->sock.recvfd.lr);
   lr_callback(n->sock.recvfd.lr, received_arp_callback);
   buf=(u8*)calloc(1, DEFAULT_RBUFLEN);
-  lr_live(n->sock.recvfd.lr, &buf, DEFAULT_RBUFLEN);
+  lr_live(n->sock.recvfd.lr, &buf, DEFAULT_RBUFLEN, NULL);
   arpreq=(arp_op_request_ethip*)((buf)+(sizeof(mach_t)+sizeof(arph_t)));
   mact_copy(dst, &arpreq->sha);
   free(buf);

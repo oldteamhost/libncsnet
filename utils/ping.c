@@ -80,7 +80,7 @@ static bool received_ping_sctp_callback(u8 *frame, size_t frmlen, ip4h_t *ip);
 static bool received_ping_udp_callback(u8 *frame, size_t frmlen, ip4h_t *ip);
 static bool received_ping_tcp_callback(u8 *frame, size_t frmlen, ip4h_t *ip);
 static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip);
-static bool received_ping_callback(u8 *frame, size_t frmlen);
+static bool received_ping_callback(u8 *frame, size_t frmlen, void *arg);
 static void tvsub(struct timeval *out, struct timeval *in);
 static void pr_pack(u8 *buf, ssize_t cc);
 static void tvrtt(void);
@@ -686,7 +686,7 @@ static bool received_ping_icmp_callback(u8 *frame, size_t frmlen, ip4h_t *ip)
  * about their reception, for laying level 0. Handles IP4, ICMP,
  * TCP, TCP, SCTP, UDP, ICMP6.
  */
-static bool received_ping_callback(u8 *frame, size_t frmlen)
+static bool received_ping_callback(u8 *frame, size_t frmlen, void *arg)
 {
   size_t hlen, tmplen=frmlen;
   u8 *frmtmp=frame;

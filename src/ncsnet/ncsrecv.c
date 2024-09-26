@@ -39,7 +39,7 @@ ssize_t ncsrecv(ncsnet_t *n, lrcall_t callback, int id_rb)
   __ncsrbuf_create(n, id_rb);
   rbuf=__ncsrbuf_get(n, id_rb);
 
-  rbuf->received=lr_live(n->sock.recvfd.lr, &rbuf->rbuf, n->sock.rbuflen);
+  rbuf->received=lr_live(n->sock.recvfd.lr, &rbuf->rbuf, n->sock.rbuflen, NULL);
   if (n->sock.rinfolvl>0&&rbuf->received>0)
     printf("%s\n", frminfo(rbuf->rbuf, rbuf->received, n->sock.rinfolvl, 0));
 

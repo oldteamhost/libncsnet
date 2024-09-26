@@ -38,7 +38,7 @@
 #include "sys/types.h"
 #include "../ncsnet-config.h"
 
-typedef bool (*lrcall_t)(u8 *, size_t);
+typedef bool (*lrcall_t)(u8 *, size_t, void *);
 typedef struct linuxread_hdr
 {
   struct timeval tstamp_s, tstamp_e;
@@ -54,10 +54,10 @@ void         lr_ns(lr_t *lr, long long ns);
 bool         lr_fd(lr_t *lr, eth_t *fd);
 void         lr_callback(lr_t *lr, lrcall_t callback);
 lrcall_t     lr_getcallback(lr_t *lr);
-ssize_t      lr_live(lr_t *lr, u8 **buf, size_t buflen);
+ssize_t      lr_live(lr_t *lr, u8 **buf, size_t buflen, void *arg);
 void         lr_close(lr_t *lr);
 
-bool lrcall_default(u8 *frame, size_t frmlen);
+bool lrcall_default(u8 *frame, size_t frmlen, void *arg);
 
 __END_DECLS
 

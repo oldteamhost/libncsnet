@@ -27,7 +27,7 @@
 static void
 *bindtmp;
 
-bool __bind_callback(u8 *frame, size_t fmrlen)
+bool __bind_callback(u8 *frame, size_t fmrlen, void *arg)
 {
   ncsnet_t *n=(ncsnet_t*)bindtmp;
   mach_t *dlt=(mach_t*)(frame);
