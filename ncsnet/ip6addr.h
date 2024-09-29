@@ -57,6 +57,7 @@ typedef struct ip6_addr {
 /*
  * functions
  */
+#define ip6t_isglobal(addr)           ((addr->octet[0]&0xE0)==0x20)
 #define ip6t_getid(addr, index)       (addr)->octet[(index)]
 #define ip6t_setid(addr, index, val)  (addr)->octet[(index)]=(u8)(val)
 #define ip6t_compare(addr1, addr2)    (memcmp((addr1).octet,(addr2).octet,sizeof(ip6_t))==0)
