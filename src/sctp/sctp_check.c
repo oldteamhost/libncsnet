@@ -29,14 +29,14 @@ void sctp_check(u8 *frame, size_t frmlen, bool adler32sum, bool badsum)
   sctph_t *sctp;
   sctp = (sctph_t*)frame;
   sctp->check = 0;
-  
+
   /* RFC 2960 originally defined Adler32 checksums, which was later
    * revised to CRC32C in RFC 3309 and RFC 4960 respectively.
    * Nmap uses CRC32C by default, unless --adler32 is given. */
   if (adler32sum)
     sctp->check = htonl(adler32(1, frame, frmlen));
   else
-    sctp->check = htonl(crc32c(frame, frmlen, NULL));
+    sctp->check = htonl(crc32c(frame, frmlen));
 
   if (badsum)
     --sctp->check;

@@ -36,14 +36,14 @@
 #include "../ncsnet-config.h"
 
 #define CRC_POLY_8       0x8C
-#define	CRC_POLY_16      0xA001
-#define	CRC_POLY_32      0xEDB88320ul
+#define CRC_POLY_16      0xA001
+#define CRC_POLY_32      0xEDB88320ul
 #define CRC_POLY_32C     0x1EDC6F41
-#define	CRC_POLY_64      0x42F0E1EBA9EA3693ull
-#define	CRC_POLY_CCITT   0x1021
-#define	CRC_POLY_DNP     0xA6BC
-#define	CRC_POLY_KERMIT  0x8408
-#define	CRC_POLY_SICK    0x8005
+#define CRC_POLY_64      0x42F0E1EBA9EA3693ull
+#define CRC_POLY_CCITT   0x1021
+#define CRC_POLY_DNP     0xA6BC
+#define CRC_POLY_KERMIT  0x8408
+#define CRC_POLY_SICK    0x8005
 
 #define CRC_START_8           0x00
 #define CRC_START_16          0x0000
@@ -72,7 +72,7 @@ u64 crc64ecma(const u8 *buf, size_t len, const u64 *customtab);
 u64 crc64we(const u8 *buf, size_t len, const u64 *customtab);
 u8  crc8(const u8 *buf, size_t len, const u8 *customtab);
 u32 crc32(const u8 *buf, size_t len, const u32 *customtab);
-u32 crc32c(const u8 *buf, size_t len, const u32 *customtab);
+unsigned long crc32c(const u8 *buf, size_t len);
 u16 crc16sick(const u8 *buf, size_t len);
 u8  crc8updt(u8 crc, u8 val);
 u32 crc32updt(u32 crc, u8 val);
