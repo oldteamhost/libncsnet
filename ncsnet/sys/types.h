@@ -28,13 +28,15 @@
 #include <stdint.h>
 #include <sys/cdefs.h>
 
-#define ncs_bswap16(x) (((x) >> 8) | ((x) << 8))
-#define ncs_bswap32(x) ((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00)	\
-		    | (((x) << 8) & 0xFF0000) | (((x) << 24) & 0xFF000000))
-#define ncs_bswap64(x) ((((x) >> 56) & 0xFF) | (((x) >> 40) & 0xFF00)	\
-		    | (((x) >> 24) & 0xFF0000) | (((x) >> 8) & 0xFF000000) \
-		    | (((x) << 8) & 0xFF00000000) | (((x) << 24) & 0xFF0000000000) \
-		    | (((x) << 40) & 0xFF000000000000) | (((x) << 56) & 0xFF00000000000000))
+#define ncs_bswap16(x) (((x)>>8)|((x)<<8))
+
+#define ncs_bswap32(x) ((((x)>>24)&0xFF)|(((x)>>8)&0xFF00)\
+    |(((x)<<8)&0xFF0000)|(((x)<<24)&0xFF000000))
+
+#define ncs_bswap64(x) ((((x)>>56)&0xFF)|(((x)>>40)&0xFF00)\
+    |(((x)>>24)&0xFF0000)|(((x)>>8)&0xFF000000) \
+    |(((x)<<8)&0xFF00000000)|(((x)<<24)&0xFF0000000000) \
+    |(((x)<<40)&0xFF000000000000)|(((x)<<56)&0xFF00000000000000))
 
 #if defined (HAVE_NETDB_HOST)
  #define htons(x) ncs_bswap16(x)
@@ -43,14 +45,27 @@
  #define ntohl(x) ncs_bswap32(x)
 #endif
 
-typedef uint8_t  u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
+#include <limits.h>
 
-typedef int8_t  i8;
-typedef int16_t i16;
-typedef int32_t i32;
+#if CHAR_BIT!=8
+  #error "CHAR_BIT != 8"
+#endif
+#if USHRT_MAX!=65535
+  #error "USHRT_MAX != 65535"
+#endif
+#if UINT_MAX!=4294967295U
+  #error "UINT_MAX != 4294967295U"
+#endif
+
+typedef  signed char   i8;
+typedef signed short   i16;
+typedef   signed int   i32;
+
+typedef unsigned char  u8;
+typedef unsigned short u16;
+typedef   unsigned int u32;
+
 typedef int64_t i64;
+typedef uint64_t u64;
 
 #endif
