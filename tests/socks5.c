@@ -45,23 +45,20 @@ int main(void)
   seq=2;
 
   u8 *tmp, *k;
+  u8 flags;
   size_t len, klen;
   ip4_t r[9];
   u32 tstamps[2];
   ip4t_pton("192.168.1.1", &r[0]);
   ip4t_pton("192.168.1.1", &r[1]);
-  ip4t_pton("192.168.1.1", &r[2]);
-  ip4t_pton("192.168.1.1", &r[3]);
-  ip4t_pton("192.168.1.1", &r[4]);
-  ip4t_pton("192.168.1.1", &r[5]);
-  ip4t_pton("192.168.1.1", &r[6]);
-  ip4t_pton("192.168.1.1", &r[7]);
-  ip4t_pton("192.168.1.1", &r[8]);
   tstamps[0]=1;
   tstamps[1]=2;
+
   //tmp=ip4_opt_route(4, r, 1, &len);
 
-  tmp=ip4_opt_tstamp(5, 0, tstamps, 2, &len);
+  /* 0000 0011 */
+  flags|=0;
+  tmp=ip4_opt_tstamp(5, flags, r, tstamps, 2, &len);
 
   tcp=tcp4_build_pkt(ipsrc, ipdst, 112, random_u16(), 0, 0, tmp, len, random_srcport(), 80, seq,
       0, 0, TCP_FLAG_SYN, 1024, 0, NULL, 0, NULL, 0, &len, 0);

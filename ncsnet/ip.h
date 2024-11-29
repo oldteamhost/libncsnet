@@ -251,8 +251,9 @@ __BEGIN_DECLS
 
 #define ip4_opt_eol(optlen) ip4_opt_type(0,0,0,(optlen))
 #define ip4_opt_nop(optlen) ip4_opt_type(0,0,1,(optlen))
-u8 *ip4_opt_route(u8 ptr, ip4_t routes[], u16 numroutes, size_t *optlen);
-u8 *ip4_opt_tstamp(u8 ptr, u8 flags, u32 tstamps[], u16 numtstamps, size_t *optlen);
+u8 *ip4_opt_route(u8 ptr, ip4_t *routes, u16 numroutes, size_t *optlen);
+u8 *ip4_opt_tstamp(u8 ptr, u8 flags, ip4_t *ips, u32 *tstamps,
+    u16 numipststamps, size_t *optlen);
 
 u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id,
     u8 tos, u16 off, u8 *opts, int optslen, u8 *frame, size_t frmlen,

@@ -24,16 +24,36 @@
 
 #include <ncsnet/ip.h>
 
-u8 *ip4_opt_tstamp(u8 ptr, u8 flags, u32 tstamps[], u16 numtstamps, size_t *optlen)
+/*
+ * NOTE: for first variant need flags 3 (0000 0011)
+ * or 1 (0000 0001), for second 0 (0000 0000),
+ *
+ * first variant: ip0 tstamp0 ip1 tstamp1
+ * second variant: tstamp0 tstamp1
+ */
+u8 *ip4_opt_tstamp(u8 ptr, u8 flags, ip4_t *ips, u32 tstamps[],
+    u16 numipststamps, size_t *optlen)
 {
   size_t tstamplen, i;
   u8 *res, *tstamp;
 
+  /*
+   * If ips and flags are specified, i.e. it's the first
+   * option, then we have to take into account their size,
+   * so 8, if not, then fuck them and size 4:
+   * --> ((numipststamps*((ips&&(flags&(0b11|0b1)))?8:4))+4)
+   */
   tstamp=frmbuild(&tstamplen, NULL, "u8(%hhu), u8(%hhu), u8(%hhu)",
-    ((numtstamps*4)+4), ptr, flags);
-  for (i=0;i<numtstamps&&tstamp;i++)
+    ((numipststamps*((ips&&(flags&(0b11|0b1)))?8:4))+4), ptr, flags);
+
+  for (i=0;i<numipststamps&&tstamp;i++) {
+    if (ips&&(flags&(0b11|0b1))) /* add it first ip */
+      tstamp=frmbuild_add(&tstamplen, tstamp,
+        NULL, "32(%u)", ips[i]);
     tstamp=frmbuild_add(&tstamplen, tstamp,
       NULL, "32(%u)", htonl(tstamp[i])); /* htonl ??? */
+  }
+
   if (tstamp)
     res=ip4_opt_type(0, 2, IP4_OPT_TS, optlen);
   if (tstamp&&res)
@@ -41,5 +61,6 @@ u8 *ip4_opt_tstamp(u8 ptr, u8 flags, u32 tstamps[], u16 numtstamps, size_t *optl
       optlen, NULL);
   if (tstamp)
     free(tstamp);
+
   return res;
 }

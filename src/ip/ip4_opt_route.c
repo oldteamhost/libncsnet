@@ -24,7 +24,7 @@
 
 #include <ncsnet/ip.h>
 
-u8 *ip4_opt_route(u8 ptr, ip4_t routes[], u16 numroutes, size_t *optlen)
+u8 *ip4_opt_route(u8 ptr, ip4_t *routes, u16 numroutes, size_t *optlen)
 {
   size_t routelen, i;
   u8 *res, *route;
