@@ -242,18 +242,11 @@ typedef struct ip6_hdr ip6h_t;
 
 #define ip_check_carry(x) \
   (x = (x >> 16) + (x & 0xffff), (~(x + (x >> 16)) & 0xffff))
-
-__BEGIN_DECLS
-
-#define ip4_opt_type(copyonfrag, _class, num, optlen) \
+#define ip4_opt_type(copyonfrag, _class, num, optlen)   \
   frmbuild((optlen), NULL, "1(%hhu), 2(%hhu), 5(%hhu)", \
     (copyonfrag), (_class), (num))
 
-#define ip4_opt_eol(optlen) ip4_opt_type(0,0,0,(optlen))
-#define ip4_opt_nop(optlen) ip4_opt_type(0,0,1,(optlen))
-u8 *ip4_opt_route(u8 ptr, ip4_t *routes, u16 numroutes, size_t *optlen);
-u8 *ip4_opt_tstamp(u8 ptr, u8 flags, ip4_t *ips, u32 *tstamps,
-    u16 numipststamps, size_t *optlen);
+__BEGIN_DECLS
 
 u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id,
     u8 tos, u16 off, u8 *opts, int optslen, u8 *frame, size_t frmlen,
@@ -261,6 +254,24 @@ u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id,
 
 u8 *ip6_build(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
     u8 nexthdr, int hoplimit, u8 *frame, size_t frmlen, size_t *pktlen);
+
+/* nop, eol, security, recordroute, timestamp, streamid */
+#define ip4_opt_eol(optlen) ip4_opt_type(0,0,0,(optlen))
+#define ip4_opt_nop(optlen) ip4_opt_type(0,0,1,(optlen))
+
+#define ip4_opt_sec(slvl, sclass, optlen) \
+  frmbuild((optlen), NULL, "1(1), 2(0),"  \
+    " 5(%hhu), 8(4), 8(%hhu), 8(%hhu)",   \
+    IP4_OPT_SEC, (slvl), (sclass))
+
+#define ip4_opt_satid(id, optlen)         \
+  frmbuild((optlen), NULL, "1(1), 2(0),"  \
+    " 5(%hhu), 8(4), 16(%hu)",            \
+    IP4_OPT_SATID, htons((id)))
+
+u8 *ip4_opt_route(u8 ptr, ip4_t *routes, u16 numroutes, size_t *optlen);
+u8 *ip4_opt_tstamp(u8 ptr, u8 flags, ip4_t *ips, u32 *tstamps,
+    u16 numipststamps, size_t *optlen);
 
 void ip4_check(u8 *frame, size_t frmlen, bool badsum);
 void ip4_recheck(u8 *pkt, u32 pktlen);

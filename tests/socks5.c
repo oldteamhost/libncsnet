@@ -57,8 +57,7 @@ int main(void)
   //tmp=ip4_opt_route(4, r, 1, &len);
 
   /* 0000 0011 */
-  flags|=0;
-  tmp=ip4_opt_tstamp(5, flags, r, tstamps, 2, &len);
+  tmp=ip4_opt_satid(23, &len);
 
   tcp=tcp4_build_pkt(ipsrc, ipdst, 112, random_u16(), 0, 0, tmp, len, random_srcport(), 80, seq,
       0, 0, TCP_FLAG_SYN, 1024, 0, NULL, 0, NULL, 0, &len, 0);
