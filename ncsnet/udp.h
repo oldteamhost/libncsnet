@@ -67,14 +67,6 @@ u8 *udp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
                    u8 hoplimit, u16 srcport, u16 dstport, u8 *frame,
                    size_t frmlen, size_t *pktlen, bool badsum);
 
-ssize_t udp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
-                      int ttl, u16 ipid, u8 *ipopt, int ipoptlen, u16 srcport,
-                      u16 dstport, u16 off, u8 *frame, size_t frmlen, int mtu, bool badsum);
-
-ssize_t udp6_send_pkt(struct ethtmp *eth, int fd, const ip6_t src, const ip6_t dst,
-                      u8 tc, u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport,
-                      u8 *frame, size_t frmlen, bool badsum);
-
 __END_DECLS
 
 #endif

@@ -183,15 +183,6 @@ u8 *tcp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 ho
                    u16 win, u16 urp, u8 *opt, size_t optlen, u8 *frame, size_t frmlen,
                    size_t *pktlen, bool badsum);
 
-ssize_t tcp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
-                      int ttl, u16 off, u8 *ipops, size_t ipoptlen, u16 srcport,
-                      u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags, u16 win,
-                      u16 urp, u8 *opt, size_t optlen, u8 *frame, size_t frmlen, int mtu,
-                      bool badsum);
-
-ssize_t tcp4_qsend_pkt(int fd, const char *src, const char *dst, int ttl,
-                       u16 dstport, u8 flags, u8 *frame, size_t frmlen);
-
 #define TCP_SYN_PACKET            6
 #define TCP_XMAS_PACKET           7
 #define TCP_FIN_PACKET            8

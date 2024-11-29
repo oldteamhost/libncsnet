@@ -242,57 +242,28 @@ typedef struct ip6_hdr ip6h_t;
 
 #define ip_check_carry(x) \
   (x = (x >> 16) + (x & 0xffff), (~(x + (x >> 16)) & 0xffff))
-#define IP4_SEND_ETH_OR_SD(fd, eth, dst, pkt, pktlen) \
-  ((eth) ? ip4_send_eth((eth), (pkt), (pktlen)) \
-   : ip4_send_raw((fd), (dst), (pkt), (pktlen)))
-#define IP6_SEND_ETH_OR_SD(fd, eth, dst, pkt, pktlen) \
-  ((eth) ? ip6_send_eth((eth), (pkt), (pktlen)) \
-   : sendto((fd), (pkt), (pktlen), 0, (dst), sizeof(*dst)))
 
 __BEGIN_DECLS
 
-u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id, u8 tos, u16 off,
-              u8 *opts, int optslen, u8 *frame, size_t frmlen,
-              size_t *pktlen);
+u8 *ip4_build(const ip4_t src, const ip4_t dst, u8 proto, int ttl, u16 id,
+    u8 tos, u16 off, u8 *opts, int optslen, u8 *frame, size_t frmlen,
+    size_t *pktlen);
 
-u8 *ip6_build(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 nexthdr, int hoplimit,
-              u8 *frame, size_t frmlen, size_t *pktlen);
+u8 *ip6_build(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel,
+    u8 nexthdr, int hoplimit, u8 *frame, size_t frmlen, size_t *pktlen);
 
-void  ip4_check(u8 *frame, size_t frmlen, bool badsum);
-int   ip_check_add(const void *buf, size_t len, int check);
-u16   in_check(u16 *ptr, int nbytes);
-void  ip4_recheck(u8 *pkt, u32 pktlen);
+void ip4_check(u8 *frame, size_t frmlen, bool badsum);
+void ip4_recheck(u8 *pkt, u32 pktlen);
 
 u16 ip4_pseudocheck(const ip4_t src, const ip4_t dst, u8 proto, u16 len, const void *hstart);
 u16 ip6_pseudocheck(const ip6_t src, const ip6_t dst, u8 nxt, u32 len, const void *hstart);
-
-int ip4_send_frag(int fd, const struct sockaddr_in *dst, const u8 *frame,
-                  size_t frmlen, u32 mtu);
-
-int ip4_send(struct ethtmp *eth, int fd, const struct sockaddr_in *dst,
-             int mtu, const u8 *frame, size_t frmlen);
-
-int ip6_send(struct ethtmp *eth, int fd, const struct sockaddr_in6 *dst,
-             const u8 *frame, size_t frmlen);
-
-int ip_send(struct ethtmp *eth, int fd, const struct sockaddr_storage *dst,
-            int mtu, const u8 *frame, size_t frmlen);
-
-int ip4_send_pkt(int fd, ip4_t src, ip4_t dst, u16 ttl, u8 proto, u16 off, u8 *opt,
-                 int optlen, const char *data, size_t datalen, int mtu);
 
 char *ip4_util_strsrc(void);
 int   ip4_util_strdst(const char* dns, char* ipbuf, size_t buflen);
 char *ip6_util_strsrc(void);
 int   ip6_util_strdst(const char *dns, char *ipbuf, size_t buflen);
-
-int   ip4_send_raw(int fd, const struct sockaddr_in *dst, const u8 *frame, size_t frmlen);
-int   ip4_send_eth(struct ethtmp *eth, const u8 *frame, size_t frmlen);
-int   ip6_send_eth(struct ethtmp *eth, const u8 *frame, size_t frmlen);
-
-/* ipaddr.c */
-char *ip_ntoa(const ip4_t *ip4);
-char *ip6_ntoa(const ip6_t *ip6);
+int   ip_check_add(const void *buf, size_t len, int check);
+u16   in_check(u16 *ptr, int nbytes);
 
 __END_DECLS
 

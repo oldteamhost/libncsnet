@@ -162,7 +162,8 @@ static bool __proc_arpcache(ncsnet_t *n, const char *to, mac_t *dst)
     return found;
   fgets(line, sizeof(line), fp);
   while (fgets(line, sizeof(line), fp)) {
-    sscanf(line, "%31s %31s %31s %31s %31s %31s", ip, hw_type, flags, mac, mask, device);
+    sscanf(line, "%31s %31s %31s %31s %31s %31s",
+      ip, hw_type, flags, mac, mask, device);
     if (strcmp(device, n->sock.dev))
       continue;
     if (strcmp(ip, gwstr))

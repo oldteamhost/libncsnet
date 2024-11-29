@@ -173,15 +173,6 @@ u8 *sctp6_build_pkt(const ip6_t src, const ip6_t dst, u8 tc, u32 flowlabel, u8 h
                     u16 srcport, u16 dstport, u32 vtag, u8 *chunks, size_t chunkslen,
                     size_t *pktlen, bool adler32sum, bool badsum);
 
-ssize_t sctp4_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
-                       int ttl, u16 ipid, u8 tos, u16 off, u8 *ipops, int ipoptlen,
-                       u16 srcport, u16 dstport, u8 *chunks, size_t chunkslen, u32 vtag,
-                       int mtu, bool adler32sum, bool badsum);
-
-ssize_t sctp6_send_pkt(struct ethtmp *eth, int fd, const ip6_t src, const ip6_t dst, u8 tc,
-                       u32 flowlabel, u8 hoplimit, u16 srcport, u16 dstport, u32 vtag,
-                       u8 *chunks, size_t chunkslen, bool adler32sum, bool badsum);
-
 __END_DECLS
 
 #endif

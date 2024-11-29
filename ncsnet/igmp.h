@@ -103,11 +103,6 @@ __BEGIN_DECLS
 u8 *igmp_build_pkt(const ip4_t src, const ip4_t dst, u16 ttl, u16 ipid, u8 tos,
                    u16 off, u8 *ipopt, int ipoptlen, u8 type, u8 code,
                    const char *data, size_t datalen, size_t *pktlen, bool badsum);
-
-ssize_t igmp_send_pkt(struct ethtmp *eth, int fd, const ip4_t src, const ip4_t dst,
-                      int ttl, u16 off, u8 *ipops, int ipoptlen, u16 ipid, u8 tos,
-                      u8 type, u8 code, const char *data, size_t datalen, int mtu,
-                      bool badsum);
 __END_DECLS
 
 /* Old */
