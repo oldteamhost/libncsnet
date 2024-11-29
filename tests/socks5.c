@@ -3,6 +3,7 @@
 #include "../ncsnet/utils.h"
 #include "../ncsnet/tcp.h"
 #include "../ncsnet/linuxread.h"
+#include "../ncsnet/trace.h"
 
 ip4_t ipdst,ipsrc;
 mac_t dst,src;
@@ -31,38 +32,47 @@ static bool c(u8 *frame, size_t frmlen, void *arg)
 
 int main(void)
 {
+
   e=eth_open("enp7s0");
   lr=lr_open("enp7s0", to_ns(1000));
-  buf=calloc(1, BUFSIZ);
   ip4t_pton("142.250.74.110", &ipdst);
-  ip4t_pton("192.168.1.33", &ipsrc);
+  ip4t_pton("192.168.1.37", &ipsrc);
   mact_pton("40:b0:76:47:8f:9a", &src);
   mact_pton("04:bf:6d:0d:3a:50", &dst);
   lr_callback(lr, c);
 
   /* SYN */
   seq=2;
-  tcp=tcp4_build_pkt(ipsrc, ipdst, 112, random_u16(), 0, 0, NULL, 0, random_srcport(), 80, seq,
+
+  u8 *tmp, *k;
+  size_t len, klen;
+  ip4_t r[9];
+  u32 tstamps[2];
+  ip4t_pton("192.168.1.1", &r[0]);
+  ip4t_pton("192.168.1.1", &r[1]);
+  ip4t_pton("192.168.1.1", &r[2]);
+  ip4t_pton("192.168.1.1", &r[3]);
+  ip4t_pton("192.168.1.1", &r[4]);
+  ip4t_pton("192.168.1.1", &r[5]);
+  ip4t_pton("192.168.1.1", &r[6]);
+  ip4t_pton("192.168.1.1", &r[7]);
+  ip4t_pton("192.168.1.1", &r[8]);
+  tstamps[0]=1;
+  tstamps[1]=2;
+  //tmp=ip4_opt_route(4, r, 1, &len);
+
+  tmp=ip4_opt_tstamp(5, 0, tstamps, 2, &len);
+
+  tcp=tcp4_build_pkt(ipsrc, ipdst, 112, random_u16(), 0, 0, tmp, len, random_srcport(), 80, seq,
       0, 0, TCP_FLAG_SYN, 1024, 0, NULL, 0, NULL, 0, &len, 0);
   res=eth_build(src, dst, ETH_TYPE_IPV4, tcp, len, &len);
   eth_send(e, res, len);
+  free(tmp);
   free(res);
   free(tcp);
-
-  lr_live(lr, &buf, BUFSIZ, NULL);
-
-  tcp=tcp4_build_pkt(ipsrc, ipdst, 112, random_u16(), 0, 0, NULL, 0, random_srcport(), 80, (ack+1),
-      (seq), 0, TCP_FLAG_ACK, 1024, 0, NULL, 0, NULL, 0, &len, 0);
-  res=eth_build(src, dst, ETH_TYPE_IPV4, tcp, len, &len);
-  eth_send(e, res, len);
-  free(res);
-  free(tcp);
-
-  lr_live(lr, &buf, BUFSIZ, NULL);
 
   eth_close(e);
   lr_close(lr);
-  free(buf);
 
   return 0;
 }
