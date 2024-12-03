@@ -31,7 +31,7 @@ u8 *tcp_build(u16 srcport, u16 dstport, u32 seq, u32 ack, u8 reserved, u8 flags,
   u8 *pkt;
   pkt=frmbuild(pktlen, NULL, "16(%hu), 16(%hu), 32(%u), 32(%u), 4(%hhu), 4(%hhu), 8(%hhu), 16(%hu), 16(0), 16(%hu)",
     htons(srcport), htons(dstport), htonl(seq), htonl(ack), (5+(optlen/4)),
-    ((reserved)?(reserved & 0xFF):0), flags, htons(win), htons(urp));
+    ((reserved)?(reserved&0xFF):0), flags, htons(win), htons(urp));
   if (pkt&&opt&&optlen)
     pkt=frmbuild_addfrm(opt, optlen, pkt, pktlen, NULL);
   if (pkt&&frame&&frmlen)

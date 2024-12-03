@@ -3,7 +3,7 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -34,7 +34,9 @@
 #include <stdbool.h>
 
 #include "eth.h"
+#include "linuxread.h"
 #include "ip.h"
+#include "intf.h"
 #include "utils.h"
 #include "raw.h"
 #include "mt19937.h"
@@ -196,6 +198,47 @@ struct tcp_flags tcp_util_exflags(u8 type);
 struct tcp_flags tcp_util_str_setflags(const char *flags);
 struct tcp_flags tcp_util_getflags(u8 flags);
 u8               tcp_util_setflags(struct tcp_flags *tf);
+
+typedef struct __tcp_bind_hdr {
+  int family, port;
+  union { ip4_t ip4; ip6_t ip6; };
+} tcp_info_t;
+typedef struct tcp_handle
+{
+  tcp_info_t bind, src;
+  u32 seq, ack;
+  eth_t *sfd;
+  lr_t *rfd;
+  u8 *link;
+  size_t linklen;
+
+  /* from libkpnet,
+   * https://github.com/KiberPerdun/libkpnet */
+  enum {
+    TCP_LISTEN=1,
+    TCP_SYN_SENT=2,
+    TCP_SYN_RECEIVED=3,
+    TCP_ESTABLISHED_CONNECTON=4,
+    TCP_FIN_WAIT_1=5,
+    TCP_FIN_WAIT_2=6,
+    TCP_CLOSE_WAIT=7,
+    TCP_CLOSING=8,
+    TCP_LAST_ACK=9,
+    TCP_TIME_WAIT=10,
+    TCP_CLOSED=11,
+  } state;
+} tcp_t;
+
+/*
+ * sudo iptables -A OUTPUT -p tcp --tcp-flags RST RST -j DROP
+ * sudo iptables -D OUTPUT -p tcp --tcp-flags RST RST -j DROP
+ */
+tcp_t *tcp_open(const char *device, long long ns);
+void tcp_add_link(tcp_t *tcp, u8 *link, size_t linklen);
+bool tcp_handshake(tcp_t *tcp, tcp_info_t *src, tcp_info_t *dst);
+void tcp_send(tcp_t *tcp, const u8 *buf, size_t buflen);
+void tcp_recv(tcp_t *tcp, u8 *buf, size_t buflen);
+void tcp_close(tcp_t *tcp);
 
 __END_DECLS
 
