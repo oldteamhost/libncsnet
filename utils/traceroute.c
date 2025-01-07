@@ -61,7 +61,7 @@ bool            ok=0, reached=0, success=0;
 double         *rtts=NULL;
 size_t          tmplen=0;
 u8             *tmp=NULL;
-const char     *run=NULL, *shortopts="hl:H:s:f:I:m:at", *node=NULL;
+const char     *run=NULL, *shortopts="hl:H:s:f:I:m:at:", *node=NULL;
 int             rez=0, id=0, is=0;
 char            ip4buf[16];
 intf_info_hdr   intfhdr={0};
