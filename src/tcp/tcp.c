@@ -37,20 +37,20 @@ static bool tcp_callback(u8 *frame, size_t frmlen, void *arg)
 
   link=(mach_t*)frame;
   if (ntohs(link->type)!=ETH_TYPE_IPV4
-      &&t->bind.family==4)
+      &&t->info.family==4)
     return 0;
   if (ntohs(link->type)!=ETH_TYPE_IPV6
-      &&t->bind.family==6)
+      &&t->info.family==6)
     return 0;
 
   if (((frmlen-14)<sizeof(ip4h_t)&&
-    t->bind.family==4)||((frmlen-14)
-      <sizeof(ip6h_t)&&t->bind.family==6))
+    t->info.family==4)||((frmlen-14)
+      <sizeof(ip6h_t)&&t->info.family==6))
     return 0;
-  if (t->bind.family==4) {
+  if (t->info.family==4) {
     ip4h_t *tmp;
     tmp=(ip4h_t*)(frame+14);
-    if (!ip4t_compare(tmp->src, t->bind.ip4))
+    if (!ip4t_compare(tmp->src, t->info.ip4))
       return 0;
     if (tmp->proto!=6)
       return 0;
@@ -59,10 +59,10 @@ static bool tcp_callback(u8 *frame, size_t frmlen, void *arg)
       return 0;
     tcphdr=(tcph_t*)((frame+14)+sizeof(ip4h_t));
   }
-  else if (t->bind.family==6) {
+  else if (t->info.family==6) {
     ip6h_t *tmp;
     tmp=(ip6h_t*)(frame+14);
-    if (!ip6t_compare(tmp->src, t->bind.ip6))
+    if (!ip6t_compare(tmp->src, t->info.ip6))
       return 0;
     if (tmp->nxt!=6)
       return 0;
@@ -72,13 +72,12 @@ static bool tcp_callback(u8 *frame, size_t frmlen, void *arg)
     tcphdr=(tcph_t*)((frame+14)+sizeof(ip6h_t));
   }
 
-  if (ntohs(tcphdr->th_sport)!=t->bind.port)
+  if (ntohs(tcphdr->th_sport)!=t->info.port)
     return 0;
   if (tcphdr->th_flags==0x12&&t->state==TCP_SYN_SENT) {
     t->state=TCP_SYN_RECEIVED;
     t->seq=ntohl(tcphdr->th_seq);
     t->ack=ntohl(tcphdr->th_ack);
-    printf("%u and %u\n", t->ack, t->seq);
   }
 
   return 1;
@@ -87,8 +86,7 @@ static bool tcp_callback(u8 *frame, size_t frmlen, void *arg)
 tcp_t *tcp_open(const char *device, long long ns)
 {
   tcp_t *tcp;
-  tcp=(tcp_t*)calloc(1, sizeof(tcp_t));
-  if (!tcp)
+  if (!(tcp=(tcp_t*)calloc(1, sizeof(tcp_t))))
     return NULL;
   if (!(tcp->sfd=eth_open(device)))
     goto free;
@@ -105,31 +103,25 @@ free:
   return NULL;
 }
 
-void tcp_add_link(tcp_t *tcp, u8 *link, size_t linklen)
-{
-  if (!link||!linklen)
-    return;
-  tcp->link=link;
-  tcp->linklen=linklen;
-}
-
-static u8 *__tcpframe(u8 *link, size_t linklen, u8 *tcp,
-  size_t tcplen, tcp_info_t *src, tcp_info_t *dst,
-  size_t *reslen)
+static u8 *__tcpframe(u8 *tcp, size_t tcplen,
+  tcp_info_t *info, size_t *reslen)
 {
   u8 *res, *ip;
   size_t iplen;
 
-  *reslen=(linklen+20+tcplen);
+  *reslen=(14+20+tcplen);
   res=(u8*)calloc(1, *reslen);
-  if (src->family==4&&dst->family==4) {
-    tcp4_check(tcp, tcplen, src->ip4, dst->ip4, 0);
-    ip=ip4_build(src->ip4, dst->ip4, 6, random_num_u32(64, 255),
+  if (info->family==4) {
+    tcp4_check(tcp, tcplen, info->srcip4, info->ip4, 0);
+    ip=ip4_build(info->srcip4, info->ip4, 6, random_num_u32(64, 255),
       random_u16(), 0, IP4_DF, NULL, 0, tcp, tcplen,
       &iplen);
     if (!ip)
       return NULL;
-    memcpy(res, link, linklen);
+    /* ethernet ii header*/
+    memcpy(res, info->dst.octet, 6);
+    memcpy(res+6, info->src.octet, 6);
+    res[12]=0x08;res[13]=0x00;
     memcpy((res+14), ip, iplen);
   }
   /* ..., ip6 */
@@ -138,69 +130,92 @@ static u8 *__tcpframe(u8 *link, size_t linklen, u8 *tcp,
   return res;
 }
 
-static bool __tcpunconnect(tcp_t *tcp, tcp_info_t *src, tcp_info_t *dst)
+static bool __tcpunconnect(tcp_t *tcp, tcp_info_t *info)
 {
   size_t tcpflen, reslen;
   u8 *tcpf, *res;
 
   if (tcp->state!=TCP_ESTABLISHED_CONNECTON)
     return 1;
-  if (!src||!dst||!tcp)
+  if (!tcp||!info)
     return 0;
 
-  tcp->state=TCP_FIN_WAIT_1;
-  tcpf=tcp_build(src->port, dst->port,
+  /*
+  tcp->state=TCP_CLOSED;
+  tcpf=tcp_build(info->srcport, info->port,
     random_u32(), 0, 0, TCP_FLAG_RST, 1024, 0,
     NULL, 0, NULL, 0, &tcpflen);
-  res=__tcpframe(tcp->link, tcp->linklen, tcpf,
-    tcpflen, src, dst, &reslen);
+  res=__tcpframe(tcpf, tcpflen, &tcp->info,
+    &reslen);
   free(tcpf);
   eth_send(tcp->sfd, res, reslen);
+  free(res);
+  */
+
+  tcp->state=TCP_FIN_WAIT_1;
+  tcp->ack=300;
+  tcp->seq=100;
+  tcpf=tcp_build(info->srcport, info->port,
+    tcp->seq, tcp->ack, 0, TCP_FLAG_FIN|TCP_FLAG_ACK, 1024, 0,
+    NULL, 0, NULL, 0, &tcpflen);
+  res=__tcpframe(tcpf, tcpflen, &tcp->info,
+    &reslen);
+  free(tcpf);
+  tcp->lastsend=eth_send(tcp->sfd, res, reslen);
   free(res);
 
   return 1;
 }
 
-bool tcp_handshake(tcp_t *tcp, tcp_info_t *src, tcp_info_t *dst)
+bool tcp_bind(tcp_t *tcp, tcp_info_t *info)
+{
+  if (info->family!=4&&info->family!=6)
+    return 0;
+  if (info->port==0)
+    return 0;
+  if (info->srcport<=0)
+    info->srcport=random_srcport();
+  memcpy(&tcp->info, info, sizeof(tcp_info_t));
+  return 1;
+}
+
+bool tcp_handshake(tcp_t *tcp)
 {
   size_t tcpflen, reslen;
   u8 *tcpf, *res, *rbuf;
-  ssize_t ret;
 
-  if (!src||!dst||!tcp)
+  if (!tcp)
     return 0;
-  memcpy(&tcp->bind, dst, sizeof(tcp_info_t));
-  memcpy(&tcp->src, src, sizeof(tcp_info_t));
 
+  /* SYN */
   tcp->state=TCP_SYN_SENT;
   tcp->seq=random_u32();
   tcp->ack=0;
-  tcpf=tcp_build(src->port, dst->port,
+  tcpf=tcp_build(tcp->info.srcport, tcp->info.port,
     tcp->seq, tcp->ack, 0, TCP_FLAG_SYN, 1024, 0,
     NULL, 0, NULL, 0, &tcpflen);
-  res=__tcpframe(tcp->link, tcp->linklen, tcpf,
-    tcpflen, src, dst, &reslen);
+  res=__tcpframe(tcpf, tcpflen, &tcp->info, &reslen);
   free(tcpf);
-  ret=eth_send(tcp->sfd, res, reslen);
+  tcp->lastsend=eth_send(tcp->sfd, res, reslen);
   free(res);
 
+  /* SYN+ACK */
   rbuf=calloc(1, USHRT_MAX);
-  ret=lr_live(tcp->rfd, &rbuf, USHRT_MAX, tcp);
+  lr_live(tcp->rfd, &rbuf, USHRT_MAX, tcp);
   free(rbuf);
-  if (ret==-1)
-    return 0;
   if (tcp->state!=TCP_SYN_RECEIVED) {
     tcp->state=TCP_CLOSED;
     return 0;
   }
 
-  tcpf=tcp_build(src->port, dst->port,
-    tcp->ack, (tcp->seq+1), 0, TCP_FLAG_ACK, 1024, 0,
+  /* ACK */
+  tcp->seq++;
+  tcpf=tcp_build(tcp->info.srcport, tcp->info.port,
+    tcp->ack, tcp->seq, 0, TCP_FLAG_ACK, 1024, 0,
     NULL, 0, NULL, 0, &tcpflen);
-  res=__tcpframe(tcp->link, tcp->linklen, tcpf,
-    tcpflen, src, dst, &reslen);
+  res=__tcpframe(tcpf, tcpflen, &tcp->info, &reslen);
   free(tcpf);
-  eth_send(tcp->sfd, res, reslen);
+  tcp->lastsend=eth_send(tcp->sfd, res, reslen);
   free(res);
 
   tcp->state=TCP_ESTABLISHED_CONNECTON;
@@ -217,18 +232,14 @@ void tcp_recv(tcp_t *tcp, u8 *buf, size_t buflen)
   return;
 }
 
-
 void tcp_close(tcp_t *tcp)
 {
   if (!tcp)
     return;
-  __tcpunconnect(tcp, &tcp->src,
-    &tcp->bind);
+  __tcpunconnect(tcp, &tcp->info);
   if (tcp->sfd)
     eth_close(tcp->sfd);
   if (tcp->rfd)
     lr_close(tcp->rfd);
-  if (tcp->link)
-    free(tcp->link);
   free(tcp);
 }

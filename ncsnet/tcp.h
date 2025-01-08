@@ -199,18 +199,20 @@ struct tcp_flags tcp_util_str_setflags(const char *flags);
 struct tcp_flags tcp_util_getflags(u8 flags);
 u8               tcp_util_setflags(struct tcp_flags *tf);
 
-typedef struct __tcp_bind_hdr {
-  int family, port;
+typedef struct __tcp_init_hdr {
+  int family, port, srcport;
   union { ip4_t ip4; ip6_t ip6; };
+  union { ip4_t srcip4; ip6_t srcip6; };
+  mac_t src, dst;
 } tcp_info_t;
+
 typedef struct tcp_handle
 {
-  tcp_info_t bind, src;
+  tcp_info_t info;
   u32 seq, ack;
   eth_t *sfd;
   lr_t *rfd;
-  u8 *link;
-  size_t linklen;
+  ssize_t lastsend;
 
   /* from libkpnet,
    * https://github.com/KiberPerdun/libkpnet */
@@ -234,8 +236,8 @@ typedef struct tcp_handle
  * sudo iptables -D OUTPUT -p tcp --tcp-flags RST RST -j DROP
  */
 tcp_t *tcp_open(const char *device, long long ns);
-void tcp_add_link(tcp_t *tcp, u8 *link, size_t linklen);
-bool tcp_handshake(tcp_t *tcp, tcp_info_t *src, tcp_info_t *dst);
+bool tcp_bind(tcp_t *tcp, tcp_info_t *info);
+bool tcp_handshake(tcp_t *tcp);
 void tcp_send(tcp_t *tcp, const u8 *buf, size_t buflen);
 void tcp_recv(tcp_t *tcp, u8 *buf, size_t buflen);
 void tcp_close(tcp_t *tcp);

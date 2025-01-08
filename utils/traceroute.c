@@ -61,8 +61,8 @@ bool            ok=0, reached=0, success=0;
 double         *rtts=NULL;
 size_t          tmplen=0;
 u8             *tmp=NULL;
-const char     *run=NULL, *shortopts="hl:H:s:f:I:m:at:", *node=NULL;
-int             rez=0, id=0, is=0;
+const char     *run=NULL, *shortopts="I:n:T:p:P:m:f:H:s:l:o:i:M:AESULChrd4", *node=NULL;
+int             rez=0,is=0;
 char            ip4buf[16];
 intf_info_hdr   intfhdr={0};
 intf_t         *i=NULL;
@@ -84,29 +84,6 @@ char            tmpbuf[16];
 ip4_t           ip4_tmp;
 bool            p=0;
 
-const struct option
-            longopts[]={
-  {"help", no_argument, 0, 'h'},
-  {"echo", no_argument, 0, 1},
-  {"cookie", no_argument, 0, 2},
-  {"syn", no_argument, 0, 3},
-  {"srcport", required_argument, 0, 4},
-  {"dstport", required_argument, 0, 5},
-  {"hex", required_argument, 0, 'H'},
-  {"tos", required_argument, 0, 6},
-  {"src", required_argument, 0, 7},
-  {"srcmac", required_argument, 0, 8},
-  {"maxwait", required_argument, 0, 9},
-  {"crap", no_argument, 0, 10},
-  {"lite-crap", no_argument, 0, 11},
-  {"df", no_argument, 0, 12},
-  {"mf", no_argument, 0, 13},
-  {"rf", no_argument, 0, 14},
-  {"all", no_argument, 0, 'a'},
-  {"try", required_argument, 0, 't'},
-};
-
-
 /*
  * Outputs the help menu, and terminates the program.
  */
@@ -114,26 +91,30 @@ static noreturn void usage(void)
 {
   puts("Usage");
   printf("  %s [flags] <target>\n\n", run);
-  puts("  -maxwait <time>  set your timeout");
-  puts("  -t, -try <num>   set your num of try");
-  puts("  -I <device>      set your interface");
-  puts("  -srcport <num>   set your srcport");
-  puts("  -dstport <num>   set your dstport");
-  puts("  -tos <num>       set Type Of Service");
-  puts("  -src <ip>        set your source ip");
-  puts("  -m <ttl>         set max ttl (hops)");
-  puts("  -f <ttl>         set first ttl (start hop)");
-  puts("  -H, -hex <hex>   set payload in your hex");
-  puts("  -s <str>         set payload in your string");
-  puts("  -l <num>         set len random payload");
+  puts("  -I <device>  set your interface");
+  puts("  -M <mac>     set your src MAC address");
+  puts("  -i <ip>      set your src IP address");
+  puts("  -n <count>   set your num of try");
+  puts("  -T <time>    set timeout, ex: 10ms/1s");
+  puts("  -p <port>    set your src port");
+  puts("  -P <port>    set your dst port");
+  puts("  -m <ttl>     set max ttl (num hops)");
+  puts("  -f <ttl>     set first ttl (start hop)");
+  puts("  -H <hex>     add payload in your hex");
+  puts("  -s <ascii>   add payload in your string");
+  puts("  -l <num>     add random payload (l=len)");
+  puts("  -o <tos>     set your Type Of Service");
   putchar('\n');
-  puts("  -a, -all    use all methods and protos");
-  puts("  -echo       use icmp echo packets");
-  puts("  -syn        use tcp syn packets");
-  puts("  -crap       use udp packets");
-  puts("  -lite-crap  use udp-lite packets");
-  puts("  -cookie     use sctp cookie packets");
-  puts("  -h, -help   show this help message and exit");
+  puts("  -A  use all methods and protos");
+  puts("  -E  use only icmp4 echo packets");
+  puts("  -S  use only tcp syn packets");
+  puts("  -U  use only udp packets");
+  puts("  -L  use only udp-lite packets");
+  puts("  -C  use only sctp-cookie packets");
+  puts("  -r  set Reserved Fragment flag");
+  puts("  -d  set Dont't Fragment flag");
+  puts("  -4  set More Fragment flag");
+  puts("  -h  show this message and exit");
   infohelp();
   exit(0);
 }
@@ -144,39 +125,39 @@ static noreturn void usage(void)
  */
 static void parsearg(int argc, char **argv)
 {
-  while ((rez=getopt_long_only(argc, argv, shortopts, longopts, &id))!=-1) {
+  while ((rez=getopt(argc, argv, shortopts))!=-1) {
     switch (rez) {
-      case 1: proto=ECHO_TR; break;
-      case 3: proto=SYN_TR; break;
-      case 2: proto=COOKIE_TR; break;
-      case 4:
+      case 'E': proto=ECHO_TR; break;
+      case 'S': proto=SYN_TR; break;
+      case 'C': proto=COOKIE_TR; break;
+      case 'p':
         srcport=atoi(optarg);
         if (srcport>USHRT_MAX)
           errx(1, "err: srcport only in range (0-%ld)",
             USHRT_MAX);
         csrcport=1;
         break;
-      case 5:
+      case 'P':
         dstport=atoi(optarg);
         if (dstport>USHRT_MAX)
           errx(1, "err: dstport only in range (0-%ld)",
             USHRT_MAX);
         break;
-      case 6:
+      case 'o':
         tos=atoi(optarg);
         if (tos>UCHAR_MAX)
           errx(1, "err: tos only in range (0-%ld)",
             UCHAR_MAX);
         break;
-      case 7: ip4t_pton(optarg, &intfhdr.srcip); csrcip=1; break;
-      case 8: mact_pton(optarg, &intfhdr.src); csrcmac=1; break;
-      case 9: maxwait=delayconv(optarg); break;
-      case 10: proto=CRAP_TR; break;
-      case 11: proto=LITE_CRAP_TR; break;
-      case 12: off|=IP4_DF; break;
-      case 13: off|=IP4_MF; break;
-      case 14: off|=IP4_RF; break;
-      case 'a': all=1; break;
+      case 'i': ip4t_pton(optarg, &intfhdr.srcip); csrcip=1; break;
+      case 'M': mact_pton(optarg, &intfhdr.src); csrcmac=1; break;
+      case 'T': maxwait=delayconv(optarg); break;
+      case 'U': proto=CRAP_TR; break;
+      case 'L': proto=LITE_CRAP_TR; break;
+      case 'd': off|=IP4_DF; break;
+      case '4': off|=IP4_MF; break;
+      case 'r': off|=IP4_RF; break;
+      case 'A': all=1; break;
       case 'l':
         datalen=atoi(optarg);
         if (datalen>1400)
@@ -259,7 +240,8 @@ static u8 *build_traceroute_probe(size_t *probelen)
       free(msg);
       break;
     case PR_TCP:
-      res=tcp_build(srcport, dstport, random_u32(), 0, 0, TCP_FLAG_SYN, 1024, 0, NULL, 0, (u8*)data, datalen, probelen);
+      res=tcp_build(srcport, dstport, random_u32(), 0, 0, TCP_FLAG_SYN, 1024, 0,
+        NULL, 0, (u8*)data, datalen, probelen);
       if (res)
         tcp4_check(res, *probelen, intfhdr.srcip, dstip, false);
       break;

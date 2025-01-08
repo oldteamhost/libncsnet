@@ -101,13 +101,14 @@ eth_t   *eth_open(const char *device);
 int      eth_fd(eth_t *e);
 ssize_t  eth_read(eth_t *e, u8 *buf, ssize_t len, int flags);
 ssize_t  eth_send(eth_t *e, const void *buf, size_t len);
+eth_t   *eth_close(eth_t *e);
+
 int      eth_get(eth_t *e, mac_t *ea);
 int      eth_set(eth_t *e, const mac_t *ea);
 u8      *eth_build(mac_t src, mac_t dst, u16 type, u8 *frame,
   size_t frmlen, size_t *pktlen);
 eth_t   *eth_open_cached(const char *device);
 void     eth_close_cached(void);
-eth_t   *eth_close(eth_t *e);
 
 __END_DECLS
 

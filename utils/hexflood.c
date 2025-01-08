@@ -52,27 +52,17 @@
 #define __DEFAULT_PPS         10000
 #define __DEFAULT_SEE         0
 
-const struct option longopts[]={
-  {"help", no_argument, 0, 'h'},
-  {"fdnum", required_argument, 0, 1},
-  {"pps", required_argument, 0, 2},
-  {"threads", required_argument, 0, 3},
-  {"frame", required_argument, 0, 4},
-  {"list", required_argument, 0, 5},
-  {"updt", required_argument, 0, 6},
-  {"see", no_argument, 0, 7},
-};
-
 const char             *run=NULL;
 eth_t                  *fds[MAXFDS];
 size_t                  fdnum=__DEFAULT_FDNUM;
-const char             *shortopts="hI:";
+const char             *shortopts="u:n:t:p:f:l:I:hs";
 clock_t                 start, end;
 size_t                  pps=__DEFAULT_PPS;
 size_t                  threadsnum=__DEFAULT_THREADSNUM;
 size_t                  total=0;
 bool                    hexc=0;
 u8                     *hexpkt=NULL;
+int                     rez=0;
 size_t                  hexpktlen=0;
 static size_t           total_calls=0;
 static pthread_mutex_t  call_mutex=PTHREAD_MUTEX_INITIALIZER;
@@ -92,15 +82,15 @@ static noreturn void usage(void)
 {
   puts("Usage");
   printf("  %s <flags>\n\n", run);
-  puts("  -frame <hex>          set frame for flood");
-  puts("  -list <path>          set list frames for flood");
-  puts("  -pps <num>            set max frames per second (default 10000) (unlimited=0)");
-  puts("  -threads <num>        set num threads (default 1)");
-  puts("  -fdnum <num>          set max fds for send (default 1)");
-  puts("  -udpt <num>           change frame after <udpt> frames (default 10000)");
-  puts("  -I <dev>              set your interface for flood");
-  puts("  -see                  show packets before send");
-  puts("  -h, -help             show this help message and exit");
+  puts("  -I <device>  set your interface for flood");
+  puts("  -n <fdnum>   set max fds for send (default 1)");
+  puts("  -u <udpt>    change frame after <updt> frames (def: 10000)");
+  puts("  -f <hex>     set frame in hex for flood");
+  puts("  -l <path>    set list frames for flood");
+  puts("  -p <pps>     set max frames per second (def: 10000) (unlimit=0)");
+  puts("  -t <num>     set num threads (default 1)");
+  puts("  -s           show packets before send");
+  puts("  -h           show this help message and exit");
   infohelp();
   exit(0);
 }
@@ -165,33 +155,32 @@ static void gethexlinelist(size_t line)
  */
 static void parseargs(int argc, char **argv)
 {
-  int rez, index=0;
-  while ((rez=getopt_long_only(argc, argv, shortopts, longopts, &index))!=-1){
+  while ((rez=getopt(argc, argv, shortopts))!=-1){
     switch (rez) {
-    case 'h': usage();
-    case 'I': ndev=optarg; break;
-    case 1:
-      fdnum=atoll(optarg);
-      if (fdnum>MAXFDS)
-        errx(1, "err: max num fds is %lld, your num is \"%lld\"", MAXFDS, fdnum);
-      break;
-    case 2: pps=atoll(optarg); break;
-    case 3: threadsnum=atoll(optarg); break;
-    case 4:
-      hexc=1;
-      hexpkt=hex_ahtoh(optarg, &hexpktlen);
-      if (hexpktlen>MAXFRAMELEN)
-        errx(2, "err: max frame len is %lld, your len is \"%lld\"", MAXFRAMELEN, hexpktlen);
-      break;
-   case 5:
-      listpath=optarg;
-      getnumlines();
-      if (numlines==0)
-        errx(2, "err: lines in file %s is \"%lld\"", optarg, numlines);
-      gethexlinelist(0);
-      break;
-   case 6: updt=atoll(optarg); break;
-   case 7: see=1; break;
+      case 'h': usage();
+      case 'I': ndev=optarg; break;
+      case 'n':
+        fdnum=atoll(optarg);
+        if (fdnum>MAXFDS)
+          errx(1, "err: max num fds is %lld, your num is \"%lld\"", MAXFDS, fdnum);
+        break;
+      case 'p': pps=atoll(optarg); break;
+      case 't': threadsnum=atoll(optarg); break;
+      case 'f':
+        hexc=1;
+        hexpkt=hex_ahtoh(optarg, &hexpktlen);
+        if (hexpktlen>MAXFRAMELEN)
+          errx(2, "err: max frame len is %lld, your len is \"%lld\"", MAXFRAMELEN, hexpktlen);
+        break;
+     case 'l':
+        listpath=optarg;
+        getnumlines();
+        if (numlines==0)
+          errx(2, "err: lines in file %s is \"%lld\"", optarg, numlines);
+        gethexlinelist(0);
+        break;
+     case 'u': updt=atoll(optarg); break;
+     case 's': see=1; break;
     }
   }
 }
