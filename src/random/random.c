@@ -69,3 +69,21 @@ const char *random_ip4(void)
   tmp=random_ip4t();
   return (ip4t_ntop_c(&tmp));
 }
+
+u32 urandom_random_num(u32 min, u32 max)
+{
+#include <sys/random.h>
+  u32 random, range;
+  ssize_t ret;
+  if (min>max)
+    return 1;
+  range=(max>=min)?(max-min):(UINT_MAX-min);
+  return ((ret=getrandom(&random, sizeof(u32), GRND_NONBLOCK
+    |GRND_RANDOM))==-1||(ret!=sizeof(u32))?0:
+    ((min+(random%range+1))));
+}
+
+size_t __urandom_random_num_call(size_t min, size_t max)
+{
+  return urandom_random_num((u32)min, (u32)max)
+}
