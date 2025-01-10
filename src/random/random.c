@@ -85,5 +85,5 @@ u32 urandom_random_num(u32 min, u32 max)
 
 size_t __urandom_random_num_call(size_t min, size_t max)
 {
-  return urandom_random_num((u32)min, (u32)max)
+  return urandom_random_num((u32)min, (u32)max);
 }
