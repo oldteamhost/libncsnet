@@ -54,6 +54,9 @@ u16         random_srcport(void);
 const char *random_ip4(void);
 ip4_t       random_ip4t(void);
 
+u32 urandom_random_num(u32 min, u32 max);
+size_t __urandom_random_num_call(size_t min, size_t max);
+
 /* XXX
 const char *random_ip6(void);
 ip4_t       random_ip6t(void);
