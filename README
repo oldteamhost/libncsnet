@@ -7,6 +7,7 @@ ncsutils (nesca network utils): recently, along with the library comes a set of 
 check folder utils/.
 
   uitls/ping.c         connection test.
+  uitls/xdump.c        simply hex dump tool.
   utils/instat.c       traffic monitoring.
   utils/hexflood.c     very fast ddos with any specified packages.
   utils/arping.c       discovering hosts on a computer network.

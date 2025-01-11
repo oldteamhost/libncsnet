@@ -58,6 +58,23 @@ void hex_htoa(const u8 *hex, size_t hexlen, char *ascii);
 /* asciihex to hex */
 u8 *hex_ahtoh(char *txt, size_t *hexlen);
 
+/*
+ * print hexdump with your options
+ *
+ * 0000  04 bf 6d 0d 3a 50 40 b0 76 47 8f 9a 08 00 45 00  ..m.:P@.vG....E.
+ * 0010  00 34 8e d2 40 00 40 06 0d 66 c0 a8 01 22 b0 64  .4..@.@..f...".d
+ * 0020  2c 5d c5 f0 1e d7 31 31 46 84 89 af 67 ba 80 10  ,]....11F...g...
+ * 0030  02 93                                            ..
+ */
+typedef struct __hexdump_opts
+{
+  size_t off, snum;
+  bool offprint, asciiprint, infoprint;
+  const char *hexprfx;
+} hdopts;
+
+void hexdump_pro(u8 *hex, size_t hexlen, hdopts *opts);
+
 __END_DECLS
 
 #endif
