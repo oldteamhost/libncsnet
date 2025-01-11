@@ -33,10 +33,10 @@
 typedef struct{
   FILE  *f; size_t curpos, flen;
 } binr_t;
-const char *run=NULL, *shortopts="p:o:s:c:AOh", *node=NULL;
+const char *run=NULL, *shortopts="p:o:s:c:AOhH:", *node=NULL;
 int         rez=0;
 hdopts      opts={.off=16, .snum=1, .offprint=1,
-  .asciiprint=1, .infoprint=0, .hexprfx=""};
+                  .asciiprint=1, .infoprint=0, .hexprfx=""};
 FILE       *f=NULL;
 size_t      binlen=0, ret=0, chunklen=104857600, tot=0, n=0;
 u8         *bin=NULL;
@@ -44,6 +44,7 @@ binr_t     *binr=NULL;
 char        date[20];
 struct tm  *t;
 time_t      now;
+bool        H;
 
 extern const char *util_bytesconv(size_t bytes);
 
@@ -107,6 +108,7 @@ static noreturn void usage(void)
 {
   puts("Usage");
   printf("  %s [flags] <file>\n\n", run);
+  puts("  -H <hex>   load hex stream, no file");
   puts("  -p <prfx>  set your hex prefix");
   puts("  -o <off>   set your offset (def. 16)");
   puts("  -s <num>   set your number spaces (def. 1)");
@@ -124,6 +126,7 @@ static void parsearg(int argc, char **argv)
   while ((rez=getopt(argc, argv, shortopts))!=-1) {
     switch (rez) {
       case 'A': opts.asciiprint=0; break;
+      case 'H': H=1; bin=hex_ahtoh(optarg, &binlen); break;
       case 'O': opts.offprint=0; break;
       case 'p': opts.hexprfx=optarg; break;
       case 'o': opts.off=atoll(optarg); break;
@@ -143,22 +146,29 @@ int main(int argc, char **argv)
   if (argc<=1)
     usage();
   parsearg(argc, argv);
-  if (optind<argc)
-    node=argv[optind];
   startstring();
-  if (!(binr=binr_open(node)))
-    errx(1, "err: %s file not found\n", node);
-  while (((bin=binr_nxt(binr, &binlen, chunklen)))
-    &&binlen>0) {
-    printf("chunk %ld in %s (%ld bytes):\n", n,
-      util_bytesconv(binlen), binlen);
-    hexdump_pro(bin, binlen, &opts);
-    putchar('\n');
-    tot+=binlen;
-    n++;
-    free(bin);
+  if (!H) {
+    if (optind<argc)
+      node=argv[optind];
+    if (!(binr=binr_open(node)))
+      errx(1, "err: %s file not found\n", node);
+    while (((bin=binr_nxt(binr, &binlen, chunklen)))
+      &&binlen>0) {
+      printf("chunk %ld in %s (%ld bytes):\n", n,
+        util_bytesconv(binlen), binlen);
+      hexdump_pro(bin, binlen, &opts);
+      putchar('\n');
+      tot+=binlen;
+      n++;
+      free(bin);
+    }
+    binr_close(binr);
   }
-  binr_close(binr);
+  else {
+    hexdump_pro(bin, binlen, &opts);
+    tot+=binlen;
+    putchar('\n');
+  }
   printf("Stats: total %s (%ld bytes)/%ld num chunks\n",
     util_bytesconv(tot), tot, n);
   now=time(NULL);
