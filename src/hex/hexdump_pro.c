@@ -79,11 +79,10 @@ void hexdump_pro(u8 *hex, size_t hexlen, hdopts *opts)
   if (opts->asciiprint&&oshift<hexlen) {
     j=hexlen%opts->off;
     if (j!=0) {
-      miss=(j==0)?0:opts->off-j;
+      miss=opts->off-j;
       o=((miss)*2)+2+(miss*opts->snum);
       if (opts->hexprfx)
-        o+=((strlen(opts->hexprfx)==1)?
-          miss:strlen(opts->hexprfx)*miss);
+        o+=(strlen(opts->hexprfx)*miss);
       for (j=0;j<o;j++)
         printf(" ");
     }
