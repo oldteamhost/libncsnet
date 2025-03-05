@@ -158,6 +158,7 @@ static void parsearg(int argc, char **argv)
       case '4': off|=IP4_MF; break;
       case 'r': off|=IP4_RF; break;
       case 'A': all=1; break;
+      case 'n': try=atoll(optarg); break;
       case 'l':
         datalen=atoi(optarg);
         if (datalen>1400)
